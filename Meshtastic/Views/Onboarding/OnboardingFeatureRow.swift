@@ -19,6 +19,7 @@ struct OnboardingFeatureRow: View {
 	let isOn: Binding<Bool>?
 
 	@Environment(\.dynamicTypeSize) private var dynamicTypeSize
+	@Environment(\.onboardingCompact) private var isCompact
 	@ScaledMetric(relativeTo: .title) private var symbolSize: CGFloat = 34
 	@ScaledMetric(relativeTo: .title) private var symbolColumn: CGFloat = 56
 
@@ -47,10 +48,10 @@ struct OnboardingFeatureRow: View {
 			VStack(alignment: .leading, spacing: 2) {
 				if let title {
 					Text(title)
-						.font(.headline)
+						.font(isCompact ? .subheadline.bold() : .headline)
 				}
 				Text(text)
-					.font(.body)
+					.font(isCompact ? .subheadline : .body)
 			}
 			.foregroundStyle(.primary)
 			.multilineTextAlignment(.leading)
@@ -66,6 +67,8 @@ struct OnboardingFeatureRow: View {
 		.accessibilityElement(children: .combine)
 	}
 
+	private var iconSize: CGFloat { isCompact ? symbolSize * 0.8 : symbolSize }
+
 	@ViewBuilder
 	private var icon: some View {
 		Group {
@@ -73,14 +76,14 @@ struct OnboardingFeatureRow: View {
 				Image(symbol)
 					.resizable()
 					.aspectRatio(contentMode: .fit)
-					.frame(width: symbolSize, height: symbolSize)
+					.frame(width: iconSize, height: iconSize)
 			} else {
 				Image(systemName: symbol)
-					.font(.system(size: symbolSize))
+					.font(.system(size: iconSize))
 			}
 		}
 		.foregroundStyle(color)
-		.frame(width: symbolColumn)
+		.frame(width: isCompact ? symbolColumn * 0.8 : symbolColumn)
 		// Decorative: the title and text say what the row is.
 		.accessibilityHidden(true)
 	}

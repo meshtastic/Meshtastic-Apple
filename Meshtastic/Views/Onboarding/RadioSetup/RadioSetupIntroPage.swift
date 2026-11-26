@@ -22,10 +22,12 @@ struct RadioSetupIntroPage: View {
 			action: { model.advance(from: .intro) }
 		) {
 			if let hardwareModelId = model.hardwareModelId {
-				DeviceHardwareImage(hwId: hardwareModelId)
-					.frame(maxWidth: .infinity)
-					.frame(height: 160)
-					.accessibilityHidden(true)
+				OnboardingCompactReader { isCompact in
+					DeviceHardwareImage(hwId: hardwareModelId)
+						.frame(maxWidth: .infinity)
+						.frame(height: isCompact ? 96 : 140)
+						.accessibilityHidden(true)
+				}
 			}
 			OnboardingFeatureRow(
 				symbol: "cpu",

@@ -55,24 +55,34 @@ struct OnboardingPage<Rows: View>: View {
 		self.rows = rows
 	}
 
+	/// Set once the content doesn't fit above the buttons: tighter spacing, a smaller title,
+	/// and smaller rows and pictures (pages read `onboardingCompact`), so the page fits the
+	/// screen instead of hiding its last rows under the buttons. It never goes back to
+	/// false while the page is up, so the layout can't flip back and forth, and the
+	/// keyboard shrinking the space only ever tightens it: one view tree throughout, so a
+	/// focused text field keeps its focus. Whatever still doesn't fit scrolls.
+	@State private var isCompact = false
+	@State private var contentHeight: CGFloat = 0
+	@State private var viewportHeight: CGFloat = 0
+
 	var body: some View {
 		VStack(spacing: 0) {
 			ScrollView(.vertical) {
-				VStack(spacing: 28) {
+				VStack(spacing: isCompact ? 14 : 20) {
 					Text(title)
-						.font(.largeTitle.bold())
+						.font(isCompact ? .title.bold() : .largeTitle.bold())
 						.multilineTextAlignment(.center)
 						.fixedSize(horizontal: false, vertical: true)
 						.frame(maxWidth: .infinity)
-						.padding(.top, 32)
+						.padding(.top, isCompact ? 0 : 8)
 					if let intro {
 						Text(intro)
-							.font(.body)
+							.font(isCompact ? .callout : .body)
 							.multilineTextAlignment(.center)
 							.fixedSize(horizontal: false, vertical: true)
 							.frame(maxWidth: 560)
 					}
-					VStack(alignment: .leading, spacing: 24) {
+					VStack(alignment: .leading, spacing: isCompact ? 14 : 22) {
 						rows()
 					}
 					// Long lines read badly on an iPad or Mac window, so the rows keep a
@@ -80,7 +90,17 @@ struct OnboardingPage<Rows: View>: View {
 					.frame(maxWidth: 560)
 				}
 				.padding(.horizontal, 24)
-				.padding(.bottom, 16)
+				.padding(.bottom, isCompact ? 8 : 16)
+				.environment(\.onboardingCompact, isCompact)
+				.onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
+					contentHeight = $0
+					compactIfNeeded()
+				}
+			}
+			.scrollBounceBehavior(.basedOnSize)
+			.onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
+				viewportHeight = $0
+				compactIfNeeded()
 			}
 			VStack(spacing: 12) {
 				if let errorMessage {
@@ -131,6 +151,33 @@ struct OnboardingPage<Rows: View>: View {
 			}
 			.padding(.bottom)
 		}
+		// The setup pages show in a hosted sheet, which doesn't inherit the app-wide toggle
+		// style from ContentView, so the accent color is set here too.
+		.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+	}
+}
+
+extension OnboardingPage {
+	fileprivate func compactIfNeeded() {
+		guard !isCompact, viewportHeight > 0, contentHeight > viewportHeight + 1 else { return }
+		isCompact = true
+	}
+}
+
+extension EnvironmentValues {
+	/// True when an `OnboardingPage` is tightening its layout to fit the screen. Rows and
+	/// pictures shrink with it.
+	@Entry var onboardingCompact = false
+}
+
+/// Reads `onboardingCompact` where a page builds its rows. The page's own body sits
+/// outside the `OnboardingPage` that sets it, so it has to be read from inside the rows.
+struct OnboardingCompactReader<Content: View>: View {
+	@Environment(\.onboardingCompact) private var isCompact
+	@ViewBuilder let content: (Bool) -> Content
+
+	var body: some View {
+		content(isCompact)
 	}
 }
 
