@@ -81,22 +81,23 @@ enum NiimbotPrinterError: LocalizedError, Equatable {
 	var errorDescription: String? {
 		switch self {
 		case .printer(let code):
-			let reason: String = switch code {
-			case 0x01: "the cover is open"
-			case 0x02: "no paper was detected"
-			case 0x03: "the battery is low"
-			case 0x05: "the print was canceled on the printer"
-			case 0x07: "the print head is too hot"
-			case 0x08: "the labels are out or the lid isn't latched"
-			case 0x09: "the printer is busy"
-			case 0x10: "the printer rejected this label roll"
-			default: "printer error 0x\(String(code, radix: 16))"
+			switch code {
+			case 0x01: return String(localized: "The printer stopped: its cover is open.", comment: "Label printer error")
+			case 0x02: return String(localized: "The printer stopped: it found no labels.", comment: "Label printer error")
+			case 0x03: return String(localized: "The printer stopped: its battery is low.", comment: "Label printer error")
+			case 0x05: return String(localized: "The print was canceled on the printer.", comment: "Label printer error")
+			case 0x07: return String(localized: "The printer stopped: its print head is too hot.", comment: "Label printer error")
+			case 0x08: return String(localized: "The printer stopped: the labels are out or the lid isn't latched.", comment: "Label printer error")
+			case 0x09: return String(localized: "The printer is busy. Try again in a moment.", comment: "Label printer error")
+			case 0x10: return String(localized: "The printer rejected this label roll.", comment: "Label printer error")
+			default:
+				let hex = String(code, radix: 16)
+				return String(localized: "The printer stopped with error 0x\(hex).", comment: "Label printer error; the argument is a hex error code")
 			}
-			return "The printer stopped: \(reason)."
-		case .unsupported(let request):
-			return "The printer doesn't support request 0x\(String(request, radix: 16))."
-		case .noResponse(let request):
-			return "The printer didn't answer request 0x\(String(request, radix: 16)). Check that it's on and nearby."
+		case .unsupported:
+			return String(localized: "This printer doesn't support printing from Meshtastic.", comment: "Label printer error")
+		case .noResponse:
+			return String(localized: "The printer didn't answer. Check that it's on and nearby.", comment: "Label printer error")
 		}
 	}
 }

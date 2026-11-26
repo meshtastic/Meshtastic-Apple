@@ -194,6 +194,12 @@ Tap any node to see the full detail view with hardware info, signal metrics, env
 
 For messageable nodes, use **Actions > Share Contact QR** to show a Meshtastic contact link and QR code that another device can scan.
 
+### Print a Contact as a Name Tag
+
+With a Niimbot D110 label printer, the contact share sheet also offers **Print Name Tag**. It prints the contact's QR code, names and node ID on a 12 mm die-cut label, laid out like a HELLO MY NODE IS name tag, so anyone can scan it to add the contact. The layout is the one meshtastic/labeltastic prints.
+
+Choose 30 or 40 mm labels to match the roll you have loaded. The first time, turn the printer on, close the Niimbot app, and pick the printer from the list; after that the sheet reconnects to it on its own. If the short name is a single emoji, it prints on the right like a pin, and the long name becomes the big line.
+
 ### Write a Contact to an NFC Tag
 
 On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also offers **Write to NFC Tag**. Hold a writable NFC tag near the top of your iPhone and the contact link is saved to it, replacing whatever the tag held before. Anyone can then tap that tag with their phone to open the contact in Meshtastic — the tag carries exactly the same link the QR code encodes.

@@ -77,8 +77,10 @@ struct LabelPrintView: View {
 					} label: {
 						if case .printing = printer.status {
 							Label("Printing…", systemImage: "printer")
+						} else if printed {
+							Label("Print Another", systemImage: "printer")
 						} else {
-							Label(printed ? "Print Another" : "Print", systemImage: "printer")
+							Label("Print", systemImage: "printer")
 						}
 					}
 					.disabled(!canPrint)
