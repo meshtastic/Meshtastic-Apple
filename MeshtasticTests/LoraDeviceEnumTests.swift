@@ -1160,4 +1160,119 @@ struct LoRaChannelCalculatorTests {
 
 		#expect(abs(calculator.radioFrequencyMHz(slot: 1) - 902.125) < 0.001)
 	}
+
+	@Test("Out-of-range channelNum falls back to derived slot and never extrapolates past band end")
+	func outOfRangeChannelNumFallsBackToDerivedSlot() {
+		let entity = LoRaConfigEntity()
+		entity.regionCode = Int32(RegionCodes.us.rawValue)
+		entity.usePreset = true
+		entity.modemPreset = Int32(ModemPresets.longFast.rawValue)
+		entity.channelNum = 120 // out of range for US LongFast (104 slots)
+
+		let calculator = LoRaChannelCalculator(config: entity)
+		#expect(calculator.effectiveChannelSlot(primaryName: "LongFast") == 20)
+		#expect(abs(calculator.radioFrequencyMHz(slot: 20) - 906.875) < 0.001)
+		#expect(calculator.radioFrequencyMHz(slot: 120) == 0)
+
+		let summary = ChannelFrequencySummary(loRaConfig: entity, primaryChannelName: "LongFast")
+		#expect(summary?.slotText == "20")
+		#expect(summary?.frequencyText == "906.875 MHz")
+	}
+
+	@Test("Custom bandwidth 0 uses the regional default bandwidth")
+	func customBandwidthZeroUsesRegionalDefault() {
+		let usDefault = LoRaChannelCalculator(
+			regionCode: RegionCodes.us.rawValue,
+			usePreset: false,
+			modemPreset: 0,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+		#expect(usDefault.numChannels() == 104)
+		#expect(abs(usDefault.radioFrequencyMHz(slot: 1) - 902.125) < 0.001)
+
+		let lora24Default = LoRaChannelCalculator(
+			regionCode: RegionCodes.lora24.rawValue,
+			usePreset: false,
+			modemPreset: 0,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+		let lora24Preset = LoRaChannelCalculator(
+			regionCode: RegionCodes.lora24.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.longFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+		#expect(lora24Default.numChannels() == 103)
+		#expect(lora24Default.numChannels() == lora24Preset.numChannels())
+		#expect(abs(lora24Default.radioFrequencyMHz(slot: 1) - 2400.40625) < 0.001)
+	}
+
+	@Test("LoRaConfig.reconcile clears an out-of-range channelNum on preset, region, or bandwidth change")
+	func loRaConfigReconcileClearsOutOfRangeChannelNum() {
+		var config = Config.LoRaConfig()
+		config.region = .jp
+		config.usePreset = true
+		config.modemPreset = .liteSlow
+		config.channelNum = 15
+
+		config.modemPreset = .longFast
+		#expect(!LoRaConfig.canSave(config, node: nil))
+		#expect(LoRaConfig.slotResetNotice(config, previousSlot: 15) == nil)
+		LoRaConfig.reconcile(&config)
+		#expect(config.channelNum == 0)
+		#expect(LoRaConfig.canSave(config, node: nil))
+		#expect(LoRaConfig.slotResetNotice(config, previousSlot: 15) != nil)
+
+		config.modemPreset = .narrowSlow
+		config.channelNum = 15
+		LoRaConfig.reconcile(&config)
+		#expect(config.channelNum == 15)
+		#expect(LoRaConfig.slotResetNotice(config, previousSlot: 15) == nil)
+
+		config.region = .us
+		config.modemPreset = .longFast
+		config.channelNum = 20
+		config.region = .eu868
+		LoRaConfig.reconcile(&config)
+		#expect(config.channelNum == 0)
+
+		config.region = .jp
+		config.usePreset = false
+		config.bandwidth = 0
+		config.channelNum = 5
+		LoRaConfig.reconcile(&config)
+		#expect(config.channelNum == 5)
+
+		config.channelNum = 15
+		LoRaConfig.reconcile(&config)
+		#expect(config.channelNum == 0)
+
+		config.usePreset = true
+		config.modemPreset = .longFast
+		config.channelNum = 15
+		config.overrideFrequency = 922.7
+		LoRaConfig.reconcile(&config)
+		#expect(config.channelNum == 15)
+		#expect(LoRaConfig.slotResetNotice(config, previousSlot: 15) == nil)
+	}
+
+	@MainActor
+	@Test("TAK shortFast config reconciles out-of-range preserved channelNum")
+	func takShortFastReconcilesChannelNum() {
+		let currentLoRa = LoRaConfigEntity()
+		currentLoRa.regionCode = Int32(RegionCodes.jp.rawValue)
+		currentLoRa.channelNum = 15
+
+		let config = TAKServerManager.shortFastLoRaConfig(preserving: currentLoRa)
+		#expect(config.modemPreset == .shortFast)
+		#expect(config.usePreset)
+		#expect(config.region == .jp)
+		#expect(config.channelNum == 0)
+	}
 }

@@ -797,6 +797,7 @@ extension AccessoryManager {
 			if let txPower = currentLoRaConfig?.txPower {
 				channelSet.loraConfig.txPower = txPower
 			}
+			LoRaConfig.reconcile(&channelSet.loraConfig)
 			targetChannelIndexes = channelSet.settings.indices.map { Int32($0) }
 			primaryPSK = channelSet.settings.first?.psk
 		}

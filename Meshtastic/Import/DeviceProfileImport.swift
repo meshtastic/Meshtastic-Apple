@@ -454,9 +454,11 @@ struct DeviceProfileImportPlan {
 			addedChannelOrLoRa = true
 		}
 		if !addedChannelOrLoRa, profile.hasConfig, config.hasLora {
+			var lora = config.lora
+			LoRaConfig.reconcile(&lora)
 			items.append(ImportItem(kind: .loraConfig, section: .channelsAndLoRa,
-									summary: "LoRa region: \(config.lora.region)",
-									isSensitive: false, mayReboot: true, payload: .loraConfig(config.lora)))
+									summary: "LoRa region: \(lora.region)",
+									isSensitive: false, mayReboot: true, payload: .loraConfig(lora)))
 		}
 
 		// Split off anything this firmware cannot apply, so it is surfaced to the user instead of being

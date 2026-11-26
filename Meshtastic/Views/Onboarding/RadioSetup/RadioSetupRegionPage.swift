@@ -73,6 +73,9 @@ struct RadioSetupRegionPage: View {
 			if let region = model.region, regionInfo(for: region)?.licensedOnly == true {
 				LicensedBandNotice(isLicensed: model.isLicensed)
 			}
+			if let notice = model.slotResetNotice {
+				OnboardingFeatureRow(symbol: "exclamationmark.triangle.fill", color: .orange, text: notice)
+			}
 		}
 	}
 }

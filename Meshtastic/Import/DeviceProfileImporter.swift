@@ -365,8 +365,10 @@ struct AccessoryProfileApplyGateway: ProfileApplyGateway {
 			// wantConfig/ack fails as the link drops. Only that reboot disconnect is expected success — so
 			// swallow the error only when the link has actually dropped; if we're still connected the send
 			// genuinely failed (e.g. serialization or a transport write error) and must surface as a failure.
+			var sanitized = config
+			LoRaConfig.reconcile(&sanitized)
 			do {
-				_ = try await accessoryManager.saveLoRaConfig(config: config, fromUser: node, toUser: node)
+				_ = try await accessoryManager.saveLoRaConfig(config: sanitized, fromUser: node, toUser: node)
 			} catch {
 				if accessoryManager.isConnected { throw error }
 				Logger.services.warning("LoRa config send did not complete; radio is likely rebooting: \(error.localizedDescription, privacy: .public)")

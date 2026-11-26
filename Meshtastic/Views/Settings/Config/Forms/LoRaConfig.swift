@@ -60,8 +60,39 @@ struct LoRaConfig: View {
 		LoRaRegionValidation.supportedRegion(rawValue: config.region.rawValue)
 	}
 
+	/// Clears a manual frequency slot that no longer fits the selected region and
+	/// bandwidth (e.g. moving from a narrow preset to a wider one), so the radio
+	/// derives a valid default slot instead of rejecting the config.
+	static func reconcile(_ config: inout Config.LoRaConfig) {
+		guard config.overrideFrequency == 0, config.channelNum > 0, config.region != .unset else { return }
+		let maxSlots = LoRaChannelCalculator(config: config).numChannels()
+		if maxSlots > 0, Int(config.channelNum) > maxSlots {
+			config.channelNum = 0
+		}
+	}
+
+	/// Explains when a region, preset, or bandwidth change cleared a manual frequency
+	/// slot that does not exist in the new setting. Nil when no slot was reset.
+	static func slotResetNotice(_ config: Config.LoRaConfig, previousSlot: Int) -> String? {
+		guard config.overrideFrequency == 0, config.channelNum == 0, previousSlot > 0, config.region != .unset else {
+			return nil
+		}
+		let maxSlots = LoRaChannelCalculator(config: config).numChannels()
+		guard maxSlots > 0, previousSlot > maxSlots else { return nil }
+		return String.localizedStringWithFormat(
+			String(localized: "Frequency slot %lld is not available for this setting (1–%lld) and will reset to Auto (0).",
+				   comment: "LoRa notice when a region, preset, or bandwidth change resets an out-of-range frequency slot; first argument is the previous slot, second is the new maximum slot"),
+			Int64(previousSlot), Int64(maxSlots))
+	}
+
 	static func canSave(_ config: Config.LoRaConfig, node: NodeInfoEntity?) -> Bool {
 		guard supportedRegion(config) != nil else { return false }
+		if config.overrideFrequency == 0, config.channelNum > 0, config.region != .unset {
+			let maxSlots = LoRaChannelCalculator(config: config).numChannels()
+			if maxSlots > 0, Int(config.channelNum) > maxSlots {
+				return false
+			}
+		}
 		guard !config.usePreset else { return true }
 		return Bandwidths.validationIssue(
 			for: Int(config.bandwidth),
@@ -144,19 +175,22 @@ struct LoRaConfig: View {
 	var body: some View {
 		MetadataConfigForm(
 			node: node, title: "LoRa", overlay: Self.overlay(node: node),
+			reconcile: { config, _ in Self.reconcile(&config) },
 			canSave: { Self.canSave($0, node: node) },
 			confirmationMessage: String(localized: "Your device may reboot after saving.",
 										comment: "LoRa save confirmation"),
 			request: accessoryManager.requestLoRaConfig,
 			save: { config, from, to in
-				guard Self.supportedRegion(config) != nil else { return }
+				var sanitized = config
+				Self.reconcile(&sanitized)
+				guard Self.supportedRegion(sanitized) != nil else { return }
 				if let deviceNum = accessoryManager.activeDeviceNum,
 				   let connectedNode = getNodeInfo(id: deviceNum, context: context),
 				   connectedNode.num == node?.user?.num ?? 0 {
-					UserDefaults.modemPreset = config.modemPreset.rawValue
+					UserDefaults.modemPreset = sanitized.modemPreset.rawValue
 				}
 
-				_ = try await accessoryManager.saveLoRaConfig(config: config, fromUser: from, toUser: to)
+				_ = try await accessoryManager.saveLoRaConfig(config: sanitized, fromUser: from, toUser: to)
 				// A change to the connected radio applies without a reboot on 2.8, so ask it for the
 				// node database to pick up its answers for the new settings.
 				if to.num == accessoryManager.activeDeviceNum {
@@ -204,6 +238,16 @@ private struct RegionRow: View {
 			}
 			if LoRaRegionValidation.supportedRegion(rawValue: config.region.rawValue) == nil {
 				UnsupportedRegionNotice()
+			}
+			if !config.usePreset,
+			   let notice = LoRaConfig.slotResetNotice(config, previousSlot: Int(node?.loRaConfig?.channelNum ?? 0)) {
+				Label {
+					Text(notice)
+						.foregroundColor(.gray)
+						.font(.caption)
+				} icon: {
+					Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
+				}
 			}
 		}
 		if let info = presetInfo, info.licensedOnly {
@@ -294,6 +338,15 @@ private struct ModemPresetRow: View {
 				supports2_8: supports2_8) {
 				Label {
 					Text(warning)
+						.foregroundColor(.gray)
+						.font(.caption)
+				} icon: {
+					Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
+				}
+			}
+			if let notice = LoRaConfig.slotResetNotice(config, previousSlot: Int(node?.loRaConfig?.channelNum ?? 0)) {
+				Label {
+					Text(notice)
 						.foregroundColor(.gray)
 						.font(.caption)
 				} icon: {

@@ -39,6 +39,18 @@ actor MockChannelSetConnection: Connection {
 		self.failureMode = failureMode
 	}
 
+	/// Every `Config.LoRaConfig` written via `setConfig.lora`, in send order.
+	var sentLoRaConfigs: [Config.LoRaConfig] {
+		sentPackets.compactMap { toRadio in
+			guard case let .packet(meshPacket) = toRadio.payloadVariant,
+				  case let .decoded(dataMessage) = meshPacket.payloadVariant,
+				  let admin = try? AdminMessage(serializedBytes: dataMessage.payload),
+				  case let .setConfig(config) = admin.payloadVariant,
+				  case let .lora(lora) = config.payloadVariant else { return nil }
+			return lora
+		}
+	}
+
 	/// Number of `setConfig.lora` admin packets actually transmitted.
 	var loraConfigSendCount: Int {
 		sentPackets.reduce(into: 0) { count, toRadio in
@@ -657,5 +669,31 @@ extension ChannelSetSaveTests {
 		}
 
 		#expect(try channelRows(for: deviceNum).dropFirst().map(\.positionPrecision) == [32], "the stored row keeps what the radio still holds")
+	}
+
+	@Test("A replace reconciles out-of-range channelNum in its LoRa config")
+	func testReplaceReconcilesOutOfRangeChannelNum() async throws {
+		let connection = MockChannelSetConnection()
+		let manager = makeManager(connection: connection)
+
+		var lora = Config.LoRaConfig()
+		lora.usePreset = true
+		lora.region = .jp
+		lora.modemPreset = .longFast
+		lora.channelNum = 15
+
+		var channelSet = ChannelSet()
+		var settings = ChannelSettings()
+		settings.name = "TestNet"
+		settings.psk = Data([1])
+		channelSet.settings.append(settings)
+		channelSet.loraConfig = lora
+
+		try await manager.saveChannelSet(channelSet: channelSet, addChannels: false, okToMQTT: false)
+
+		let sentLoRa = try #require(await connection.sentLoRaConfigs.last)
+		#expect(sentLoRa.region == .jp)
+		#expect(sentLoRa.modemPreset == .longFast)
+		#expect(sentLoRa.channelNum == 0)
 	}
 }

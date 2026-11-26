@@ -105,4 +105,24 @@ struct SitePlannerParametersTests {
 		)
 		#expect(params.txPowerWatts == 0.1) // planner default preserved
 	}
+
+	@MainActor
+	@Test func prefillFallsBackToNamedSlotWhenChannelNumExceedsRegionMax() {
+		let config = LoRaConfigEntity()
+		config.regionCode = Int32(RegionCodes.us.rawValue)
+		config.modemPreset = Int32(ModemPresets.longFast.rawValue)
+		config.usePreset = true
+		config.txPower = 20
+		config.channelNum = 120
+
+		let params = SitePlannerParameters.prefilled(
+			name: "US Node",
+			coordinate: CLLocationCoordinate2D(latitude: 47.6, longitude: -122.3),
+			loRaConfig: config,
+			primaryChannelName: "LongFast"
+		)
+
+		// US LongFast has 104 slots; out-of-range channelNum 120 falls back to "LongFast" (slot 20 = 906.875 MHz).
+		#expect(abs(params.txFrequencyMHz - 906.875) < 1e-6)
+	}
 }

@@ -14,10 +14,13 @@ private actor ChannelRefreshLifecycleConnection: Connection {
 	let type: TransportType = .ble
 	var isConnected = true
 	private(set) var sentWantConfigIDs: [UInt32] = []
+	private(set) var sentToRadios: [ToRadio] = []
 	private(set) var pendingPacketDrainStartCount = 0
 	private var pauseNextConfigSend = false
 	private var pausedConfigSendContinuation: CheckedContinuation<Void, Never>?
 	private var failNextDrain = false
+	private(set) var failNextLoRaConfigRequest = false
+	private var onSend: (@MainActor @Sendable (ToRadio) async -> Void)?
 
 	func pauseNextWantConfigSend() {
 		pauseNextConfigSend = true
@@ -32,7 +35,24 @@ private actor ChannelRefreshLifecycleConnection: Connection {
 		failNextDrain = true
 	}
 
+	func failNextGetLoRaConfigRequest() {
+		failNextLoRaConfigRequest = true
+	}
+
+	func setOnSend(_ handler: (@MainActor @Sendable (ToRadio) async -> Void)?) {
+		onSend = handler
+	}
+
 	func send(_ data: ToRadio) async throws {
+		sentToRadios.append(data)
+		if failNextLoRaConfigRequest,
+		   case let .packet(meshPacket) = data.payloadVariant,
+		   case let .decoded(dataMessage) = meshPacket.payloadVariant,
+		   let admin = try? AdminMessage(serializedBytes: dataMessage.payload),
+		   case .getConfigRequest(.loraConfig) = admin.payloadVariant {
+			failNextLoRaConfigRequest = false
+			throw AccessoryError.ioFailed("Simulated getConfigRequest failure")
+		}
 		if case let .wantConfigID(id) = data.payloadVariant {
 			sentWantConfigIDs.append(id)
 			if pauseNextConfigSend {
@@ -40,6 +60,11 @@ private actor ChannelRefreshLifecycleConnection: Connection {
 				await withCheckedContinuation { continuation in
 					pausedConfigSendContinuation = continuation
 				}
+			}
+		}
+		if let onSend {
+			Task { @MainActor in
+				await onSend(data)
 			}
 		}
 	}
@@ -809,5 +834,188 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		// directly instead of accumulating into an orphaned stage.
 		await manager.handleChannel(channel(index: 0, name: "Later Radio Primary"))
 		#expect(try channelNames(nodeNum: nodeNum) == ["Later Radio Primary"])
+	}
+
+	private func seedConnectedNode(nodeNum: UInt32, channelNum: Int32 = 11) throws {
+		let context = PersistenceController.shared.context
+		let user = UserEntity()
+		user.num = Int64(nodeNum)
+		user.userId = "!\(String(format: "%08x", nodeNum))"
+		user.longName = "Refresh Node"
+
+		let loRa = LoRaConfigEntity()
+		loRa.regionCode = Int32(RegionCodes.jp.rawValue)
+		loRa.usePreset = true
+		loRa.modemPreset = Int32(ModemPresets.longFast.rawValue)
+		loRa.channelNum = channelNum
+
+		let node = NodeInfoEntity()
+		node.num = Int64(nodeNum)
+		node.id = Int64(nodeNum)
+		node.user = user
+		node.loRaConfig = loRa
+		user.userNode = node
+
+		context.insert(user)
+		context.insert(loRa)
+		context.insert(node)
+		try context.save()
+	}
+
+	private func connectManager(_ manager: AccessoryManager, nodeNum: UInt32, firmwareVersion: String) {
+		manager.isSwitchingDevices = false
+		manager.activeDeviceNum = Int64(nodeNum)
+		if var active = manager.activeConnection {
+			active.device.firmwareVersion = firmwareVersion
+			manager.activeConnection = active
+		}
+		manager.isConnected = true
+		manager.updateState(.subscribed)
+	}
+
+	private func isGetLoRaConfigPacket(_ toRadio: ToRadio) -> UInt32? {
+		guard case let .packet(meshPacket) = toRadio.payloadVariant,
+			  case let .decoded(dataMessage) = meshPacket.payloadVariant,
+			  let admin = try? AdminMessage(serializedBytes: dataMessage.payload),
+			  case .getConfigRequest(.loraConfig) = admin.payloadVariant else { return nil }
+		return meshPacket.id
+	}
+
+	@Test("Post-LoRa refresh skips firmware before 2.8.1")
+	func postLoRaRefreshSkipsOlderFirmware() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x0010_2800
+		try seedConnectedNode(nodeNum: nodeNum)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		connectManager(manager, nodeNum: nodeNum, firmwareVersion: "2.8.0")
+
+		let task = manager.refreshNodeDatabaseAfterLoRaChange(after: .zero)
+		#expect(task == nil)
+		#expect(await connection.sentToRadios.isEmpty)
+	}
+
+	@Test("Post-LoRa refresh requests LoRa config before database dump")
+	func postLoRaRefreshOrdersLoRaRequestBeforeDatabaseDump() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x0010_2810
+		try seedConnectedNode(nodeNum: nodeNum)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		connectManager(manager, nodeNum: nodeNum, firmwareVersion: "2.8.1")
+
+		await connection.setOnSend { toRadio in
+			if case let .wantConfigID(id) = toRadio.payloadVariant {
+				while manager.firstDatabaseNodeInfoContinuation == nil {
+					await Task.yield()
+				}
+				await self.completeConfig(manager, id: id)
+			}
+		}
+
+		let task = try #require(manager.refreshNodeDatabaseAfterLoRaChange(after: .zero))
+		await task.value
+
+		let sent = await connection.sentToRadios
+		let configIndex = sent.firstIndex { self.isGetLoRaConfigPacket($0) != nil }
+		let dbIndex = sent.firstIndex {
+			if case let .wantConfigID(id) = $0.payloadVariant { return id == UInt32(manager.NONCE_ONLY_DB) }
+			return false
+		}
+		#expect(configIndex == 0)
+		#expect(dbIndex == 1)
+	}
+
+	@Test("Post-LoRa refresh applies clamped LoRa config from radio response")
+	func postLoRaRefreshAppliesClampedResponse() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x0010_2811
+		try seedConnectedNode(nodeNum: nodeNum, channelNum: 11)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		connectManager(manager, nodeNum: nodeNum, firmwareVersion: "2.8.1")
+
+		var replyTask: Task<Void, Never>?
+		await connection.setOnSend { toRadio in
+			if let requestID = self.isGetLoRaConfigPacket(toRadio) {
+				replyTask = Task { @MainActor in
+					var clamped = Config.LoRaConfig()
+					clamped.region = .jp
+					clamped.usePreset = true
+					clamped.modemPreset = .longFast
+					clamped.channelNum = 9
+
+					var adminReply = AdminMessage()
+					var configResponse = Config()
+					configResponse.lora = clamped
+					adminReply.getConfigResponse = configResponse
+
+					var dataMessage = DataMessage()
+					dataMessage.portnum = .adminApp
+					dataMessage.requestID = requestID
+					dataMessage.payload = (try? adminReply.serializedData()) ?? Data()
+
+					var replyPacket = MeshPacket()
+					replyPacket.from = nodeNum
+					replyPacket.to = nodeNum
+					replyPacket.decoded = dataMessage
+
+					var fromRadio = FromRadio()
+					fromRadio.packet = replyPacket
+					await manager.didReceive(.data(fromRadio))
+				}
+			} else if case let .wantConfigID(id) = toRadio.payloadVariant {
+				while manager.firstDatabaseNodeInfoContinuation == nil {
+					await Task.yield()
+				}
+				await replyTask?.value
+				await self.completeConfig(manager, id: id)
+			}
+		}
+
+		let task = try #require(manager.refreshNodeDatabaseAfterLoRaChange(after: .zero))
+		await task.value
+
+		let freshContext = ModelContext(PersistenceController.shared.container)
+		let targetNum = Int64(nodeNum)
+		let updatedNode = try freshContext.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == targetNum })).first
+		#expect(updatedNode?.loRaConfig?.channelNum == 9)
+	}
+
+	@Test("Post-LoRa refresh still requests database dump if LoRa config fetch fails")
+	func postLoRaRefreshProceedsWhenLoRaFetchFails() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x0010_2812
+		try seedConnectedNode(nodeNum: nodeNum)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		connectManager(manager, nodeNum: nodeNum, firmwareVersion: "2.8.1")
+		await connection.failNextGetLoRaConfigRequest()
+
+		await connection.setOnSend { toRadio in
+			if case let .wantConfigID(id) = toRadio.payloadVariant {
+				while manager.firstDatabaseNodeInfoContinuation == nil {
+					await Task.yield()
+				}
+				await self.completeConfig(manager, id: id)
+			}
+		}
+
+		let task = try #require(manager.refreshNodeDatabaseAfterLoRaChange(after: .zero))
+		await task.value
+
+		let sent = await connection.sentToRadios
+		let configIndex = sent.firstIndex { self.isGetLoRaConfigPacket($0) != nil }
+		let dbIndex = sent.firstIndex {
+			if case let .wantConfigID(id) = $0.payloadVariant { return id == UInt32(manager.NONCE_ONLY_DB) }
+			return false
+		}
+		#expect(configIndex != nil)
+		#expect(dbIndex != nil)
+		if let configIndex, let dbIndex {
+			#expect(configIndex < dbIndex)
+		}
+		#expect(await !connection.failNextLoRaConfigRequest)
+		#expect(await connection.sentWantConfigIDs == [UInt32(manager.NONCE_ONLY_DB)])
 	}
 }
