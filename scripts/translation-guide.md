@@ -30,7 +30,7 @@ Bluetooth, IAQ, ATAK, WinTAK, mPWRD-OS, iOS, macOS, CarPlay, SiriKit.
 | de | Informal, du-form |
 | pt-BR | Informal, você, matching the Brazilian Meshtastic community |
 | ko | Formal 합쇼체 |
-| es, fr, it, ja, zh-Hans, zh-Hant, zh-Hant-TW | Professional |
+| es, fr, it, ja, tr, zh-Hans, zh-Hant, zh-Hant-TW | Professional, siz-form in Turkish |
 | pl | Informal, ty-form, matching the Meshtastic Android Polish translation |
 | da, ru, sr, uk | Match the existing community translations |
 
