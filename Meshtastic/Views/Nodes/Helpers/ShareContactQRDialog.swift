@@ -57,6 +57,7 @@ struct ShareContactQRDialog: View {
 	let node: NodeInfo
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.presentationHost) private var presentationHost
+	@State private var isPrintingNameTag = false
 
 	var qrString: String {
 		ShareContactQR.urlString(for: node, manuallyVerified: manuallyVerified) ?? ""
@@ -109,6 +110,11 @@ struct ShareContactQRDialog: View {
 				)
 			}
 			#endif
+			Button {
+				isPrintingNameTag = true
+			} label: {
+				Label("Print Name Tag", systemImage: "printer")
+			}
 		}
 		.padding()
 		.frame(maxWidth: 350)
@@ -132,6 +138,9 @@ struct ShareContactQRDialog: View {
 			}
 		}
 		.presentationDragIndicator(.visible)
+		.sheet(isPresented: $isPrintingNameTag) {
+			LabelPrintView(nameTagFor: node)
+		}
 	}
 }
 

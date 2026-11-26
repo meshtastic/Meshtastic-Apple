@@ -230,6 +230,9 @@ targets:
       # Real-size device models, Chirpy and the banana for scale (iPhone, iPad, Mac and Vision Pro).
       - path: "Meshtastic/Resources/DeviceModels"
         type: syncedFolder
+      # Noto Emoji (OFL-1.1) for the black-and-white emoji on printed name tags.
+      - path: "Meshtastic/Resources/Fonts"
+        type: syncedFolder
       - path: "Meshtastic/MeshtasticApp.swift"
       - path: "Meshtastic/AppState.swift"
       - path: "Meshtastic/MeshtasticAppDelegate.swift"
