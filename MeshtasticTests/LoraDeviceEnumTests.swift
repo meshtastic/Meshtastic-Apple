@@ -497,20 +497,6 @@ struct SerialModeTypesTests {
 	}
 }
 
-@Suite("SerialTimeoutIntervals")
-struct SerialTimeoutIntervalsTests {
-
-	@Test func allCases_haveNonEmptyDescription() {
-		for interval in SerialTimeoutIntervals.allCases {
-			#expect(!interval.description.isEmpty)
-		}
-	}
-
-	@Test func totalCaseCount() {
-		#expect(SerialTimeoutIntervals.allCases.count == 8)
-	}
-}
-
 // MARK: - Position Config Enums
 
 @Suite("GpsUpdateIntervals")

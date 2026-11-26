@@ -56,22 +56,6 @@ struct SerialModeTypesEnumTests {
 	}
 }
 
-// MARK: - SerialTimeoutIntervals Tests
-
-@Suite("SerialTimeoutIntervals Enum")
-struct SerialTimeoutIntervalsEnumTests {
-
-	@Test func allCases_count() {
-		#expect(SerialTimeoutIntervals.allCases.count == 8)
-	}
-
-	@Test func allCases_haveDescriptions() {
-		for interval in SerialTimeoutIntervals.allCases {
-			#expect(!interval.description.isEmpty)
-		}
-	}
-}
-
 // MARK: - GpsUpdateIntervals Tests
 
 @Suite("GpsUpdateIntervals Enum")

@@ -16,14 +16,26 @@ struct GPIOPinPicker: View {
 	@Binding var selection: Int
 
 	var body: some View {
-		Picker(title, selection: $selection) {
-			ForEach(0..<49, id: \.self) { pin in
-				if pin == 0 {
-					Text("Unset").tag(pin)
-				} else {
-					Text("Pin \(pin)").tag(pin)
+		// The label wraps and the pin stays on the right. A plain Picker drops its value onto
+		// a line of its own once the label is too long to fit beside it, which the registry's
+		// longer names (such as "Transmit data (txd) GPIO pin") are on a phone.
+		HStack {
+			Text(title)
+			Spacer(minLength: 8)
+			Picker(title, selection: $selection) {
+				ForEach(0..<49, id: \.self) { pin in
+					if pin == 0 {
+						Text("Unset").tag(pin)
+					} else {
+						Text("Pin \(pin)").tag(pin)
+					}
 				}
 			}
+			.labelsHidden()
+			.fixedSize()
+			// The menu button is taller than a line of text; without this the description
+			// sits lower under these rows than under the form's other pickers.
+			.padding(.vertical, -8)
 		}
 	}
 }

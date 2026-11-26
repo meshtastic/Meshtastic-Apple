@@ -279,11 +279,6 @@ struct SerialConfigEnumsExtendedTests {
 		#expect(SerialModeTypes.nmea.description.contains("NMEA"))
 		#expect(SerialModeTypes.caltopo.description.contains("CALTOPO"))
 	}
-
-	@Test func timeoutIntervals_specificDescriptions() {
-		#expect(SerialTimeoutIntervals.fiveSeconds.description.contains("Five"))
-		#expect(SerialTimeoutIntervals.oneMinute.description.contains("Minute"))
-	}
 }
 
 // MARK: - AppSettingsEnums Extended Tests

@@ -36,9 +36,9 @@ struct SerialConfig: View {
 				.init(F.enabled, symbol: "terminal"),
 				.init(F.echo, symbol: "repeat"),
 				.init(F.baud),
-				.init(F.timeout, control: .options(SerialTimeoutIntervals.allCases.map {
-					ConfigFormOption(value: $0.rawValue, title: $0.description)
-				})),
+				// Milliseconds, as the firmware reads it; 0 means its 250 ms default. The old
+				// picker offered seconds and saved them as milliseconds.
+				.init(F.timeout, displayDefault: 250),
 				// The screen has always offered the six modes the app describes, not every
 				// value the enum declares, so the set is unchanged.
 				.init(F.mode, enumValues: { _ in SerialModeTypes.allCases.map(\.rawValue) })
