@@ -53,9 +53,11 @@ struct RadioSetupNamePage: View {
 			}
 		) {
 			// The circle other people see, following the short name as it is typed.
-			CircleText(text: model.shortName.isEmpty ? "?" : model.shortName, color: nodeColor, circleSize: previewSize)
-				.frame(maxWidth: .infinity)
-				.accessibilityHidden(true)
+			OnboardingCompactReader { isCompact in
+				CircleText(text: model.shortName.isEmpty ? "?" : model.shortName, color: nodeColor, circleSize: isCompact ? previewSize * 0.7 : previewSize)
+					.frame(maxWidth: .infinity)
+					.accessibilityHidden(true)
+			}
 			VStack(spacing: 0) {
 				// The long name needs the row's width, so its label sits above the field.
 				NameRow(title: String(localized: "Long Name"), text: longName, labelAbove: true)
