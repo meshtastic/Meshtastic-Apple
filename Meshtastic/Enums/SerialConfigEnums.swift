@@ -150,37 +150,3 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 		}
 	}
 }
-
-enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
-
-	case unset = 0
-	case oneSecond = 1
-	case fiveSeconds = 5
-	case tenSeconds = 10
-	case fifteenSeconds = 15
-	case thirtySeconds = 30
-	case oneMinute = 60
-	case fiveMinutes = 300
-
-	var id: Int { self.rawValue }
-	var description: String {
-		switch self {
-		case .unset:
-			return String(localized: "Unset", comment: "SerialTimeoutIntervals.description")
-		case .oneSecond:
-			return String(localized: "One Second", comment: "SerialTimeoutIntervals.description")
-		case .fiveSeconds:
-			return String(localized: "Five Seconds", comment: "SerialTimeoutIntervals.description")
-		case .tenSeconds:
-			return String(localized: "Ten Seconds", comment: "SerialTimeoutIntervals.description")
-		case .fifteenSeconds:
-			return String(localized: "Fifteen Seconds", comment: "SerialTimeoutIntervals.description")
-		case .thirtySeconds:
-			return String(localized: "Thirty Seconds", comment: "SerialTimeoutIntervals.description")
-		case .oneMinute:
-			return String(localized: "One Minute", comment: "SerialTimeoutIntervals.description")
-		case .fiveMinutes:
-			return String(localized: "Five Minutes", comment: "SerialTimeoutIntervals.description")
-		}
-	}
-}
