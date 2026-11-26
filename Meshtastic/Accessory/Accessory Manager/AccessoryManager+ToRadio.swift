@@ -1098,7 +1098,8 @@ extension AccessoryManager {
 			regionPresets: loRaRegionPresets,
 			isConnected: isConnected,
 			loRaConfig: node?.loRaConfig,
-			primaryChannelName: beaconPrimaryChannelName(for: node)
+			primaryChannelName: beaconPrimaryChannelName(for: node),
+			firmwareVersion: connectedVersion
 		)
 	}
 
@@ -1197,7 +1198,7 @@ extension AccessoryManager {
 		// doesn't have fails here instead of after the channel write.
 		let (targetRegion, targetPreset) = beaconJoinRegionAndPreset(region: region, preset: preset, node: node)
 		if let frequencySlot, targetRegion != 0,
-		   !LoRaChannelCalculator.isValidBeaconSlot(frequencySlot, regionCode: targetRegion, preset: targetPreset) {
+		   !LoRaChannelCalculator.isValidBeaconSlot(frequencySlot, regionCode: targetRegion, preset: targetPreset, firmwareVersion: connectedVersion) {
 			throw AccessoryError.appError("The mesh's frequency slot \(frequencySlot) doesn't exist in this region")
 		}
 

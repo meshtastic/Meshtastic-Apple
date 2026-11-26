@@ -17,6 +17,14 @@ import MeshtasticProtobufs
 /// Moved out of `Channels.swift` (was `private struct`) so the Mesh Beacons join
 /// enhancement can reuse the exact same math instead of hand-rolling a second hash.
 struct LoRaChannelCalculator {
+	/// Firmware version introducing the JP ARIB STD-T108 200 kHz unit-channel grid (meshtastic/firmware#11559).
+	/// Can be adjusted once the firmware PR ships in a tagged release.
+	static let jpUnitChannelGridMinFirmwareVersion = "2.8.1"
+
+	static func usesJPUnitChannelGrid(firmwareVersion: String?) -> Bool {
+		NodeInfoEntity.firmware(firmwareVersion, isAtLeast: jpUnitChannelGridMinFirmwareVersion)
+	}
+
 	private let regionCode: Int
 	private let usePreset: Bool
 	private let modemPreset: Int
@@ -24,8 +32,9 @@ struct LoRaChannelCalculator {
 	private let bandwidth: Int
 	private let overrideFrequency: Double
 	private let frequencyOffset: Double
+	private let firmwareVersion: String?
 
-	init(config: LoRaConfigEntity?) {
+	init(config: LoRaConfigEntity?, firmwareVersion: String? = nil) {
 		regionCode = Int(config?.regionCode ?? 0)
 		usePreset = config?.usePreset ?? false
 		modemPreset = Int(config?.modemPreset ?? 0)
@@ -33,6 +42,7 @@ struct LoRaChannelCalculator {
 		bandwidth = Int(config?.bandwidth ?? 0)
 		overrideFrequency = Double(config?.overrideFrequency ?? 0)
 		frequencyOffset = Double(config?.frequencyOffset ?? 0)
+		self.firmwareVersion = firmwareVersion ?? config?.loRaConfigNode?.knownFirmwareVersion
 	}
 
 	init(
@@ -42,7 +52,8 @@ struct LoRaChannelCalculator {
 		channelNum: Int,
 		bandwidth: Int,
 		overrideFrequency: Double,
-		frequencyOffset: Double = 0
+		frequencyOffset: Double = 0,
+		firmwareVersion: String? = nil
 	) {
 		self.regionCode = regionCode
 		self.usePreset = usePreset
@@ -51,10 +62,14 @@ struct LoRaChannelCalculator {
 		self.bandwidth = bandwidth
 		self.overrideFrequency = overrideFrequency
 		self.frequencyOffset = frequencyOffset
+		self.firmwareVersion = firmwareVersion
 	}
 
 	private var region: RegionInfo? {
-		RegionInfo(regionCode: regionCode)
+		RegionInfo(
+			regionCode: regionCode,
+			usesJPUnitChannelGrid: Self.usesJPUnitChannelGrid(firmwareVersion: firmwareVersion)
+		)
 	}
 
 	var regionName: String {
@@ -99,8 +114,9 @@ struct LoRaChannelCalculator {
 		guard let region else { return 0 }
 		let bandwidthMHz = bandwidthMHz(region: region)
 		guard bandwidthMHz > 0, slot > 0 else { return 0 }
-		let slotWidth = region.spacing + 2 * region.padding + bandwidthMHz
-		return region.freqStart + bandwidthMHz / 2 + region.padding + Double(slot - 1) * slotWidth + frequencyOffset
+		let plan = region.slotPlan(bandwidthMHz: bandwidthMHz)
+		guard plan.count > 0 else { return 0 }
+		return plan.centerFreq(slotIndex: slot - 1) + frequencyOffset
 	}
 
 	/// How many frequency slots the region has at this bandwidth.
@@ -108,8 +124,7 @@ struct LoRaChannelCalculator {
 		guard let region else { return 0 }
 		let bandwidthMHz = bandwidthMHz(region: region)
 		guard bandwidthMHz > 0 else { return 1 }
-		let slotWidth = region.spacing + 2 * region.padding + bandwidthMHz
-		return max(Int(((region.freqEnd - region.freqStart + region.spacing) / slotWidth).rounded()), 1)
+		return max(region.slotPlan(bandwidthMHz: bandwidthMHz).count, 1)
 	}
 
 	/// Whether the region is at least one slot wide at this bandwidth. The firmware
@@ -119,9 +134,9 @@ struct LoRaChannelCalculator {
 		guard let region else { return false }
 		let bandwidthMHz = bandwidthMHz(region: region)
 		guard bandwidthMHz > 0 else { return false }
-		let slotWidth = region.spacing + 2 * region.padding + bandwidthMHz
+		let plan = region.slotPlan(bandwidthMHz: bandwidthMHz)
 		// Small tolerance so a band exactly one slot wide (EU868 at 250 kHz) isn't lost to rounding.
-		return region.freqEnd - region.freqStart + 1e-6 >= slotWidth
+		return plan.count > 0 && region.freqEnd - region.freqStart + 1e-6 >= plan.width
 	}
 
 	private func bandwidthMHz(region: RegionInfo) -> Double {
@@ -199,14 +214,15 @@ extension LoRaChannelCalculator {
 	/// Whether a slot a beacon pinned exists in the region and preset the radio would join on.
 	/// Slots are 1-based. This matches what the firmware accepts: the slot must be within the
 	/// region's slot count, and the preset's bandwidth must fit in the region at all.
-	static func isValidBeaconSlot(_ slot: Int, regionCode: Int, preset: ModemPresets) -> Bool {
+	static func isValidBeaconSlot(_ slot: Int, regionCode: Int, preset: ModemPresets, firmwareVersion: String? = nil) -> Bool {
 		let calculator = LoRaChannelCalculator(
 			regionCode: regionCode,
 			usePreset: true,
 			modemPreset: preset.rawValue,
 			channelNum: 0,
 			bandwidth: 0,
-			overrideFrequency: 0
+			overrideFrequency: 0,
+			firmwareVersion: firmwareVersion
 		)
 		guard calculator.regionFitsBandwidth() else { return false }
 		let count = calculator.numChannels()
@@ -237,11 +253,13 @@ extension LoRaChannelCalculator {
 		regionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:],
 		isConnected: Bool,
 		loRaConfig: LoRaConfigEntity?,
-		primaryChannelName: String
+		primaryChannelName: String,
+		firmwareVersion: String? = nil
 	) -> BeaconJoinOption {
 		// No channel to join, or nothing to join it with.
 		guard hasOfferChannel, !offerChannelName.isEmpty, isConnected else { return .none }
 
+		let effectiveVersion = firmwareVersion ?? loRaConfig?.loRaConfigNode?.knownFirmwareVersion
 		let region = beaconRegion(offerRegion: offerRegion, radioRegion: Int(loRaConfig?.regionCode ?? 0))
 		let preset = beaconPreset(
 			offered: offeredPreset,
@@ -250,7 +268,7 @@ extension LoRaChannelCalculator {
 		// A pinned slot the region doesn't have can't be joined at all. With no region known
 		// yet there is nothing to check it against.
 		if let slot = offeredFrequencySlot, region != 0,
-		   !isValidBeaconSlot(slot, regionCode: region, preset: preset) {
+		   !isValidBeaconSlot(slot, regionCode: region, preset: preset, firmwareVersion: effectiveVersion) {
 			return .none
 		}
 
@@ -262,7 +280,7 @@ extension LoRaChannelCalculator {
 		// offerRegion == 0 means the beacon didn't advertise a region, so it can't be a mismatch.
 		let regionOK = offerRegion == 0 || offerRegion == Int(config.regionCode)
 
-		let calculator = LoRaChannelCalculator(config: config)
+		let calculator = LoRaChannelCalculator(config: config, firmwareVersion: effectiveVersion)
 		let radioSlot = calculator.effectiveChannelSlot(primaryName: primaryChannelName)
 		let beaconSlot = offeredFrequencySlot ?? calculator.slotForChannelName(offerChannelName)
 
@@ -301,6 +319,23 @@ struct ChannelFrequencySummary {
 
 // MARK: - Region frequency bounds
 
+/// Per-region frequency-slot layout for a given modem bandwidth, mirroring firmware `MeshRadio.h`'s
+/// `RegionInfo::SlotPlan`.
+private struct SlotPlan {
+	let width: Double
+	let count: Int
+	let firstCenter: Double
+	let lowerCount: Int
+	let upperFirstCenter: Double
+
+	func centerFreq(slotIndex: Int) -> Double {
+		if lowerCount < count && slotIndex >= lowerCount {
+			return upperFirstCenter + Double(slotIndex - lowerCount) * width
+		}
+		return firstCenter + Double(slotIndex) * width
+	}
+}
+
 /// Region frequency band + wide-LoRa flag used to compute bandwidth and slot count.
 struct RegionInfo {
 	let freqStart: Double
@@ -308,9 +343,11 @@ struct RegionInfo {
 	let wideLoRa: Bool
 	let spacing: Double
 	let padding: Double
+	let unitChannelMHz: Double
+	let bandSplitMHz: Double
 	let defaultSlot: Int
 
-	init?(regionCode: Int) {
+	init?(regionCode: Int, usesJPUnitChannelGrid: Bool = true) {
 		guard let region = RegionCodes(rawValue: regionCode) else { return nil }
 		switch region {
 		case .us, .unset:
@@ -322,7 +359,11 @@ struct RegionInfo {
 		case .cn:
 			self.init(freqStart: 470.0, freqEnd: 510.0)
 		case .jp:
-			self.init(freqStart: 920.5, freqEnd: 923.5)
+			if usesJPUnitChannelGrid {
+				self.init(freqStart: 920.5, freqEnd: 923.5, unitChannelMHz: 0.2, bandSplitMHz: 922.3)
+			} else {
+				self.init(freqStart: 920.5, freqEnd: 923.5)
+			}
 		case .anz:
 			self.init(freqStart: 915.0, freqEnd: 928.0)
 		case .kr:
@@ -394,6 +435,8 @@ struct RegionInfo {
 		wideLoRa: Bool = false,
 		spacing: Double = 0,
 		padding: Double = 0,
+		unitChannelMHz: Double = 0,
+		bandSplitMHz: Double = 0,
 		defaultSlot: Int = 0
 	) {
 		self.freqStart = freqStart
@@ -401,7 +444,56 @@ struct RegionInfo {
 		self.wideLoRa = wideLoRa
 		self.spacing = spacing
 		self.padding = padding
+		self.unitChannelMHz = unitChannelMHz
+		self.bandSplitMHz = bandSplitMHz
 		self.defaultSlot = defaultSlot
+	}
+
+	fileprivate func slotPlan(bandwidthMHz bwMHz: Double) -> SlotPlan {
+		let effectivePadding: Double
+		if unitChannelMHz > 0 && bwMHz > 0 {
+			let numUnits = Int((bwMHz / unitChannelMHz) * (1.0 - 1e-6)) + 1
+			let slotSpan = Double(numUnits) * unitChannelMHz
+			effectivePadding = slotSpan > bwMHz ? (slotSpan - bwMHz) * 0.5 : 0
+		} else {
+			effectivePadding = padding
+		}
+
+		let width = spacing + 2 * effectivePadding + bwMHz
+		let centerOffset = bwMHz * 0.5 + effectivePadding
+		let lowerFirst = freqStart + centerOffset
+		let hasBandSplit = bandSplitMHz > freqStart && bandSplitMHz < freqEnd
+
+		guard width > 0, freqEnd > freqStart else {
+			return SlotPlan(width: width, count: 0, firstCenter: lowerFirst, lowerCount: 0, upperFirstCenter: lowerFirst)
+		}
+
+		if unitChannelMHz > 0 || hasBandSplit {
+			let countSubBand: (Double, Double) -> Int = { subStart, subEnd in
+				let span = subEnd - subStart
+				guard span + spacing > 0 else { return 0 }
+				let tol = min(subEnd * 1.5e-7, width * 0.25)
+				return Int(((span + spacing + tol) / width) * (1.0 + 1e-6))
+			}
+			if hasBandSplit {
+				let lowerCount = countSubBand(freqStart, bandSplitMHz)
+				let upperCount = countSubBand(bandSplitMHz, freqEnd)
+				let upperFirst = bandSplitMHz + centerOffset
+				let firstCenter = (lowerCount > 0 || upperCount == 0) ? lowerFirst : upperFirst
+				return SlotPlan(
+					width: width,
+					count: lowerCount + upperCount,
+					firstCenter: firstCenter,
+					lowerCount: lowerCount,
+					upperFirstCenter: upperFirst
+				)
+			}
+			let count = countSubBand(freqStart, freqEnd)
+			return SlotPlan(width: width, count: count, firstCenter: lowerFirst, lowerCount: count, upperFirstCenter: lowerFirst)
+		}
+
+		let count = max(Int(((freqEnd - freqStart + spacing) / width).rounded()), 0)
+		return SlotPlan(width: width, count: count, firstCenter: lowerFirst, lowerCount: count, upperFirstCenter: lowerFirst)
 	}
 }
 
