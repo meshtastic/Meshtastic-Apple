@@ -68,7 +68,7 @@ When sharing channels, the share screen shows a QR code and link, and — on iPh
 
 ### Security
 
-Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.
+Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+. This section also holds the serial output and debug log streaming switches.
 
 #### Packet Authenticity
 
@@ -115,7 +115,7 @@ BLE radio settings including PIN mode and power saving. Changes apply on next ra
 
 ### Device
 
-Device role, serial output, debug log streaming, and node info broadcast interval.
+Device role, rebroadcast mode, node info broadcast interval, button and LED options, time zone, and GPIO pins. Serial output and debug log streaming are under [Security](#security).
 
 The **Repeater** role is deprecated and can no longer be selected for new configurations. If a node is still set to Repeater it is shown as "Repeater (Deprecated)" with a reminder to switch it to a Router-based role (Router or Router Late).
 
