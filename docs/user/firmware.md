@@ -6,7 +6,7 @@ nav_order: 5
 
 # Firmware Updates
 
-The app can check for and install Meshtastic firmware updates directly on your connected radio over Bluetooth.
+The app can check for and install Meshtastic firmware updates directly on your connected radio, over Bluetooth or, for ESP32 radios, Wi-Fi.
 
 ## Checking for Updates
 
@@ -28,23 +28,22 @@ Some radios report a specialized firmware target that is not a separate entry in
 
 ## Installing an Update
 
-1. Tap **Update Firmware** when a newer version is available.
-2. The app downloads the correct firmware binary for your hardware.
-3. The radio enters update mode (DFU) and the new firmware is transferred over BLE.
-4. The radio reboots automatically when the update completes.
+1. Tap **Install** next to a release, or open a firmware file you downloaded.
+2. The update screen shows your radio's picture and name, the firmware version going on, and a short checklist: the radio is charged or plugged in, your phone stays close to it, and the app stays open. Tap **Update**.
+3. The screen goes through each stage with a progress bar: **Getting Your Radio Ready** while the radio restarts into update mode, **Sending Firmware** during the transfer, then **Restarting Your Radio**.
+4. **Update Complete** means the transfer finished and the radio is restarting into the new firmware. The app reconnects on its own once it's back.
 
-For ESP32 BLE updates, the app waits for the radio's final verification response before showing success. If the radio reports an error or does not send the final success response, the app keeps the update in a failed state instead of treating the upload as complete.
+The same screen is used whatever the radio. nRF52 radios update over Bluetooth, and ESP32 radios over Bluetooth or Wi-Fi, matching how the app is connected to the radio. The phone's screen stays on while the update screen is open.
 
-If an nRF52 Bluetooth update loses the radio partway, the app starts it over and shows **Reconnecting...**, up to three times. Bootloader 2.6.0 and later accept the fresh start.
+**Details**, under the card, lists every step the update reported with its time. Include it when you report a problem.
 
-| Icon | Progress | Description |
-|------|----------|-------------|
-| ![0%](../assets/screenshots/progressZero.png) | Starting | Update initiating — firmware binary downloading. |
-| ![50%](../assets/screenshots/progressHalf.png) | In Progress | Firmware transfer in progress over BLE. |
-| ![Complete](../assets/screenshots/progressComplete.png) | Complete | Transfer finished — radio is rebooting. |
-| ![Error](../assets/screenshots/progressError.png) | Error | Update failed — see Troubleshooting below. |
+For ESP32 updates, the app waits for the radio's final verification response before showing success. If the radio reports an error or doesn't send the final success response, the update shows **The Update Didn't Finish** instead of treating the upload as complete.
 
-**Do not close the app or move out of Bluetooth range during a firmware update.**
+If an nRF52 Bluetooth update loses the radio partway, the app starts it over, up to three times. Bootloader 2.6.0 and later accept the fresh start. If it still fails, **Try Again** goes back to the radio in its bootloader.
+
+The screen offers the **Web Flasher** instead of an update when the phone can't do it: an ESP32 radio running firmware older than 2.7.18, or a radio the app isn't connected to over Bluetooth or Wi-Fi.
+
+**Do not close the app or move out of range during a firmware update.** Closing the update screen while it's running asks you to confirm, and the radio stays in update mode until an update finishes or you power it off and on again.
 
 ## Upgrading the Bootloader (nRF52)
 
@@ -84,7 +83,7 @@ With the Meshtastic nRF52 Bootloader 2.6.0 and later, the radio's drive works li
 
 ## During the Transfer
 
-While a supported OTA transfer is active, the update screen rotates short tips, and you can tap **Play Chirpy Hop** to play without leaving the updater. Firmware progress remains visible above the game, and the back button returns to the normal update screen at any time. Keep the Meshtastic app in the foreground until the update finishes.
+While a transfer is under way, you can tap **Play Chirpy Hop** under the card to play without leaving the updater. Firmware progress remains visible above the game, and the back button returns to the normal update screen at any time. Keep the Meshtastic app in the foreground until the update finishes.
 
 ## Update Channels
 

@@ -20,16 +20,30 @@ struct ESP32OTAIntroSheet: View {
 
 	let binFileURL: URL
 
+	/// The updater, once there is one. Both ESP32 updaters disconnect the app from the radio
+	/// before the transfer, which would otherwise flip the live route to "unavailable" and tear
+	/// the updater down mid-update, leaving the radio waiting in update mode.
+	@State private var chosenRoute: Route?
+
 	var body: some View {
+		Group {
+			content(for: chosenRoute ?? route)
+		}
+		.onAppear { lockInUpdater() }
+		.onChange(of: route) { _, _ in lockInUpdater() }
+	}
+
+	@ViewBuilder
+	private func content(for route: Route) -> some View {
 		switch route {
 		case .wifi:
 			ESP32WifiOTASheet(binFileURL: binFileURL, host: debugHost, onUpdateComplete: { dismiss() })
 				.trackScreen(.esp32WiFiUpdate)
-				.onAppear { Logger.services.info("📡 [ESP32 OTA] Wi-Fi path, file \(binFileURL.lastPathComponent, privacy: .public)") }
+				.onAppear { Logger.services.info("📡 [ESP32 OTA] Wi-Fi path") }
 		case .ble:
 			ESP32BLEOTASheet(binFileURL: binFileURL, onUpdateComplete: { dismiss() })
 				.trackScreen(.esp32BLEUpdate)
-				.onAppear { Logger.services.info("📡 [ESP32 OTA] BLE path, file \(binFileURL.lastPathComponent, privacy: .public)") }
+				.onAppear { Logger.services.info("📡 [ESP32 OTA] BLE path") }
 		case .unavailable(let reason):
 			FirmwareUpdateView(
 				stage: .unavailable(reason: reason),
@@ -41,10 +55,19 @@ struct ESP32OTAIntroSheet: View {
 		}
 	}
 
-	private enum Route {
+	private enum Route: Equatable {
 		case wifi
 		case ble
 		case unavailable(String)
+	}
+
+	/// Keeps the route live until an updater is chosen, then holds it for the rest of the session.
+	private func lockInUpdater() {
+		guard chosenRoute == nil else { return }
+		switch route {
+		case .wifi, .ble: chosenRoute = route
+		case .unavailable: break
+		}
 	}
 
 	private var route: Route {
@@ -57,8 +80,10 @@ struct ESP32OTAIntroSheet: View {
 		case is BLEConnection:
 			return .ble
 		#if targetEnvironment(macCatalyst)
-		case is SerialConnection:
-			return .wifi // DEBUG
+		// A Wi-Fi update needs the radio's IP address, which a serial connection doesn't give.
+		// Only a DEBUG build with the IP override set can use one.
+		case is SerialConnection where debugHost != nil:
+			return .wifi
 		#endif
 		default:
 			Logger.services.info("📡 [ESP32 OTA] No active connection — no OTA path available")

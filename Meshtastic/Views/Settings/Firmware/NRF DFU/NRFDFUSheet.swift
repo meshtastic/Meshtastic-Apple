@@ -12,6 +12,8 @@ struct NRFDFUSheet: View {
 	@Environment(\.dismiss) var dismiss
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@StateObject private var dfuViewModel = DFUViewModel()
+	/// Held so closing the sheet while it's still reaching the radio cancels the start.
+	@State private var startTask: Task<Void, Never>?
 
 	let firmwareToFlash: URL
 
@@ -21,7 +23,7 @@ struct NRFDFUSheet: View {
 			progress: dfuViewModel.progress,
 			detail: dfuViewModel.statusMessage,
 			isStartDisabled: !(accessoryManager.activeConnection?.connection is BLEConnection),
-			onStart: { Task { await startUpdate() } },
+			onStart: { startTask = Task { await startUpdate() } },
 			onRetry: {
 				if dfuViewModel.canRetry {
 					accessoryManager.otaInProgress = true
@@ -29,7 +31,7 @@ struct NRFDFUSheet: View {
 					accessoryManager.stopDiscovery()
 					dfuViewModel.retry()
 				} else {
-					Task { await startUpdate() }
+					startTask = Task { await startUpdate() }
 				}
 			},
 			onDismiss: {
@@ -41,6 +43,8 @@ struct NRFDFUSheet: View {
 			}
 		)
 		.onDisappear {
+			startTask?.cancel()
+			startTask = nil
 			if accessoryManager.otaInProgress {
 				restoreDiscovery()
 			}
@@ -71,6 +75,11 @@ struct NRFDFUSheet: View {
 			return
 		}
 		let peripheral = await connection.peripheral
+		// Closed while reaching the radio: don't claim it or start an update nobody can see.
+		guard !Task.isCancelled else {
+			Logger.services.info("NRF DFU: start cancelled, the sheet was closed")
+			return
+		}
 		// The DFU library reboots the radio into the bootloader and reconnects to it on its
 		// own. Stop scanning and auto-connect first or the app grabs the device out from under it.
 		accessoryManager.otaInProgress = true
