@@ -76,9 +76,9 @@ struct BootloaderStatus: Equatable {
 	}
 }
 
-/// Whether to suggest the Meshtastic bootloader before a Bluetooth update on an nRF52 radio.
-/// Factory and pre-2.6.0 bootloaders often won't stay in update mode when asked over Bluetooth:
-/// the radio restarts back into its old firmware and the update never starts.
+/// Whether an nRF52 radio's bootloader may be why a Bluetooth update never started. Factory
+/// and pre-2.6.0 bootloaders often won't stay in update mode when asked over Bluetooth: the
+/// radio restarts back into its old firmware and the update never starts.
 enum BootloaderAdvice: Equatable {
 	/// The radio reports a bootloader older than 2.6.0.
 	case outdated

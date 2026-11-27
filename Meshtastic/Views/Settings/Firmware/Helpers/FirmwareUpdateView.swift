@@ -62,26 +62,10 @@ extension EnvironmentValues {
 }
 
 /// A title and message that replace the stage's own, for a situation the stage alone doesn't
-/// cover, such as a bootloader that needs updating first.
+/// cover, such as a radio whose bootloader wouldn't take the update.
 struct FirmwareUpdateCallout: Equatable {
 	let title: String
 	let message: String
-
-	/// Before an nRF52 Bluetooth update, for a bootloader that may not stay in update mode.
-	static func before(_ advice: BootloaderAdvice) -> FirmwareUpdateCallout {
-		switch advice {
-		case .outdated:
-			return FirmwareUpdateCallout(
-				title: String(localized: "Update the Bootloader First", comment: "Firmware update screen title when the radio's bootloader is too old for a Bluetooth update"),
-				message: String(localized: "Your radio's bootloader is older than 2.6.0 and may not accept a firmware update over Bluetooth. Update the bootloader over USB first, then update the firmware here.", comment: "Firmware update screen message when the radio's bootloader is too old for a Bluetooth update")
-			)
-		case .unknown:
-			return FirmwareUpdateCallout(
-				title: String(localized: "Your Bootloader May Need an Update", comment: "Firmware update screen title when the radio doesn't report its bootloader version"),
-				message: String(localized: "Your radio doesn't report which bootloader it has. A radio still on its factory bootloader may not accept a firmware update over Bluetooth. If you've never updated it, update the bootloader over USB first.", comment: "Firmware update screen message when the radio doesn't report its bootloader version")
-			)
-		}
-	}
 
 	/// After an nRF52 update failed before any firmware went across.
 	static let didNotEnterUpdateMode = FirmwareUpdateCallout(
@@ -121,11 +105,9 @@ struct FirmwareUpdateView: View {
 	let onStart: () -> Void
 	let onRetry: () -> Void
 	let onDismiss: () -> Void
-	/// Shown instead of the ready wording, before the update starts.
-	var readyNotice: FirmwareUpdateCallout?
 	/// Shown instead of the failed wording.
 	var failureNotice: FirmwareUpdateCallout?
-	/// Opens the bootloader upgrade. When set, a notice offers it as the main action.
+	/// Opens the bootloader upgrade. When set, the failure callout offers it as the main action.
 	var onUpgradeBootloader: (() -> Void)?
 
 	@State private var showChirpyGame = false
@@ -276,10 +258,7 @@ struct FirmwareUpdateView: View {
 			}
 
 			if stage == .ready {
-				// A notice takes the checklist's place; there is no progress yet either way.
-				if readyNotice == nil {
-					readyChecklist
-				}
+				readyChecklist
 			} else if stage != .failed, !isUnavailable {
 				FirmwareUpdateProgressBar(
 					progress: stage == .done ? 1 : progress,
@@ -326,17 +305,6 @@ struct FirmwareUpdateView: View {
 	@ViewBuilder
 	private var actions: some View {
 		switch stage {
-		case .ready where readyNotice != nil && onUpgradeBootloader != nil:
-			VStack(spacing: 10) {
-				upgradeBootloaderButton
-				Button(action: onStart) {
-					Text("Update Firmware Anyway", comment: "Button that starts a firmware update despite the bootloader advice")
-						.frame(maxWidth: .infinity)
-				}
-				.buttonStyle(.bordered)
-				.controlSize(.large)
-				.disabled(isStartDisabled)
-			}
 		case .failed where failureNotice != nil && onUpgradeBootloader != nil:
 			VStack(spacing: 10) {
 				upgradeBootloaderButton
@@ -422,7 +390,6 @@ struct FirmwareUpdateView: View {
 	}
 
 	private var title: String {
-		if stage == .ready, let readyNotice { return readyNotice.title }
 		if stage == .failed, let failureNotice { return failureNotice.title }
 		switch stage {
 		case .ready:
@@ -443,7 +410,6 @@ struct FirmwareUpdateView: View {
 	}
 
 	private var message: String {
-		if stage == .ready, let readyNotice { return readyNotice.message }
 		if stage == .failed, let failureNotice { return failureNotice.message }
 		switch stage {
 		case .ready:

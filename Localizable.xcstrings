@@ -7851,12 +7851,6 @@
     "Update Bootloader" : {
       "comment" : "Button that opens the bootloader upgrade from the firmware update screen"
     },
-    "Update Firmware Anyway" : {
-      "comment" : "Button that starts a firmware update despite the bootloader advice"
-    },
-    "Update the Bootloader First" : {
-      "comment" : "Firmware update screen title when the radio's bootloader is too old for a Bluetooth update"
-    },
     "Update This Radio From a Computer" : {
       "comment" : "Firmware update screen title when the phone can't update the radio"
     },
@@ -16415,9 +16409,6 @@
         }
       }
     },
-    "Your Bootloader May Need an Update" : {
-      "comment" : "Firmware update screen title when the radio doesn't report its bootloader version"
-    },
     "Your phone stays close to the radio" : {
       "comment" : "Firmware update checklist item"
     },
@@ -16511,9 +16502,6 @@
     },
     "Your Radio Didn't Go Into Update Mode" : {
       "comment" : "Firmware update screen title when the radio restarted but never entered update mode"
-    },
-    "Your radio doesn't report which bootloader it has. A radio still on its factory bootloader may not accept a firmware update over Bluetooth. If you've never updated it, update the bootloader over USB first." : {
-      "comment" : "Firmware update screen message when the radio doesn't report its bootloader version"
     },
     "Your radio is restarting into update mode. Keep the app open and your phone near the radio." : {
       "comment" : "Firmware update screen message while the radio restarts into update mode"
@@ -16968,9 +16956,6 @@
     },
     "Your radio will restart a few times and reconnect when it's done." : {
       "comment" : "Firmware update screen message before the update starts"
-    },
-    "Your radio's bootloader is older than 2.6.0 and may not accept a firmware update over Bluetooth. Update the bootloader over USB first, then update the firmware here." : {
-      "comment" : "Firmware update screen message when the radio's bootloader is too old for a Bluetooth update"
     },
     "your radio's primary channel to \"%@\"" : {
       "comment" : "Beacon switch prompt; one of the changes listed",

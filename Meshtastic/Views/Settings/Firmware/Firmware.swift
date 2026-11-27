@@ -470,8 +470,8 @@ private struct FirmwareContentView: View {
 		OTAFIXBootloader.supportsTarget(firmwareTarget)
 	}
 
-	/// Whether to suggest the Meshtastic bootloader before a Bluetooth update: nRF52 boards with
-	/// an OTAFIX build, whose bootloader is older than 2.6.0 or unreported.
+	/// Whether a failed Bluetooth update should point at the Meshtastic bootloader: nRF52 boards
+	/// with an OTAFIX build, whose bootloader is older than 2.6.0 or unreported.
 	var nrfBootloaderAdvice: BootloaderAdvice? {
 		guard showsMaintenanceSection else { return nil }
 		return BootloaderAdvice.forNRF52(packed: node.metadata?.bootloaderVersion, upgradeAvailable: showsBootloaderUpgrade)

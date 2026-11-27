@@ -16,7 +16,9 @@ struct NRFDFUSheet: View {
 	@State private var startTask: Task<Void, Never>?
 
 	let firmwareToFlash: URL
-	/// Set when the radio's bootloader may not take a Bluetooth update.
+	/// Set when the radio's bootloader may not take a Bluetooth update. The firmware update is
+	/// still tried first, since it's the less risky step and firmware 2.8.3 and later reports the
+	/// bootloader; only if the radio then doesn't go into update mode is the bootloader offered.
 	var bootloaderAdvice: BootloaderAdvice?
 	/// The board's PlatformIO target, for opening the bootloader upgrade.
 	var platformioTarget: String?
@@ -47,7 +49,6 @@ struct NRFDFUSheet: View {
 					dismiss()
 				}
 			},
-			readyNotice: bootloaderAdvice.map(FirmwareUpdateCallout.before),
 			// Only blame the bootloader when it isn't known to be current.
 			failureNotice: dfuViewModel.failedBeforeTransfer && bootloaderAdvice != nil ? .didNotEnterUpdateMode : nil,
 			onUpgradeBootloader: bootloaderAdvice != nil && platformioTarget != nil ? { showBootloaderUpgrade = true } : nil
