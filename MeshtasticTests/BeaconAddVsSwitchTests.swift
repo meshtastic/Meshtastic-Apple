@@ -353,4 +353,16 @@ struct BeaconAddVsSwitchTests {
 		#expect(LoRaChannelCalculator.beaconPreset(offered: nil, regionInfo: usTurbo) == .longTurbo)
 		#expect(LoRaChannelCalculator.beaconPreset(offered: nil, regionInfo: nil) == .longFast)
 	}
+
+	@Test func jpBeaconSlotsFollowARIBGridAndFirmwareGate() {
+		let jp = RegionCodes.jp.rawValue
+		#expect(LoRaChannelCalculator.isValidBeaconSlot(7, regionCode: jp, preset: .longFast))
+		#expect(!LoRaChannelCalculator.isValidBeaconSlot(8, regionCode: jp, preset: .longFast))
+		#expect(LoRaChannelCalculator.isValidBeaconSlot(15, regionCode: jp, preset: .narrowSlow))
+		#expect(!LoRaChannelCalculator.isValidBeaconSlot(16, regionCode: jp, preset: .narrowSlow))
+
+		// Firmware prior to #11559 keeps the legacy unbonded 12-slot JP grid for LongFast.
+		#expect(LoRaChannelCalculator.isValidBeaconSlot(12, regionCode: jp, preset: .longFast, firmwareVersion: "2.7.26"))
+		#expect(!LoRaChannelCalculator.isValidBeaconSlot(13, regionCode: jp, preset: .longFast, firmwareVersion: "2.7.26"))
+	}
 }

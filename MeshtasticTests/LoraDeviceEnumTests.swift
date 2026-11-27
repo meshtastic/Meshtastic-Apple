@@ -1146,4 +1146,242 @@ struct LoRaChannelCalculatorTests {
 
 		#expect(abs(calculator.radioFrequencyMHz(slot: 1) - 902.125) < 0.001)
 	}
+
+	@Test("JP Narrow and Lite presets use 15 200 kHz unit channels across the 922.3 MHz split")
+	func jpNarrowAndLitePresetsUse15UnitChannels() {
+		for preset in [ModemPresets.narrowSlow, .liteFast] {
+			let calculator = LoRaChannelCalculator(
+				regionCode: RegionCodes.jp.rawValue,
+				usePreset: true,
+				modemPreset: preset.rawValue,
+				channelNum: 0,
+				bandwidth: 0,
+				overrideFrequency: 0
+			)
+			#expect(calculator.numChannels() == 15)
+			#expect(abs(calculator.radioFrequencyMHz(slot: 1) - 920.600) < 0.001)
+			#expect(abs(calculator.radioFrequencyMHz(slot: 2) - 920.800) < 0.001)
+			#expect(abs(calculator.radioFrequencyMHz(slot: 9) - 922.200) < 0.001)
+			#expect(abs(calculator.radioFrequencyMHz(slot: 10) - 922.400) < 0.001)
+			#expect(abs(calculator.radioFrequencyMHz(slot: 15) - 923.400) < 0.001)
+		}
+
+		let narrowSlow = LoRaChannelCalculator(
+			regionCode: RegionCodes.jp.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.narrowSlow.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+		let narrowSlowSlot = narrowSlow.effectiveChannelSlot(primaryName: "NarrowSlow")
+		#expect(narrowSlowSlot == 2)
+		#expect(abs(narrowSlow.radioFrequencyMHz(slot: narrowSlowSlot) - 920.800) < 0.001)
+
+		let narrowFast = LoRaChannelCalculator(
+			regionCode: RegionCodes.jp.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.narrowFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+		let narrowFastSlot = narrowFast.effectiveChannelSlot(primaryName: "NarrowFast")
+		#expect(narrowFastSlot == 11)
+		#expect(abs(narrowFast.radioFrequencyMHz(slot: narrowFastSlot) - 922.600) < 0.001)
+
+		let liteFast = LoRaChannelCalculator(
+			regionCode: RegionCodes.jp.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.liteFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+		let liteFastSlot = liteFast.effectiveChannelSlot(primaryName: "LiteFast")
+		#expect(liteFastSlot == 5)
+		#expect(abs(liteFast.radioFrequencyMHz(slot: liteFastSlot) - 921.400) < 0.001)
+	}
+
+	@Test("JP 250 kHz presets bond two unit channels without crossing 922.3 MHz")
+	func jp250kHzPresetsBondTwoUnitChannelsWithoutCrossing922_3MHz() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.jp.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.longFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+		#expect(calculator.numChannels() == 7)
+		#expect(calculator.effectiveChannelSlot(primaryName: "LongFast") == 6)
+
+		let expected = [920.7, 921.1, 921.5, 921.9, 922.5, 922.9, 923.3]
+		for (index, freq) in expected.enumerated() {
+			#expect(abs(calculator.radioFrequencyMHz(slot: index + 1) - freq) < 0.001)
+		}
+	}
+
+	@Test("JP 500 kHz Turbo presets bond three unit channels")
+	func jp500kHzTurboPresetsBondThreeUnitChannels() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.jp.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.shortTurbo.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+		#expect(calculator.numChannels() == 5)
+		#expect(calculator.effectiveChannelSlot(primaryName: "ShortTurbo") == 1)
+
+		let expected = [920.8, 921.4, 922.0, 922.6, 923.2]
+		for (index, freq) in expected.enumerated() {
+			#expect(abs(calculator.radioFrequencyMHz(slot: index + 1) - freq) < 0.001)
+		}
+	}
+
+	@Test("JP custom bandwidths and frequency overrides follow the unit-channel grid")
+	func jpCustomBandwidthsAndOverridesFollowUnitChannelGrid() {
+		let bw203 = LoRaChannelCalculator(
+			regionCode: RegionCodes.jp.rawValue,
+			usePreset: false,
+			modemPreset: 0,
+			channelNum: 0,
+			bandwidth: 200,
+			overrideFrequency: 0
+		)
+		#expect(bw203.numChannels() == 7)
+		#expect(abs(bw203.radioFrequencyMHz(slot: 1) - 920.700) < 0.001)
+		#expect(abs(bw203.radioFrequencyMHz(slot: 5) - 922.500) < 0.001)
+
+		let bw406 = LoRaChannelCalculator(
+			regionCode: RegionCodes.jp.rawValue,
+			usePreset: false,
+			modemPreset: 0,
+			channelNum: 0,
+			bandwidth: 400,
+			overrideFrequency: 0
+		)
+		#expect(bw406.numChannels() == 5)
+		#expect(abs(bw406.radioFrequencyMHz(slot: 1) - 920.800) < 0.001)
+		#expect(abs(bw406.radioFrequencyMHz(slot: 4) - 922.600) < 0.001)
+
+		let offsetCalc = LoRaChannelCalculator(
+			regionCode: RegionCodes.jp.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.narrowSlow.rawValue,
+			channelNum: 2,
+			bandwidth: 0,
+			overrideFrequency: 0,
+			frequencyOffset: 0.01
+		)
+		#expect(abs(offsetCalc.radioFrequencyMHz(slot: 2) - 920.810) < 0.001)
+
+		let overrideCalc = LoRaChannelCalculator(
+			regionCode: RegionCodes.jp.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.narrowSlow.rawValue,
+			channelNum: 2,
+			bandwidth: 0,
+			overrideFrequency: 922.7
+		)
+		#expect(abs(overrideCalc.radioFrequencyMHz(slot: 2) - 922.700) < 0.001)
+	}
+
+	@Test("JP slots stay within band edges and never straddle 922.3 MHz")
+	func jpSlotsStayWithinBandEdgesAndNeverStraddle922_3MHz() {
+		let jpPresets: [ModemPresets] = [.narrowSlow, .liteFast, .longFast, .shortTurbo]
+		for preset in jpPresets {
+			let calculator = LoRaChannelCalculator(
+				regionCode: RegionCodes.jp.rawValue,
+				usePreset: true,
+				modemPreset: preset.rawValue,
+				channelNum: 0,
+				bandwidth: 0,
+				overrideFrequency: 0
+			)
+			let halfBw = preset.bandwidthMHz * 0.5
+			var prevUpper = 0.0
+			for slot in 1...calculator.numChannels() {
+				let center = calculator.radioFrequencyMHz(slot: slot)
+				let lo = center - halfBw
+				let hi = center + halfBw
+				#expect(lo >= 920.5 - 1e-4)
+				#expect(hi <= 923.5 + 1e-4)
+				if slot > 1 {
+					#expect(lo >= prevUpper - 1e-4)
+				}
+				#expect(hi <= 922.3 + 1e-4 || lo >= 922.3 - 1e-4)
+				prevUpper = hi
+			}
+		}
+	}
+
+	@MainActor
+	@Test("JP grid falls back to legacy unbonded math on firmware before #11559")
+	func jpGridFallsBackToLegacyMathOnOlderFirmware() {
+		for legacyVersion in ["2.7.26", "2.8.0"] {
+			let longFast = LoRaChannelCalculator(
+				regionCode: RegionCodes.jp.rawValue,
+				usePreset: true,
+				modemPreset: ModemPresets.longFast.rawValue,
+				channelNum: 0,
+				bandwidth: 0,
+				overrideFrequency: 0,
+				firmwareVersion: legacyVersion
+			)
+			#expect(longFast.numChannels() == 12)
+
+			let narrowSlow = LoRaChannelCalculator(
+				regionCode: RegionCodes.jp.rawValue,
+				usePreset: true,
+				modemPreset: ModemPresets.narrowSlow.rawValue,
+				channelNum: 2,
+				bandwidth: 0,
+				overrideFrequency: 0,
+				firmwareVersion: legacyVersion
+			)
+			#expect(narrowSlow.numChannels() == 48)
+			#expect(abs(narrowSlow.radioFrequencyMHz(slot: 2) - 920.59375) < 0.001)
+		}
+
+		for gatedVersion in [LoRaChannelCalculator.jpUnitChannelGridMinFirmwareVersion, nil] {
+			let longFast = LoRaChannelCalculator(
+				regionCode: RegionCodes.jp.rawValue,
+				usePreset: true,
+				modemPreset: ModemPresets.longFast.rawValue,
+				channelNum: 0,
+				bandwidth: 0,
+				overrideFrequency: 0,
+				firmwareVersion: gatedVersion
+			)
+			#expect(longFast.numChannels() == 7)
+
+			let narrowSlow = LoRaChannelCalculator(
+				regionCode: RegionCodes.jp.rawValue,
+				usePreset: true,
+				modemPreset: ModemPresets.narrowSlow.rawValue,
+				channelNum: 2,
+				bandwidth: 0,
+				overrideFrequency: 0,
+				firmwareVersion: gatedVersion
+			)
+			#expect(abs(narrowSlow.radioFrequencyMHz(slot: 2) - 920.800) < 0.001)
+		}
+
+		let metadata = DeviceMetadataEntity()
+		metadata.firmwareVersion = "2.7.26"
+		let node = NodeInfoEntity()
+		node.metadata = metadata
+		let entity = LoRaConfigEntity()
+		entity.regionCode = Int32(RegionCodes.jp.rawValue)
+		entity.usePreset = true
+		entity.modemPreset = Int32(ModemPresets.longFast.rawValue)
+		entity.loRaConfigNode = node
+
+		#expect(LoRaChannelCalculator(config: entity).numChannels() == 12)
+		metadata.firmwareVersion = LoRaChannelCalculator.jpUnitChannelGridMinFirmwareVersion
+		#expect(LoRaChannelCalculator(config: entity).numChannels() == 7)
+	}
 }
