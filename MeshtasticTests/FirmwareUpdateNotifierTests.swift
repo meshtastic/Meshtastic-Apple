@@ -144,7 +144,7 @@ struct FirmwareUpdateNotifierTests {
 			latestStableVersion: "v2.8.0"
 		))
 
-		#expect(appOTANotice?.connectMessage.contains("Open Firmware Updates") == true)
+		#expect(appOTANotice?.connectMessage.contains("is behind stable") == true)
 		#expect(flasherNotice?.connectMessage.contains("Meshtastic Flasher") == true)
 		#expect(appOTANotice?.actionPath == "meshtastic:///settings/firmwareUpdates")
 		#expect(flasherNotice?.actionPath == "https://flasher.meshtastic.org")
@@ -154,5 +154,13 @@ struct FirmwareUpdateNotifierTests {
 
 	@Test func updateNudgeUsesAnUpdateAffordance() {
 		#expect(FirmwareUpdateNotice.symbolName == "arrow.triangle.2.circlepath")
+	}
+
+	@Test func connectUpdateInstallsThePhoneUpdateFile() {
+		#expect(FirmwareUpdatePlan.phoneUpdateFileType(for: .nrf52840) == .otaZip)
+		for esp32 in [Architecture.esp32, .esp32C3, .esp32S3, .esp32C6] {
+			#expect(FirmwareUpdatePlan.phoneUpdateFileType(for: esp32) == .bin)
+		}
+		#expect(FirmwareUpdatePlan.phoneUpdateFileType(for: .rp2040) == nil)
 	}
 }

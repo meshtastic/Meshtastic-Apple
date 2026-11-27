@@ -24,6 +24,9 @@ struct Connect: View {
 	@State var router: Router
 	@State var node: NodeInfoEntity?
 	@State private var firmwareUpdateNotice: FirmwareUpdateNotice?
+	/// The update started from the Connect notice. Kept apart from the notice, which clears when
+	/// the radio disconnects; the update disconnects it on purpose and the sheet has to stay up.
+	@State private var firmwareUpdatePlan: FirmwareUpdatePlan?
 	@State var showSecurityVersionNag = false
 	@ObservedObject private var liveActivities = MeshLiveActivityManager.shared
 #if os(iOS) && !targetEnvironment(macCatalyst)
@@ -415,9 +418,11 @@ struct Connect: View {
 
 					if let firmwareUpdateNotice, accessoryManager.isConnected {
 						Section {
-							FirmwareUpdateConnectNotice(notice: firmwareUpdateNotice) {
-								openFirmwareUpdateDestination(firmwareUpdateNotice)
-							}
+							FirmwareUpdateConnectNotice(
+								notice: firmwareUpdateNotice,
+								onUpdate: startFirmwareUpdate,
+								onOpen: { openFirmwareUpdateDestination(firmwareUpdateNotice) }
+							)
 						}
 						.textCase(nil)
 					}
@@ -599,6 +604,25 @@ struct Connect: View {
 			}
 #endif
 		}
+		.hostedSheet(item: $firmwareUpdatePlan) { plan in
+			switch plan.file.firmwareType {
+			case .otaZip:
+				NRFDFUSheet(firmwareToFlash: plan.file.localUrl, bootloaderAdvice: plan.bootloaderAdvice, platformioTarget: plan.firmwareTarget)
+					.environment(\.firmwareUpdateRadio, plan.radio)
+					.trackScreen(.nordicDFUUpdate)
+					// An update has to keep running and can't be backed out of mid-transfer, which a page
+					// on the cinema screen can't promise; it runs in the app window.
+					.hostedWindowOnly()
+			case .bin:
+				ESP32OTAIntroSheet(binFileURL: plan.file.localUrl)
+					.environment(\.firmwareUpdateRadio, plan.radio)
+					.trackScreen(.esp32Update)
+					.hostedWindowOnly()
+			case .uf2:
+				// Never planned: the phone only installs DFU zips and OTA bins.
+				EmptyView()
+			}
+		}
 		.hostedSheet(isPresented: $showSecurityVersionNag) {
 			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
 				.trackScreen(.firmwareSecurityWarning)
@@ -698,6 +722,25 @@ struct Connect: View {
 		firmwareUpdateNotice = FirmwareUpdateNotifier.notice(accessoryManager: accessoryManager)
 	}
 
+	/// Downloads the newest stable build if needed, then opens the update screen. Falls back to
+	/// the Firmware Updates page when there's no file the phone can install.
+	@MainActor
+	private func startFirmwareUpdate() async throws {
+		guard let plan = FirmwareUpdateNotifier.updatePlan(accessoryManager: accessoryManager) else {
+			if let firmwareUpdateNotice {
+				openFirmwareUpdateDestination(firmwareUpdateNotice)
+			}
+			return
+		}
+		if plan.file.status != .downloaded {
+			try await plan.file.download()
+		}
+		// The download can outlast the connection. If the radio it was for is gone, or another
+		// radio is connected now, don't open the update for the wrong one.
+		guard accessoryManager.isConnected, accessoryManager.activeDeviceNum == plan.nodeNum else { return }
+		firmwareUpdatePlan = plan
+	}
+
 	@MainActor
 	private func openFirmwareUpdateDestination(_ notice: FirmwareUpdateNotice) {
 		guard let url = notice.actionURL else { return }
@@ -784,38 +827,114 @@ struct TransportIcon: View {
 
 private struct FirmwareUpdateConnectNotice: View {
 	let notice: FirmwareUpdateNotice
-	let action: () -> Void
+	/// Downloads the firmware and opens the update screen.
+	let onUpdate: () async throws -> Void
+	/// Opens Firmware Updates, or the Flasher for radios the phone can't update.
+	let onOpen: () -> Void
+
+	@State private var isDownloading = false
+	@State private var downloadFailed = false
 
 	var body: some View {
-		Button(action: action) {
-			HStack(alignment: .top, spacing: 12) {
-				Image(systemName: FirmwareUpdateNotice.symbolName)
-					.font(.title3)
-					.foregroundColor(.accentColor)
-					.padding(.top, 2)
-					.accessibilityHidden(true)
-				VStack(alignment: .leading, spacing: 2) {
-					Text("Firmware update available")
-						.font(.callout)
-						.fontWeight(.semibold)
-						.foregroundColor(.primary)
-					Text(notice.connectMessage)
+		switch notice.installMethod {
+		case .appOTA:
+			updateRow
+		case .flasher:
+			Button(action: onOpen) {
+				HStack(alignment: .top, spacing: 12) {
+					icon
+					text
+					Spacer(minLength: 8)
+					Image(systemName: "chevron.right")
 						.font(.footnote)
 						.foregroundColor(.secondary)
+						.padding(.top, 4)
+						.accessibilityHidden(true)
+				}
+				.padding(.vertical, 6)
+			}
+			.buttonStyle(.plain)
+			.accessibilityElement(children: .combine)
+			.accessibilityHint(notice.accessibilityHint)
+		}
+	}
+
+	private var updateRow: some View {
+		HStack(alignment: .top, spacing: 12) {
+			icon
+			VStack(alignment: .leading, spacing: 10) {
+				text
+					.accessibilityElement(children: .combine)
+				if downloadFailed {
+					Text("Couldn't download the firmware. Check your internet connection and try again.")
+						.font(.footnote)
+						.foregroundColor(.red)
 						.fixedSize(horizontal: false, vertical: true)
 				}
-				Spacer(minLength: 8)
-				Image(systemName: "chevron.right")
-					.font(.footnote)
-					.foregroundColor(.secondary)
-					.padding(.top, 4)
-					.accessibilityHidden(true)
+				HStack(spacing: 10) {
+					Button {
+						Task { await update() }
+					} label: {
+						if isDownloading {
+							HStack(spacing: 6) {
+								ProgressView()
+									.controlSize(.small)
+								Text("Downloading")
+							}
+						} else {
+							Text("Update")
+						}
+					}
+					.buttonStyle(.borderedProminent)
+					.tint(.accentFill)
+					.disabled(isDownloading)
+					Button(action: onOpen) {
+						Text("Other Versions")
+					}
+					.buttonStyle(.bordered)
+					.accessibilityHint(notice.accessibilityHint)
+				}
+				.controlSize(.small)
+				// Rounded rectangles, not capsules. Bordered styles also keep each tap to its
+				// own button; plain buttons in one list row would all fire together.
+				.buttonBorderShape(.roundedRectangle(radius: 8))
 			}
-			.padding(.vertical, 6)
+			Spacer(minLength: 0)
 		}
-		.buttonStyle(.plain)
-		.accessibilityElement(children: .combine)
-		.accessibilityHint(notice.accessibilityHint)
+		.padding(.vertical, 6)
+	}
+
+	private var icon: some View {
+		Image(systemName: FirmwareUpdateNotice.symbolName)
+			.font(.title3)
+			.foregroundColor(.accentColor)
+			.padding(.top, 2)
+			.accessibilityHidden(true)
+	}
+
+	private var text: some View {
+		VStack(alignment: .leading, spacing: 2) {
+			Text("Firmware update available")
+				.font(.callout)
+				.fontWeight(.semibold)
+				.foregroundColor(.primary)
+			Text(notice.connectMessage)
+				.font(.footnote)
+				.foregroundColor(.secondary)
+				.fixedSize(horizontal: false, vertical: true)
+		}
+	}
+
+	private func update() async {
+		isDownloading = true
+		downloadFailed = false
+		defer { isDownloading = false }
+		do {
+			try await onUpdate()
+		} catch is CancellationError {
+		} catch {
+			downloadFailed = true
+		}
 	}
 }
 
