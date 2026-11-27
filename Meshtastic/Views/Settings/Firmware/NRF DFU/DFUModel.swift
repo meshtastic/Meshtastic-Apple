@@ -9,7 +9,6 @@ import Foundation
 import NordicDFU
 import CoreBluetooth
 import OSLog
-import UIKit
 
 // A simple enum to track the UI state
 enum DFUUpdateState: Equatable {
@@ -62,13 +61,8 @@ class DFUViewModel: NSObject, ObservableObject {
 	/// Set when the library confirms an abort. Handing the radio back to the app before
 	/// this lands restarts discovery while NordicDFU still owns the peripheral.
 	@Published private(set) var didAbort = false
-	@Published var rotatingMessage: String = ""
-	
-	var lastRotatingMessageUpdate = Date.distantPast
-	var rotatingMessageIndex = -1
-	var rotatingMessages: [String] {
-		FirmwareUpdateTips.messages
-	}
+	/// True after the transfer, while the radio restarts into the new firmware.
+	@Published private(set) var isRestarting = false
 	
     // MARK: - DFU Controller
     private var dfuController: DFUServiceController?
@@ -101,10 +95,30 @@ class DFUViewModel: NSObject, ObservableObject {
 		self.activating = false
 		self.restarts = 0
         self.didAbort = false
+		self.isRestarting = false
         self.state = .uploading
 		Logger.services.info("NRF DFU: starting on \(peripheral.identifier.uuidString, privacy: .public)")
 		run(targetIdentifier: peripheral.identifier)
     }
+
+	/// True once an update has been started, so Try Again can go back to the same radio.
+	var canRetry: Bool { targetIdentifier != nil && zipFileUrl != nil }
+
+	/// Starts over after a failure. A radio that failed mid-update is usually still waiting in
+	/// its bootloader with no app connection, so go back to the bootloader when one was reached.
+	func retry() {
+		guard let target = bootloaderIdentifier ?? targetIdentifier else { return }
+		stopRequested = false
+		activating = false
+		restarts = 0
+		didAbort = false
+		isRestarting = false
+		progress = 0
+		state = .starting
+		statusMessage = "Reconnecting..."
+		Logger.services.info("NRF DFU: retrying on \(target.uuidString, privacy: .public)")
+		run(targetIdentifier: target)
+	}
 
 	private func run(targetIdentifier: UUID) {
 		guard let zipFileUrl, let firmware = try? DFUFirmware(urlToZipFile: zipFileUrl) else {
@@ -154,6 +168,7 @@ class DFUViewModel: NSObject, ObservableObject {
 		Logger.services.warning("NRF DFU: link lost (\(message, privacy: .public)), starting over, attempt \(self.restarts) of \(DFURestartPolicy.maxRestarts)")
 		restartTarget = bootloaderIdentifier
 		progress = 0
+		isRestarting = false
 		state = .starting
 		statusMessage = "Reconnecting..."
 		restartTask = Task { @MainActor [weak self] in
@@ -186,21 +201,19 @@ extension DFUViewModel: DFUServiceDelegate {
 		// delegateQueue is .main, so we're already on the main thread
 		switch state {
 		case .starting:
-			UIApplication.shared.isIdleTimerDisabled = true
-			self.rotatingMessage = "This can take a while. Please be patient."
 			self.state = .starting
+			self.statusMessage = state.description
 		case .completed:
-			UIApplication.shared.isIdleTimerDisabled = false
+			self.isRestarting = false
 			self.state = .success
 			self.statusMessage = "Update Complete"
-			self.rotatingMessage = "Firmware Update Successful!"
 			self.progress = 1.0
 		case .disconnecting:
 			self.activating = true
-			UIApplication.shared.isIdleTimerDisabled = false
+			self.isRestarting = true
 			self.statusMessage = "Disconnecting..."
 		case .aborted:
-			UIApplication.shared.isIdleTimerDisabled = false
+			self.isRestarting = false
 			self.state = .error("Aborted")
 			self.statusMessage = "Update Aborted"
 			self.didAbort = true
@@ -234,12 +247,6 @@ extension DFUViewModel: DFUProgressDelegate {
 		// Convert 0-100 Int to 0.0-1.0 Double for SwiftUI ProgressView
 		self.progress = Double(progress) / 100.0
 		
-		if self.lastRotatingMessageUpdate.timeIntervalSinceNow < -10 {
-			// Last message was 10 seconds ago. This ensures messages don't rotate too fast
-			self.lastRotatingMessageUpdate = Date()
-			self.rotatingMessageIndex = (self.rotatingMessageIndex + 1) % self.rotatingMessages.count
-			self.rotatingMessage = self.rotatingMessages[self.rotatingMessageIndex]
-		}
 		Logger.services.info("NRF DFU Progress: \(progress)%")
 	}
 }

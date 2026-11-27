@@ -17,7 +17,6 @@ struct ESP32BLEOTASheet: View {
 	@StateObject var ota = ESP32BLEOTAViewModel()
 	
 	@State var rebootSuccessful = false
-	@State var inRetryWorkflow = false
 	
 	// The stuff we're updating, and the place we're updating it to
 	let binFileURL: URL
@@ -32,15 +31,12 @@ struct ESP32BLEOTASheet: View {
 	
 	var body: some View {
 		FirmwareOTAUpdateSheet(
-			title: "ESP32 BLE Updater",
 			progress: ota.transferProgress,
 			statusState: ota.otaStatus,
 			statusMessage: ota.statusMessage,
-			inRetryWorkflow: inRetryWorkflow,
 			isStartDisabled: accessoryManager.activeDeviceNum == nil,
 			onStart: { startBLEProcess() },
 			onRetry: {
-				inRetryWorkflow = true
 				var transaction = Transaction(animation: .none)
 				transaction.disablesAnimations = true
 				withTransaction(transaction) {
@@ -53,8 +49,7 @@ struct ESP32BLEOTASheet: View {
 				} else {
 					dismiss()
 				}
-			},
-			gameTitle: "ESP32 BLE OTA"
+			}
 		)
 		.task {
 			// Attempt to grab peripheral from current BLE connection

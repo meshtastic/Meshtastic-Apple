@@ -25,7 +25,6 @@ struct ESP32WifiOTASheet: View {
 	let onUpdateComplete: (() -> Void)?
 	
 	@State var alreadyRebooted: Bool = false
-	@State var inRetryWorkflow = false
 	/// Retained so dismissing the sheet cancels it. Without this the flow could resume after
 	/// cleanup had already handed the radio back and start a transfer against a reconnected node.
 	@State private var otaTask: Task<Void, Never>?
@@ -38,15 +37,12 @@ struct ESP32WifiOTASheet: View {
 	
 	var body: some View {
 		FirmwareOTAUpdateSheet(
-			title: "ESP32 WiFi Updater",
 			progress: ota.progress,
 			statusState: ota.otaState,
 			statusMessage: ota.statusMessage,
-			inRetryWorkflow: inRetryWorkflow,
 			isStartDisabled: accessoryManager.activeDeviceNum == nil,
 			onStart: { startWifiProcess() },
 			onRetry: {
-				inRetryWorkflow = true
 				var transaction = Transaction(animation: .none)
 				transaction.disablesAnimations = true
 				withTransaction(transaction) {
@@ -59,8 +55,7 @@ struct ESP32WifiOTASheet: View {
 				} else {
 					dismiss()
 				}
-			},
-			gameTitle: "ESP32 Wi-Fi OTA"
+			}
 		)
 		.onReceive(NotificationCenter.default.publisher(for: .otaDeviceNotice)) { notice in
 			guard let message = notice.object as? String else { return }

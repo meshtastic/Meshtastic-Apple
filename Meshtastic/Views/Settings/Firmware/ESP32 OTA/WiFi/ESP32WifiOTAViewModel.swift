@@ -83,11 +83,6 @@ class ESP32WifiOTAViewModel: ObservableObject {
 			return
 		}
 		
-		UIApplication.shared.isIdleTimerDisabled = true
-		defer {
-			UIApplication.shared.isIdleTimerDisabled = false
-		}
-		
 		progress = 0.0
 		errorMessage = nil
 		deviceRefusal = nil
