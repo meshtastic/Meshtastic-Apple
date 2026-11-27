@@ -735,6 +735,9 @@ struct Connect: View {
 		if plan.file.status != .downloaded {
 			try await plan.file.download()
 		}
+		// The download can outlast the connection. If the radio it was for is gone, or another
+		// radio is connected now, don't open the update for the wrong one.
+		guard accessoryManager.isConnected, accessoryManager.activeDeviceNum == plan.nodeNum else { return }
 		firmwareUpdatePlan = plan
 	}
 

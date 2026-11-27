@@ -606,6 +606,12 @@
         }
       }
     },
+    "%@ is behind stable %@." : {
+      "comment" : "Connect screen firmware notice: the radio's firmware version, then the latest stable version"
+    },
+    "%@ is behind stable %@. Use Meshtastic Flasher for this hardware." : {
+      "comment" : "Connect screen firmware notice for radios the app can't update: the radio's firmware version, then the latest stable version"
+    },
     "%@, up to date" : {
       "comment" : "Firmware screen: the newest bootloader release, when the radio already has it. The argument is a version, such as 2.6.0.",
       "localizations" : {

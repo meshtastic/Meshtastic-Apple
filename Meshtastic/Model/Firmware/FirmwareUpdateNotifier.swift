@@ -44,9 +44,11 @@ struct FirmwareUpdateNotice: Equatable {
 	var connectMessage: String {
 		switch installMethod {
 		case .appOTA:
-			return "\(currentVersion) is behind stable \(latestStableVersion)."
+			return String(localized: "\(currentVersion) is behind stable \(latestStableVersion).",
+						  comment: "Connect screen firmware notice: the radio's firmware version, then the latest stable version")
 		case .flasher:
-			return "\(currentVersion) is behind stable \(latestStableVersion). Use Meshtastic Flasher for this hardware."
+			return String(localized: "\(currentVersion) is behind stable \(latestStableVersion). Use Meshtastic Flasher for this hardware.",
+						  comment: "Connect screen firmware notice for radios the app can't update: the radio's firmware version, then the latest stable version")
 		}
 	}
 
@@ -86,6 +88,8 @@ struct FirmwareUpdateNotice: Equatable {
 /// for the phone's own update path (Bluetooth DFU zip on nRF52, OTA bin on ESP32) and what
 /// the update screen shows about the radio.
 struct FirmwareUpdatePlan: Identifiable {
+	/// The radio the file was chosen for.
+	let nodeNum: Int64
 	let file: FirmwareFile
 	let hardware: DeviceHardwareEntity
 	/// The radio's own PlatformIO target, which may be a flavor of the catalog's target.
@@ -253,6 +257,7 @@ enum FirmwareUpdateNotifier {
 			: nil
 		let longName = node.user?.longName ?? ""
 		return FirmwareUpdatePlan(
+			nodeNum: node.num,
 			file: file,
 			hardware: hardware,
 			firmwareTarget: pioEnv,
