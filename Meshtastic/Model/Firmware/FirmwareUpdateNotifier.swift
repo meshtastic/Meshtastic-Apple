@@ -44,7 +44,7 @@ struct FirmwareUpdateNotice: Equatable {
 	var connectMessage: String {
 		switch installMethod {
 		case .appOTA:
-			return "\(currentVersion) is behind stable \(latestStableVersion). Open Firmware Updates when you're ready."
+			return "\(currentVersion) is behind stable \(latestStableVersion)."
 		case .flasher:
 			return "\(currentVersion) is behind stable \(latestStableVersion). Use Meshtastic Flasher for this hardware."
 		}
@@ -78,6 +78,43 @@ struct FirmwareUpdateNotice: Equatable {
 			return String(localized: "Opens Firmware Updates", comment: "VoiceOver hint: tapping this notice opens the Firmware Updates screen")
 		case .flasher:
 			return String(localized: "Opens Meshtastic Flasher", comment: "VoiceOver hint: tapping this notice opens the Meshtastic Flasher site")
+		}
+	}
+}
+
+/// Everything the Connect screen needs to update the radio itself: the newest stable file
+/// for the phone's own update path (Bluetooth DFU zip on nRF52, OTA bin on ESP32) and what
+/// the update screen shows about the radio.
+struct FirmwareUpdatePlan: Identifiable {
+	let file: FirmwareFile
+	let hardware: DeviceHardwareEntity
+	/// The radio's own PlatformIO target, which may be a flavor of the catalog's target.
+	let firmwareTarget: String
+	let pioEnv: String
+	let radioName: String
+	let bootloaderAdvice: BootloaderAdvice?
+
+	var id: URL { file.localUrl }
+
+	var radio: FirmwareUpdateRadio {
+		FirmwareUpdateRadio(
+			hardware: hardware,
+			pioEnv: pioEnv,
+			name: radioName,
+			firmwareVersion: FirmwareFileVersion.version(in: file.localUrl.lastPathComponent),
+			firmwareBuild: FirmwareFileVersion.build(in: file.localUrl.lastPathComponent)
+		)
+	}
+
+	/// The file type the phone installs for an architecture; nil when it can't update it.
+	static func phoneUpdateFileType(for architecture: Architecture) -> FirmwareFile.FirmwareType? {
+		switch architecture {
+		case .nrf52840:
+			return .otaZip
+		case .esp32, .esp32C3, .esp32S3, .esp32C6:
+			return .bin
+		case .rp2040:
+			return nil
 		}
 	}
 }
@@ -175,6 +212,54 @@ enum FirmwareUpdateNotifier {
 	static func notice(accessoryManager: AccessoryManager) -> FirmwareUpdateNotice? {
 		guard let candidate = candidate(accessoryManager: accessoryManager) else { return nil }
 		return notice(for: candidate)
+	}
+
+	/// The newest stable file for the connected radio, for starting the update from the
+	/// Connect screen. Nil when the phone can't update this radio or no stable build is listed.
+	@MainActor
+	static func updatePlan(accessoryManager: AccessoryManager) -> FirmwareUpdatePlan? {
+		guard let nodeNum = accessoryManager.activeDeviceNum,
+		      let node = getNodeInfo(id: nodeNum, context: accessoryManager.context),
+		      let pioEnv = node.myInfo?.pioEnv?.trimmingCharacters(in: .whitespacesAndNewlines),
+		      !pioEnv.isEmpty,
+		      let hardware = hardware(
+				platformioTarget: pioEnv,
+				hwModel: node.user.map { Int64($0.hwModelId) },
+				context: accessoryManager.context
+		      ),
+		      let architecture = hardware.architecture.flatMap({ Architecture(rawValue: $0) }),
+		      let fileType = FirmwareUpdatePlan.phoneUpdateFileType(for: architecture) else {
+			return nil
+		}
+
+		let region = node.loRaConfig.flatMap { RegionCodes(rawValue: Int($0.regionCode)) } ?? .unset
+		let firmwareList = FirmwareViewModel(
+			forHardware: hardware,
+			platformioTarget: pioEnv,
+			preferredRegion: region,
+			automaticallyRefresh: false
+		)
+		firmwareList.refresh()
+		guard let file = firmwareList.mostRecentFirmware(forReleaseType: .stable)
+			.first(where: { $0.firmwareType == fileType }) else {
+			return nil
+		}
+
+		let bootloaderAdvice: BootloaderAdvice? = architecture == .nrf52840
+			? BootloaderAdvice.forNRF52(
+				packed: node.metadata?.bootloaderVersion,
+				upgradeAvailable: OTAFIXBootloader.supportsTarget(pioEnv)
+			)
+			: nil
+		let longName = node.user?.longName ?? ""
+		return FirmwareUpdatePlan(
+			file: file,
+			hardware: hardware,
+			firmwareTarget: pioEnv,
+			pioEnv: pioEnv,
+			radioName: longName.isEmpty ? (hardware.displayName ?? "") : longName,
+			bootloaderAdvice: bootloaderAdvice
+		)
 	}
 
 	@MainActor

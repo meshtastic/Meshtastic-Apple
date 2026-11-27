@@ -4185,6 +4185,9 @@
         }
       }
     },
+    "Couldn't download the firmware. Check your internet connection and try again." : {
+
+    },
     "Current Bootloader Version" : {
       "comment" : "Firmware screen: label above the radio's installed nRF52 bootloader version",
       "localizations" : {
@@ -4419,6 +4422,9 @@
           }
         }
       }
+    },
+    "Downloading" : {
+
     },
     "Downloading Map" : {
       "comment" : "Spatial map loading card: title while the street map for the area downloads",
@@ -5988,6 +5994,9 @@
     },
     "Open the Web Flasher" : {
       "comment" : "Button that opens flash.meshtastic.org when the phone can't update a radio"
+    },
+    "Other Versions" : {
+
     },
     "Over 2 hours old · %@" : {
       "comment" : "Telemetry widget warning. The argument is how long ago, such as 3 hours ago.",
