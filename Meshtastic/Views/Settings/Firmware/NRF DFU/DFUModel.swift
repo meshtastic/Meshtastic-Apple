@@ -63,6 +63,9 @@ class DFUViewModel: NSObject, ObservableObject {
 	@Published private(set) var didAbort = false
 	/// True after the transfer, while the radio restarts into the new firmware.
 	@Published private(set) var isRestarting = false
+	/// True when the last failure came before any firmware went across: the radio never
+	/// reached, or never stayed in, its bootloader's update mode.
+	@Published private(set) var failedBeforeTransfer = false
 	
     // MARK: - DFU Controller
     private var dfuController: DFUServiceController?
@@ -96,6 +99,7 @@ class DFUViewModel: NSObject, ObservableObject {
 		self.restarts = 0
         self.didAbort = false
 		self.isRestarting = false
+		self.failedBeforeTransfer = false
         self.state = .uploading
 		Logger.services.info("NRF DFU: starting on \(peripheral.identifier.uuidString, privacy: .public)")
 		run(targetIdentifier: peripheral.identifier)
@@ -113,6 +117,7 @@ class DFUViewModel: NSObject, ObservableObject {
 		restarts = 0
 		didAbort = false
 		isRestarting = false
+		failedBeforeTransfer = false
 		progress = 0
 		state = .starting
 		statusMessage = "Reconnecting..."
@@ -236,6 +241,7 @@ extension DFUViewModel: DFUServiceDelegate {
 			dfuStateDidChange(to: .aborted)
 			return
 		}
+		self.failedBeforeTransfer = !transferStarted
 		self.state = .error(message)
 		self.statusMessage = "Error: \(message)"
     }

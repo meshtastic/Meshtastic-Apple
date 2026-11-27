@@ -75,3 +75,24 @@ struct BootloaderStatus: Equatable {
 		return version >= latest
 	}
 }
+
+/// Whether to suggest the Meshtastic bootloader before a Bluetooth update on an nRF52 radio.
+/// Factory and pre-2.6.0 bootloaders often won't stay in update mode when asked over Bluetooth:
+/// the radio restarts back into its old firmware and the update never starts.
+enum BootloaderAdvice: Equatable {
+	/// The radio reports a bootloader older than 2.6.0.
+	case outdated
+	/// The radio doesn't report one: firmware before 2.8.3, so it could be anything.
+	case unknown
+
+	/// - Parameters:
+	///   - packed: `DeviceMetadata.bootloader_version`; zero or nil when not reported.
+	///   - upgradeAvailable: a Meshtastic bootloader build exists for this board.
+	static func forNRF52(packed: Int64?, upgradeAvailable: Bool) -> BootloaderAdvice? {
+		guard upgradeAvailable else { return nil }
+		guard let packed, let value = UInt32(exactly: packed), let version = BootloaderVersion(packed: value) else {
+			return .unknown
+		}
+		return version < .firstReported ? .outdated : nil
+	}
+}

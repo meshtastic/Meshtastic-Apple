@@ -326,7 +326,7 @@ private struct FirmwareContentView: View {
 			// and a second name would split its history in Error Tracking.
 			switch installation.type {
 			case .otaZip:
-				NRFDFUSheet(firmwareToFlash: installation.url)
+				NRFDFUSheet(firmwareToFlash: installation.url, bootloaderAdvice: nrfBootloaderAdvice, platformioTarget: firmwareTarget)
 					.environment(\.firmwareUpdateRadio, updateRadio(for: installation.url))
 					.trackScreen(.nordicDFUUpdate)
 					// An update has to keep running and can't be backed out of mid-transfer, which a page
@@ -470,6 +470,13 @@ private struct FirmwareContentView: View {
 		OTAFIXBootloader.supportsTarget(firmwareTarget)
 	}
 
+	/// Whether to suggest the Meshtastic bootloader before a Bluetooth update: nRF52 boards with
+	/// an OTAFIX build, whose bootloader is older than 2.6.0 or unreported.
+	var nrfBootloaderAdvice: BootloaderAdvice? {
+		guard showsMaintenanceSection else { return nil }
+		return BootloaderAdvice.forNRF52(packed: node.metadata?.bootloaderVersion, upgradeAvailable: showsBootloaderUpgrade)
+	}
+
 	/// The bootloader the radio reports, against the latest release. Nil when it reports none
 	/// (older firmware), and then the section is as it was before the field existed.
 	var bootloaderStatus: BootloaderStatus? {
@@ -563,7 +570,7 @@ private struct FirmwareContentView: View {
 				if let locallyChosenFirmwareFile = self.locallyChosenFirmwareFile {
 					switch type {
 					case .otaZip:
-						NRFDFUSheet(firmwareToFlash: locallyChosenFirmwareFile)
+						NRFDFUSheet(firmwareToFlash: locallyChosenFirmwareFile, bootloaderAdvice: nrfBootloaderAdvice, platformioTarget: firmwareTarget)
 							.environment(\.firmwareUpdateRadio, updateRadio(for: locallyChosenFirmwareFile))
 							.trackScreen(.nordicDFUUpdate)
 							// An update has to keep running and can't be backed out of mid-transfer, which a page

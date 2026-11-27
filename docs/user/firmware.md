@@ -39,6 +39,8 @@ The same screen is used whatever the radio. nRF52 radios update over Bluetooth, 
 
 For ESP32 updates, the app waits for the radio's final verification response before showing success. If the radio reports an error or doesn't send the final success response, the update shows **The Update Didn't Finish** instead of treating the upload as complete.
 
+On an nRF52 radio, the update screen first checks the bootloader. If the radio reports a bootloader older than 2.6.0, or reports none (firmware before 2.8.3), and a Meshtastic bootloader exists for the board, the screen explains that a factory or older bootloader may not accept a Bluetooth update and offers **Update Bootloader** first, with **Update Firmware Anyway** to go ahead. If an update then fails before any firmware has gone across, the screen says the radio didn't go into update mode and offers the same bootloader update.
+
 If an nRF52 Bluetooth update loses the radio partway, the app starts it over, up to three times. Bootloader 2.6.0 and later accept the fresh start. If it still fails, **Try Again** goes back to the radio in its bootloader.
 
 The screen offers the **Web Flasher** instead of an update when the phone can't do it: an ESP32 radio running firmware older than 2.7.18, or a radio the app isn't connected to over Bluetooth or Wi-Fi.
