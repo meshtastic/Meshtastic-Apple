@@ -18,13 +18,19 @@ permissions:
 
 jobs:
   build-snapshots:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
+        # 26.4 or later: mvt-tools 3.x, which VectorTiles needs, declares Swift tools 6.3.
+        run: sudo xcode-select -s /Applications/Xcode_26.4.1.app/Contents/Developer
+
+      - name: List iPhone simulators
+        # The destination names no iOS version, so the newest runtime this Xcode has is used.
+        # Listed so a missing device is obvious from the log.
+        run: xcrun simctl list devices available | grep -E "^-- |iPhone"
 
       - name: Regenerate doc snapshots
         run: |
@@ -65,7 +71,7 @@ jobs:
           if ! xcodebuild test \
             -workspace Meshtastic.xcworkspace \
             -scheme Meshtastic \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
+            -destination 'platform=iOS Simulator,name=iPhone 17' \
             "${snapshot_tests[@]}" \
             2>&1 | tee /tmp/xcodebuild-snapshots.log | tail -20; then
             echo "── error lines from full log ──" >&2
