@@ -81,6 +81,10 @@ struct FirmwareUpdateView: View {
 
 	@State private var showChirpyGame = false
 	@State private var showStopConfirmation = false
+	/// Height of everything under the navigation bar, so the sheet can be just that tall.
+	@State private var contentHeight: CGFloat = 0
+	/// The inline navigation bar above the content.
+	private static let navigationBarHeight: CGFloat = 64
 
 	var body: some View {
 		SheetNavigationStack {
@@ -108,6 +112,7 @@ struct FirmwareUpdateView: View {
 				.padding(20)
 				.frame(maxWidth: 560)
 				.frame(maxWidth: .infinity)
+				.onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
 			}
 			.background(Color(.systemGroupedBackground))
 			.navigationTitle(Text("Firmware Update", comment: "Title of the firmware update screen"))
@@ -130,6 +135,9 @@ struct FirmwareUpdateView: View {
 			}
 		}
 		.interactiveDismissDisabled(true)
+		// Only as tall as the content, growing when Details opens. A sheet taller than the
+		// screen stops at full height and the content scrolls.
+		.presentationDetents(contentHeight > 0 ? [.height(contentHeight + Self.navigationBarHeight)] : [.large])
 		.hostedConfirmation(
 			Text("Stop the update?", comment: "Title of the confirmation shown when closing an update in progress"),
 			isPresented: $showStopConfirmation,
