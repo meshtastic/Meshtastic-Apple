@@ -395,6 +395,12 @@ enum SettingsSearchCatalogue {
 			label: String(localized: "Share QR Code", comment: "Settings control"),
 			keywords: [String(localized: "qr", comment: "Search keyword"), String(localized: "share", comment: "Search keyword"), String(localized: "invite", comment: "Search keyword")],
 			requiresConnection: true),
+		.init(
+			destination: .shareQRCode,
+			screenTitle: String(localized: "Share QR Code", comment: "Settings screen"),
+			listSection: .radioConfiguration,
+			label: String(localized: "Print Label", comment: "Settings control"),
+			requiresConnection: true),
 
 		// MARK: TAK Server
 		.init(

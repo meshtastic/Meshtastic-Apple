@@ -75,6 +75,9 @@ class DFUViewModel: NSObject, ObservableObject {
 	/// Set when the upload begins. START has erased the application by then, so the peripheral
 	/// last connected to is the bootloader.
 	private var transferStarted = false
+	/// The same, for this attempt only: Try Again starts a new attempt but keeps
+	/// `transferStarted`, which picks the radio to retry against.
+	private var attemptReachedTransfer = false
 	/// The bootloader every restart goes back to, kept once known since a restart's own session
 	/// never reports `.uploading` if it fails to connect.
 	private var restartTarget: UUID?
@@ -93,6 +96,7 @@ class DFUViewModel: NSObject, ObservableObject {
 		self.targetIdentifier = peripheral.identifier
 		self.selector = BootloaderPeripheralSelector()
 		self.transferStarted = false
+		self.attemptReachedTransfer = false
 		self.restartTarget = nil
 		self.stopRequested = false
 		self.activating = false
@@ -118,6 +122,7 @@ class DFUViewModel: NSObject, ObservableObject {
 		didAbort = false
 		isRestarting = false
 		failedBeforeTransfer = false
+		attemptReachedTransfer = false
 		progress = 0
 		state = .starting
 		statusMessage = "Reconnecting..."
@@ -224,6 +229,7 @@ extension DFUViewModel: DFUServiceDelegate {
 			self.didAbort = true
 		case .uploading:
 			self.transferStarted = true
+			self.attemptReachedTransfer = true
 			self.state = .uploading
 			self.statusMessage = "Uploading..."
 		default:
@@ -241,7 +247,7 @@ extension DFUViewModel: DFUServiceDelegate {
 			dfuStateDidChange(to: .aborted)
 			return
 		}
-		self.failedBeforeTransfer = !transferStarted
+		self.failedBeforeTransfer = !attemptReachedTransfer
 		self.state = .error(message)
 		self.statusMessage = "Error: \(message)"
     }
