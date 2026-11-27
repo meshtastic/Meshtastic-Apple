@@ -10,12 +10,34 @@ import Foundation
 @Suite("Firmware OTA & DFU Update Sheet Tests")
 struct FirmwareOTAUpdateSheetTests {
 
-	@Test("FirmwareUpdateTips has non-empty localized messages")
-	func testFirmwareUpdateTipsContent() {
-		#expect(!FirmwareUpdateTips.messages.isEmpty)
-		for message in FirmwareUpdateTips.messages {
-			#expect(!message.isEmpty)
-		}
+	@Test("ESP32 update states map onto the shared update screen's stages")
+	func testStageFromOTAStatus() {
+		#expect(FirmwareUpdateStage(LocalOTAStatusCode.idle) == .ready)
+		#expect(FirmwareUpdateStage(LocalOTAStatusCode.waitingForConnection) == .preparing)
+		#expect(FirmwareUpdateStage(LocalOTAStatusCode.connected) == .preparing)
+		#expect(FirmwareUpdateStage(LocalOTAStatusCode.preparing) == .preparing)
+		#expect(FirmwareUpdateStage(LocalOTAStatusCode.transferring) == .sending)
+		#expect(FirmwareUpdateStage(LocalOTAStatusCode.completed) == .done)
+		#expect(FirmwareUpdateStage(LocalOTAStatusCode.error) == .failed)
+	}
+
+	@Test("Closing asks for confirmation only while an update is under way")
+	func testStageIsUnderWay() {
+		#expect(FirmwareUpdateStage.preparing.isUnderWay)
+		#expect(FirmwareUpdateStage.sending.isUnderWay)
+		#expect(FirmwareUpdateStage.restarting.isUnderWay)
+		#expect(!FirmwareUpdateStage.ready.isUnderWay)
+		#expect(!FirmwareUpdateStage.done.isUnderWay)
+		#expect(!FirmwareUpdateStage.failed.isUnderWay)
+		#expect(!FirmwareUpdateStage.unavailable(reason: "x").isUnderWay)
+	}
+
+	@Test("The firmware version is read from release file names")
+	func testFirmwareFileVersion() {
+		#expect(FirmwareFileVersion.version(in: "firmware-seeed_wio_tracker_L1-2.8.3.eb99f95-ota.zip") == "2.8.3.eb99f95")
+		#expect(FirmwareFileVersion.version(in: "firmware-heltec-v3-2.7.18.fb3bf78.bin") == "2.7.18.fb3bf78")
+		#expect(FirmwareFileVersion.version(in: "firmware-rak4631-2.8.1.uf2") == "2.8.1")
+		#expect(FirmwareFileVersion.version(in: "my-custom-build.zip") == nil)
 	}
 
 	@Test("DFUUpdateState isError property correctly identifies error states")
@@ -50,14 +72,5 @@ struct FirmwareOTAUpdateSheetTests {
 		#expect(LocalOTAStatusCode.transferring.rawValue == "Uploading")
 		#expect(LocalOTAStatusCode.completed.rawValue == "Completed")
 		#expect(LocalOTAStatusCode.error.rawValue == "Error")
-	}
-
-	@Test("OTAMetadataItem structure and identification")
-	func testOTAMetadataItem() {
-		let item = OTAMetadataItem(label: "Target Firmware", value: "2.7.20.bin", isMonospaced: true)
-		#expect(item.id == "Target Firmware")
-		#expect(item.label == "Target Firmware")
-		#expect(item.value == "2.7.20.bin")
-		#expect(item.isMonospaced)
 	}
 }

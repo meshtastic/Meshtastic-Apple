@@ -3660,6 +3660,9 @@
         }
       }
     },
+    "Connect to your radio over Bluetooth or Wi-Fi to update it from your phone, or update it from a computer with the Web Flasher." : {
+      "comment" : "Shown when the phone has no Bluetooth or Wi-Fi connection to an ESP32 radio it could update"
+    },
     "Connect to your radio to open a remote shell." : {
       "localizations" : {
         "de" : {
@@ -5597,6 +5600,9 @@
         }
       }
     },
+    "Getting Your Radio Ready" : {
+      "comment" : "Firmware update screen title while the radio restarts into update mode"
+    },
     "Heard %@" : {
       "comment" : "Node Tracker widget footer. The argument is how long ago, such as 5 minutes ago.",
       "localizations" : {
@@ -5695,6 +5701,9 @@
           }
         }
       }
+    },
+    "Keep the app open and your phone near the radio." : {
+      "comment" : "Firmware update screen message while firmware is transferred"
     },
     "Label Length" : {
       "comment" : "Label printing sheet: picker for 30 or 40 mm labels",
@@ -5970,6 +5979,9 @@
           }
         }
       }
+    },
+    "Open the Web Flasher" : {
+      "comment" : "Button that opens flash.meshtastic.org when the phone can't update a radio"
     },
     "Over 2 hours old · %@" : {
       "comment" : "Telemetry widget warning. The argument is how long ago, such as 3 hours ago.",
@@ -6828,6 +6840,9 @@
         }
       }
     },
+    "Ready to Update" : {
+      "comment" : "Firmware update screen title before the update starts"
+    },
     "Replaces channels" : {
       "comment" : "Printed channel label: scanning it replaces the radio's channels",
       "localizations" : {
@@ -6850,6 +6865,9 @@
           }
         }
       }
+    },
+    "Restarting Your Radio" : {
+      "comment" : "Firmware update screen title after the transfer while the radio restarts"
     },
     "Searching the Maps" : {
       "comment" : "Cinema loading card: title while the downloaded maps are searched for summits, coastline or buildings",
@@ -6957,6 +6975,9 @@
         }
       }
     },
+    "Sending Firmware" : {
+      "comment" : "Firmware update screen title while firmware is transferred"
+    },
     "Show Labels" : {
       "comment" : "Node Map widget setting: counts over the map on the small size",
       "localizations" : {
@@ -7062,6 +7083,9 @@
           }
         }
       }
+    },
+    "Something interrupted the update. Move your phone close to the radio and try again." : {
+      "comment" : "Firmware update screen message after an update fails"
     },
     "Step %lld of %lld: elevation" : {
       "comment" : "Spatial map loading card: which part of the download is running, the elevation data",
@@ -7312,6 +7336,9 @@
         }
       }
     },
+    "The app stays open until it finishes" : {
+      "comment" : "Firmware update checklist item"
+    },
     "The print was canceled on the printer." : {
       "comment" : "Label printer error",
       "localizations" : {
@@ -7542,6 +7569,12 @@
         }
       }
     },
+    "The radio is charged or plugged in" : {
+      "comment" : "Firmware update checklist item"
+    },
+    "The Update Didn't Finish" : {
+      "comment" : "Firmware update screen title after an update fails"
+    },
     "These channels make a QR too dense for a 12 mm label. Share fewer channels to print one." : {
       "comment" : "Label printing: the channel QR is too big to print",
       "localizations" : {
@@ -7587,6 +7620,9 @@
           }
         }
       }
+    },
+    "This radio's firmware is too old to update from your phone. Update it once from a computer with the Web Flasher, and later updates can come from here." : {
+      "comment" : "Shown when an ESP32 radio's firmware predates phone updates"
     },
     "Turn on Bluetooth to find the printer." : {
       "comment" : "Label printing sheet",
@@ -7799,6 +7835,12 @@
           }
         }
       }
+    },
+    "Update" : {
+      "comment" : "Button that starts a firmware update"
+    },
+    "Update This Radio From a Computer" : {
+      "comment" : "Firmware update screen title when the phone can't update the radio"
     },
     "Updated %@" : {
       "comment" : "Widget footer. The argument is how long ago, such as 11 minutes ago.",
@@ -16355,6 +16397,9 @@
         }
       }
     },
+    "Your phone stays close to the radio" : {
+      "comment" : "Firmware update checklist item"
+    },
     "Your phone's location goes only to your connected radio. Your radio shares nothing until you turn it on. This app only lets public channels share an approximate location. Radios on firmware 2.8 or later enforce the same limit. You can change location permissions at any time from settings." : {
       "localizations" : {
         "de" : {
@@ -16442,6 +16487,15 @@
           }
         }
       }
+    },
+    "Your radio is restarting into update mode. Keep the app open and your phone near the radio." : {
+      "comment" : "Firmware update screen message while the radio restarts into update mode"
+    },
+    "Your radio is running the new firmware. The app reconnects on its own." : {
+      "comment" : "Firmware update screen message after a successful update"
+    },
+    "Your radio is starting the new firmware. The app reconnects on its own." : {
+      "comment" : "Firmware update screen message after the transfer while the radio restarts"
     },
     "Your radio restarts to apply this and reconnects in a few seconds." : {
       "comment" : "Radio setup preset footer",
@@ -16887,6 +16941,9 @@
           }
         }
       }
+    },
+    "Your radio will restart a few times and reconnect when it's done." : {
+      "comment" : "Firmware update screen message before the update starts"
     },
     "your radio's primary channel to \"%@\"" : {
       "comment" : "Beacon switch prompt; one of the changes listed",

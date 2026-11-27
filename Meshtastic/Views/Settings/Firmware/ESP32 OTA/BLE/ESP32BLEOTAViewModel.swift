@@ -76,12 +76,6 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 	}
 	
 	func startOTA(binURL: URL, desiredPeripheral: UUID?) async {
-		// Prevent screen sleep during update; guaranteed cleanup on any exit
-		UIApplication.shared.isIdleTimerDisabled = true
-		defer {
-			UIApplication.shared.isIdleTimerDisabled = false
-		}
-		
 		deviceRefusal = nil
 		lastDeviceNotice = nil
 
@@ -258,8 +252,7 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			self.statusMessage = deviceRefusal ?? lastDeviceNotice ?? error.localizedDescription
 			Logger.services.error("OTA Failed: \(self.statusMessage, privacy: .public)")
 		}
-		
-		UIApplication.shared.isIdleTimerDisabled = false
+
 	}
 	
 	// MARK: - Helpers

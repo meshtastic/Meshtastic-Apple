@@ -327,6 +327,7 @@ private struct FirmwareContentView: View {
 			switch installation.type {
 			case .otaZip:
 				NRFDFUSheet(firmwareToFlash: installation.url)
+					.environment(\.firmwareUpdateRadio, updateRadio(for: installation.url))
 					.trackScreen(.nordicDFUUpdate)
 					// An update has to keep running and can't be backed out of mid-transfer, which a page
 					// on the cinema screen can't promise; it runs in the app window.
@@ -335,6 +336,7 @@ private struct FirmwareContentView: View {
 				UF2MassStorageView(fileURL: installation.url)
 			case .bin:
 				ESP32OTAIntroSheet(binFileURL: installation.url)
+					.environment(\.firmwareUpdateRadio, updateRadio(for: installation.url))
 					.trackScreen(.esp32Update)
 										.hostedWindowOnly()
 			}
@@ -342,6 +344,18 @@ private struct FirmwareContentView: View {
 	}
 	
 	// MARK: - Subviews
+
+	/// The radio as the update screen shows it: its picture, its own name, and the version
+	/// read from the firmware file's name.
+	private func updateRadio(for firmwareFile: URL) -> FirmwareUpdateRadio {
+		let longName = node.user?.longName ?? ""
+		return FirmwareUpdateRadio(
+			hardware: hardware,
+			pioEnv: node.myInfo?.pioEnv,
+			name: longName.isEmpty ? (hardware.displayName ?? "") : longName,
+			firmwareVersion: FirmwareFileVersion.version(in: firmwareFile.lastPathComponent)
+		)
+	}
 	
 	@ViewBuilder
 	var firmwareRows: some View {
@@ -549,6 +563,7 @@ private struct FirmwareContentView: View {
 					switch type {
 					case .otaZip:
 						NRFDFUSheet(firmwareToFlash: locallyChosenFirmwareFile)
+							.environment(\.firmwareUpdateRadio, updateRadio(for: locallyChosenFirmwareFile))
 							.trackScreen(.nordicDFUUpdate)
 							// An update has to keep running and can't be backed out of mid-transfer, which a page
 							// on the cinema screen can't promise; it runs in the app window.
@@ -557,6 +572,7 @@ private struct FirmwareContentView: View {
 						UF2MassStorageView(fileURL: locallyChosenFirmwareFile)
 					case .bin:
 						ESP32OTAIntroSheet(binFileURL: locallyChosenFirmwareFile)
+							.environment(\.firmwareUpdateRadio, updateRadio(for: locallyChosenFirmwareFile))
 							.trackScreen(.esp32Update)
 														.hostedWindowOnly()
 					}

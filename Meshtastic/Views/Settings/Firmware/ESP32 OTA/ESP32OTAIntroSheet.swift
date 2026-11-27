@@ -7,232 +7,51 @@
 
 import SwiftUI
 import OSLog
-import Network
 
+/// Entry point for updating an ESP32 radio from the phone. Goes straight to the shared update
+/// screen for whichever way the radio is connected, or explains why the phone can't do it.
 struct ESP32OTAIntroSheet: View {
-	private enum Step {
-		case intro
-		case updater
-	}
-
 	/// ESP32 OTA (BLE/WiFi) requires AdminMessage.OTAEvent with otaHash for authentication,
 	/// added to Meshtastic firmware in 2.7.18.
 	private let minimumOTAVersion = "2.7.18"
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) var dismiss
-	@Environment(\.modelContext) var context
 
 	let binFileURL: URL
 
-	@State var showWifiUpdater = false
-	@State var debugHost: String = ""
-	@State var showBLEUpdater = false
-
-	/// True when the connected device's firmware supports the OTAEvent protocol.
-	private var firmwareSupportsOTA: Bool {
-		accessoryManager.checkIsVersionSupported(forVersion: minimumOTAVersion)
-	}
-
 	var body: some View {
-		SheetNavigationStack {
-			List {
-				Section {
-					VStack(alignment: .leading, spacing: 12) {
-						Label("Desktop Recommended", systemImage: "desktopcomputer")
-							.font(.headline)
-
-						Text("The recommended way to update ESP32 devices is using the **Web Flasher** on a desktop computer (Chrome-based browser).")
-							.fixedSize(horizontal: false, vertical: true)
-
-						Text("The **Web Flasher** does not support updating on this device or over USB or BLE.")
-							.font(.caption)
-							.foregroundStyle(.secondary)
-
-						Link(destination: URL(string: "https://flash.meshtastic.org")!) {
-							HStack {
-								Text("Open Web Flasher")
-								Image(systemName: "arrow.up.right")
-							}
-							.frame(maxWidth: .infinity)
-						}
-						.buttonStyle(.bordered)
-						.controlSize(.regular)
-					}
-					.listRowBackground(Color(UIColor.tertiarySystemBackground))
-				} footer: {
-					Color.clear.frame(height: 5)
-				}
-
-				if !firmwareSupportsOTA {
-					Section {
-						HStack(spacing: 12) {
-							Image(systemName: "exclamationmark.triangle.fill")
-								.foregroundStyle(.orange)
-							VStack(alignment: .leading, spacing: 4) {
-								Text("Firmware Update Required")
-									.font(.subheadline.bold())
-								Text("ESP32 OTA updating requires firmware \(minimumOTAVersion) or later. Update your device firmware using the Web Flasher first.")
-									.font(.caption)
-									.foregroundStyle(.secondary)
-									.fixedSize(horizontal: false, vertical: true)
-							}
-						}
-						.padding(.vertical, 4)
-					}
-				}
-
-				switch OTAMode {
-				case .wifi:
-					Section {
-						VStack(alignment: .leading, spacing: 12) {
-							Label("WiFi OTA Updating", systemImage: "wifi")
-								.font(.headline)
-
-							HStack(alignment: .top, spacing: 12) {
-								Image(systemName: "lock.shield")
-									.font(.title2)
-									.foregroundStyle(.blue)
-
-								Text("Advanced Users Only.")
-									.font(.callout)
-							}
-
-							Text("If your device has the proper updater loaded into the OTA_1 partition, you can attempt to use the WiFi update process.")
-								.font(.caption)
-								.foregroundStyle(.secondary)
-
-							Button(role: .destructive) {
-								self.showWifiUpdater = true
-							} label: {
-								Text("I Know What I'm Doing")
-									.frame(maxWidth: .infinity)
-							}
-							.buttonStyle(.borderedProminent)
-							.tint(.accentFill)
-							.controlSize(.large)
-							.clipShape(RoundedRectangle(cornerRadius: 10))
-							.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)
-						}
-						.padding()
-						.listRowBackground(Color(UIColor.tertiarySystemBackground))
-					}
-				case .ble:
-					Section {
-						VStack(alignment: .leading, spacing: 12) {
-							Label {
-								Text("BLE OTA Updating")
-							} icon: {
-								Image("custom.bluetooth")
-							}
-							.font(.headline)
-
-							HStack(alignment: .top, spacing: 12) {
-								Image(systemName: "lock.shield")
-									.font(.title2)
-									.foregroundStyle(.blue)
-
-								Text("Advanced Users Only.")
-									.font(.callout)
-							}
-
-							Text("If your device has the proper updater loaded into the OTA_1 partition, you can attempt to use the BLE update process.")
-								.font(.caption)
-								.foregroundStyle(.secondary)
-
-							Button(role: .destructive) {
-								self.showBLEUpdater = true
-							} label: {
-								Text("I Know What I'm Doing")
-									.frame(maxWidth: .infinity)
-							}
-							.buttonStyle(.borderedProminent)
-							.tint(.accentFill)
-							.controlSize(.large)
-							.clipShape(RoundedRectangle(cornerRadius: 10))
-							.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)
-						}
-						.padding()
-						.listRowBackground(Color(UIColor.tertiarySystemBackground))
-					}
-				case .none:
-					Section {
-						HStack(spacing: 12) {
-							Image(systemName: "antenna.radiowaves.left.and.right.slash")
-								.foregroundStyle(.secondary)
-							Text("Connect to your device via Bluetooth or Wi-Fi to use over-the-air firmware updates.")
-								.font(.caption)
-								.foregroundStyle(.secondary)
-								.fixedSize(horizontal: false, vertical: true)
-						}
-						.padding(.vertical, 4)
-					}
-				}
-
-				#if DEBUG
-				Section("Debug BLE") {
-					Button("Manually Start BLE OTA") {
-						self.showBLEUpdater = true
-					}
-				}
-				Section("Debug Wifi") {
-					TextField("Device IP", text: $debugHost)
-					Button("Manually Start WIFI OTA") {
-						self.showWifiUpdater = true
-					}
-				}
-				#endif
-
-			}
-			.hostedSheet(isPresented: $showWifiUpdater) {
-				let theHost: String? = {
-					#if DEBUG
-					if !debugHost.isEmpty {
-						return debugHost
-					}
-					#endif
-					return nil
-				}()
-				let _ = Logger.services.info("📡 [ESP32 OTA] Wi-Fi path, file \(binFileURL.lastPathComponent, privacy: .public)")
-				ESP32WifiOTASheet(binFileURL: binFileURL, host: theHost, onUpdateComplete: { dismiss() })
-					.environmentObject(accessoryManager)
-					.trackScreen(.esp32WiFiUpdate)
-			}
-			.hostedSheet(isPresented: $showBLEUpdater) {
-				let _ = Logger.services.info("📡 [ESP32 OTA] BLE path, file \(binFileURL.lastPathComponent, privacy: .public)")
-				ESP32BLEOTASheet(binFileURL: binFileURL, onUpdateComplete: { dismiss() })
-					.environmentObject(accessoryManager)
-					.trackScreen(.esp32BLEUpdate)
-			}
-			.navigationTitle("ESP32 Update")
-			.navigationBarTitleDisplayMode(.inline)
-			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button {
-						dismiss()
-					} label: {
-						Image(systemName: "xmark")
-					}
-					.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the ESP32 update sheet"))
-				}
-			}
+		switch route {
+		case .wifi:
+			ESP32WifiOTASheet(binFileURL: binFileURL, host: debugHost, onUpdateComplete: { dismiss() })
+				.trackScreen(.esp32WiFiUpdate)
+				.onAppear { Logger.services.info("📡 [ESP32 OTA] Wi-Fi path, file \(binFileURL.lastPathComponent, privacy: .public)") }
+		case .ble:
+			ESP32BLEOTASheet(binFileURL: binFileURL, onUpdateComplete: { dismiss() })
+				.trackScreen(.esp32BLEUpdate)
+				.onAppear { Logger.services.info("📡 [ESP32 OTA] BLE path, file \(binFileURL.lastPathComponent, privacy: .public)") }
+		case .unavailable(let reason):
+			FirmwareUpdateView(
+				stage: .unavailable(reason: reason),
+				progress: 0,
+				onStart: {},
+				onRetry: {},
+				onDismiss: { dismiss() }
+			)
 		}
-		.textCase(nil)
 	}
 
-	private enum SupportedOTAMode {
-		case none
+	private enum Route {
 		case wifi
 		case ble
+		case unavailable(String)
 	}
 
-	private var OTAMode: SupportedOTAMode {
-		guard let connection = accessoryManager.activeConnection?.connection else {
-			Logger.services.info("📡 [ESP32 OTA] No active connection — no OTA path available")
-			return .none
+	private var route: Route {
+		guard accessoryManager.checkIsVersionSupported(forVersion: minimumOTAVersion) else {
+			return .unavailable(String(localized: "This radio's firmware is too old to update from your phone. Update it once from a computer with the Web Flasher, and later updates can come from here.", comment: "Shown when an ESP32 radio's firmware predates phone updates"))
 		}
-
-		switch connection {
+		switch accessoryManager.activeConnection?.connection {
 		case is TCPConnection:
 			return .wifi
 		case is BLEConnection:
@@ -242,8 +61,19 @@ struct ESP32OTAIntroSheet: View {
 			return .wifi // DEBUG
 		#endif
 		default:
-			return .none
+			Logger.services.info("📡 [ESP32 OTA] No active connection — no OTA path available")
+			return .unavailable(String(localized: "Connect to your radio over Bluetooth or Wi-Fi to update it from your phone, or update it from a computer with the Web Flasher.", comment: "Shown when the phone has no Bluetooth or Wi-Fi connection to an ESP32 radio it could update"))
 		}
+	}
+
+	/// DEBUG only: launch with `-esp32OTADebugHost <ip>` to send a Wi-Fi update to that address.
+	private var debugHost: String? {
+		#if DEBUG
+		if let host = UserDefaults.standard.string(forKey: "esp32OTADebugHost"), !host.isEmpty {
+			return host
+		}
+		#endif
+		return nil
 	}
 }
 
