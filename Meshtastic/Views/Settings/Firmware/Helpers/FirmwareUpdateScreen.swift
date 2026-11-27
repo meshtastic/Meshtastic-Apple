@@ -170,6 +170,8 @@ struct FirmwareUpdateNotes: View {
 struct FirmwareUSBUpdateModeStep: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context
+	/// The restart request in flight. One at a time, and cancelled when the screen closes.
+	@State private var restartTask: Task<Void, Never>?
 
 	var body: some View {
 		FirmwareUpdateStep(
@@ -188,16 +190,22 @@ struct FirmwareUSBUpdateModeStep: View {
 			}
 			.buttonStyle(.bordered)
 			.controlSize(.large)
-			.disabled(accessoryManager.activeDeviceNum == nil)
+			.disabled(accessoryManager.activeDeviceNum == nil || restartTask != nil)
+		}
+		.onDisappear {
+			restartTask?.cancel()
+			restartTask = nil
 		}
 	}
 
 	private func restartIntoUpdateMode() {
 		guard let node = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context),
-			  let user = node.user else { return }
-		Task {
+			  let user = node.user, restartTask == nil else { return }
+		restartTask = Task {
+			defer { restartTask = nil }
 			do {
 				try await accessoryManager.sendEnterDfuMode(fromUser: user, toUser: user)
+			} catch is CancellationError {
 			} catch {
 				Logger.mesh.error("Restart into update mode failed: \(error.localizedDescription, privacy: .public)")
 			}
