@@ -61,6 +61,19 @@ extension EnvironmentValues {
 	@Entry var firmwareUpdateRadio: FirmwareUpdateRadio?
 }
 
+/// A title and message that replace the stage's own, for a situation the stage alone doesn't
+/// cover, such as a radio whose bootloader wouldn't take the update.
+struct FirmwareUpdateCallout: Equatable {
+	let title: String
+	let message: String
+
+	/// After an nRF52 update failed before any firmware went across.
+	static let didNotEnterUpdateMode = FirmwareUpdateCallout(
+		title: String(localized: "Your Radio Didn't Go Into Update Mode", comment: "Firmware update screen title when the radio restarted but never entered update mode"),
+		message: String(localized: "It restarted but didn't wait for the update. This usually means its bootloader needs updating. Update the bootloader over USB, then try again.", comment: "Firmware update screen message when the radio restarted but never entered update mode")
+	)
+}
+
 /// Reads the firmware version out of a firmware file name, as people know it: `2.8.3` from
 /// `firmware-…-2.8.3.eb99f95.zip`, without the build's commit hash. Takes the last
 /// version-shaped run whose major number is plausible, so a date earlier in the name, as in
@@ -92,6 +105,10 @@ struct FirmwareUpdateView: View {
 	let onStart: () -> Void
 	let onRetry: () -> Void
 	let onDismiss: () -> Void
+	/// Shown instead of the failed wording.
+	var failureNotice: FirmwareUpdateCallout?
+	/// Opens the bootloader upgrade. When set, the failure callout offers it as the main action.
+	var onUpgradeBootloader: (() -> Void)?
 
 	@State private var showChirpyGame = false
 	@State private var showStopConfirmation = false
@@ -288,6 +305,20 @@ struct FirmwareUpdateView: View {
 	@ViewBuilder
 	private var actions: some View {
 		switch stage {
+		case .failed where failureNotice != nil && onUpgradeBootloader != nil:
+			VStack(spacing: 10) {
+				upgradeBootloaderButton
+				Button(action: onRetry) {
+					Label {
+						Text("Try Again", comment: "Button that restarts a firmware update that failed")
+					} icon: {
+						Image(systemName: "arrow.clockwise")
+					}
+					.frame(maxWidth: .infinity)
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.large)
+			}
 		case .ready:
 			Button(action: onStart) {
 				Text("Update", comment: "Button that starts a firmware update")
@@ -335,6 +366,22 @@ struct FirmwareUpdateView: View {
 		}
 	}
 
+	private var upgradeBootloaderButton: some View {
+		Button {
+			onUpgradeBootloader?()
+		} label: {
+			Label {
+				Text("Update Bootloader", comment: "Button that opens the bootloader upgrade from the firmware update screen")
+			} icon: {
+				Image(systemName: "memorychip")
+			}
+			.frame(maxWidth: .infinity)
+		}
+		.buttonStyle(.borderedProminent)
+		.tint(.accentFill)
+		.controlSize(.large)
+	}
+
 	// MARK: - Wording
 
 	private var isUnavailable: Bool {
@@ -343,6 +390,7 @@ struct FirmwareUpdateView: View {
 	}
 
 	private var title: String {
+		if stage == .failed, let failureNotice { return failureNotice.title }
 		switch stage {
 		case .ready:
 			return String(localized: "Ready to Update", comment: "Firmware update screen title before the update starts")
@@ -362,6 +410,7 @@ struct FirmwareUpdateView: View {
 	}
 
 	private var message: String {
+		if stage == .failed, let failureNotice { return failureNotice.message }
 		switch stage {
 		case .ready:
 			return String(localized: "Your radio will restart a few times and reconnect when it's done.", comment: "Firmware update screen message before the update starts")

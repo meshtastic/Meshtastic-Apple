@@ -63,6 +63,9 @@ class DFUViewModel: NSObject, ObservableObject {
 	@Published private(set) var didAbort = false
 	/// True after the transfer, while the radio restarts into the new firmware.
 	@Published private(set) var isRestarting = false
+	/// True when the last failure came before any firmware went across: the radio never
+	/// reached, or never stayed in, its bootloader's update mode.
+	@Published private(set) var failedBeforeTransfer = false
 	
     // MARK: - DFU Controller
     private var dfuController: DFUServiceController?
@@ -72,6 +75,9 @@ class DFUViewModel: NSObject, ObservableObject {
 	/// Set when the upload begins. START has erased the application by then, so the peripheral
 	/// last connected to is the bootloader.
 	private var transferStarted = false
+	/// The same, for this attempt only: Try Again starts a new attempt but keeps
+	/// `transferStarted`, which picks the radio to retry against.
+	private var attemptReachedTransfer = false
 	/// The bootloader every restart goes back to, kept once known since a restart's own session
 	/// never reports `.uploading` if it fails to connect.
 	private var restartTarget: UUID?
@@ -90,12 +96,14 @@ class DFUViewModel: NSObject, ObservableObject {
 		self.targetIdentifier = peripheral.identifier
 		self.selector = BootloaderPeripheralSelector()
 		self.transferStarted = false
+		self.attemptReachedTransfer = false
 		self.restartTarget = nil
 		self.stopRequested = false
 		self.activating = false
 		self.restarts = 0
         self.didAbort = false
 		self.isRestarting = false
+		self.failedBeforeTransfer = false
         self.state = .uploading
 		Logger.services.info("NRF DFU: starting on \(peripheral.identifier.uuidString, privacy: .public)")
 		run(targetIdentifier: peripheral.identifier)
@@ -113,6 +121,8 @@ class DFUViewModel: NSObject, ObservableObject {
 		restarts = 0
 		didAbort = false
 		isRestarting = false
+		failedBeforeTransfer = false
+		attemptReachedTransfer = false
 		progress = 0
 		state = .starting
 		statusMessage = "Reconnecting..."
@@ -219,6 +229,7 @@ extension DFUViewModel: DFUServiceDelegate {
 			self.didAbort = true
 		case .uploading:
 			self.transferStarted = true
+			self.attemptReachedTransfer = true
 			self.state = .uploading
 			self.statusMessage = "Uploading..."
 		default:
@@ -236,6 +247,7 @@ extension DFUViewModel: DFUServiceDelegate {
 			dfuStateDidChange(to: .aborted)
 			return
 		}
+		self.failedBeforeTransfer = !attemptReachedTransfer
 		self.state = .error(message)
 		self.statusMessage = "Error: \(message)"
     }

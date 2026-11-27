@@ -5682,6 +5682,9 @@
     "Installing firmware %@" : {
       "comment" : "First line of the firmware update Details log; the version with its commit hash"
     },
+    "It restarted but didn't wait for the update. This usually means its bootloader needs updating. Update the bootloader over USB, then try again." : {
+      "comment" : "Firmware update screen message when the radio restarted but never entered update mode"
+    },
     "JOIN MY MESH" : {
       "comment" : "Printed channel label header, in capitals like HELLO MY NODE IS",
       "localizations" : {
@@ -7844,6 +7847,9 @@
     },
     "Update" : {
       "comment" : "Button that starts a firmware update"
+    },
+    "Update Bootloader" : {
+      "comment" : "Button that opens the bootloader upgrade from the firmware update screen"
     },
     "Update This Radio From a Computer" : {
       "comment" : "Firmware update screen title when the phone can't update the radio"
@@ -16493,6 +16499,9 @@
           }
         }
       }
+    },
+    "Your Radio Didn't Go Into Update Mode" : {
+      "comment" : "Firmware update screen title when the radio restarted but never entered update mode"
     },
     "Your radio is restarting into update mode. Keep the app open and your phone near the radio." : {
       "comment" : "Firmware update screen message while the radio restarts into update mode"

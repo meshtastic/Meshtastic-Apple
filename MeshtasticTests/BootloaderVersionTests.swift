@@ -77,4 +77,21 @@ struct BootloaderVersionTests {
 		entity.update(from: metadata)
 		#expect(entity.bootloaderVersion == 0)
 	}
+
+	@Test("Advises the bootloader upgrade for an unreported or pre-2.6.0 bootloader on a supported board")
+	func adviceBeforeBluetoothUpdate() {
+		let packed = { (major: Int64, minor: Int64, patch: Int64) in major << 16 | minor << 8 | patch }
+		#expect(BootloaderAdvice.forNRF52(packed: 0, upgradeAvailable: true) == .unknown)
+		#expect(BootloaderAdvice.forNRF52(packed: nil, upgradeAvailable: true) == .unknown)
+		#expect(BootloaderAdvice.forNRF52(packed: packed(0, 9, 2), upgradeAvailable: true) == .outdated)
+		#expect(BootloaderAdvice.forNRF52(packed: packed(2, 5, 9), upgradeAvailable: true) == .outdated)
+		#expect(BootloaderAdvice.forNRF52(packed: packed(2, 6, 0), upgradeAvailable: true) == nil)
+		#expect(BootloaderAdvice.forNRF52(packed: packed(2, 6, 1), upgradeAvailable: true) == nil)
+	}
+
+	@Test("No bootloader advice when there is no Meshtastic bootloader build for the board")
+	func noAdviceWithoutUpgrade() {
+		#expect(BootloaderAdvice.forNRF52(packed: 0, upgradeAvailable: false) == nil)
+		#expect(BootloaderAdvice.forNRF52(packed: 0x000902, upgradeAvailable: false) == nil)
+	}
 }
