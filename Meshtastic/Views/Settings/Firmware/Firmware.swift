@@ -317,9 +317,11 @@ private struct FirmwareContentView: View {
 		}
 		.hostedSheet(isPresented: $showBootloaderUpgrade) {
 			BootloaderUpgradeView(platformioTarget: firmwareTarget)
+				.environment(\.firmwareUpdateRadio, maintenanceRadio)
 		}
 		.hostedSheet(isPresented: $showFactoryErase) {
 			FactoryEraseView()
+				.environment(\.firmwareUpdateRadio, maintenanceRadio)
 		}
 		.hostedSheet(item: $rowInstallation) { installation in
 			// UF2MassStorageView is left unnamed here and below: reflection already names it,
@@ -334,6 +336,7 @@ private struct FirmwareContentView: View {
 					.hostedWindowOnly()
 			case .uf2:
 				UF2MassStorageView(fileURL: installation.url)
+					.environment(\.firmwareUpdateRadio, updateRadio(for: installation.url))
 			case .bin:
 				ESP32OTAIntroSheet(binFileURL: installation.url)
 					.environment(\.firmwareUpdateRadio, updateRadio(for: installation.url))
@@ -344,6 +347,17 @@ private struct FirmwareContentView: View {
 	}
 	
 	// MARK: - Subviews
+
+	/// The radio as the bootloader and erase screens show it: no firmware going on.
+	private var maintenanceRadio: FirmwareUpdateRadio {
+		let longName = node.user?.longName ?? ""
+		return FirmwareUpdateRadio(
+			hardware: hardware,
+			pioEnv: node.myInfo?.pioEnv,
+			name: longName.isEmpty ? (hardware.displayName ?? "") : longName,
+			firmwareVersion: nil
+		)
+	}
 
 	/// The radio as the update screen shows it: its picture, its own name, and the version
 	/// read from the firmware file's name.
@@ -578,6 +592,7 @@ private struct FirmwareContentView: View {
 							.hostedWindowOnly()
 					case .uf2:
 						UF2MassStorageView(fileURL: locallyChosenFirmwareFile)
+							.environment(\.firmwareUpdateRadio, updateRadio(for: locallyChosenFirmwareFile))
 					case .bin:
 						ESP32OTAIntroSheet(binFileURL: locallyChosenFirmwareFile)
 							.environment(\.firmwareUpdateRadio, updateRadio(for: locallyChosenFirmwareFile))

@@ -1736,6 +1736,12 @@
         }
       }
     },
+    "After the file is written the radio erases itself. Its drive disappears and comes back a couple of seconds later." : {
+      "comment" : "Note on the factory erase screen"
+    },
+    "After the file is written the radio installs the bootloader and restarts. Its drive disappears and comes back." : {
+      "comment" : "Note on the bootloader update screen"
+    },
     "Air" : {
       "comment" : "Short label for airtime in a small widget",
       "localizations" : {
@@ -2315,6 +2321,12 @@
         }
       }
     },
+    "Bootloader Installed" : {
+      "comment" : "Bootloader update screen title after the file is written"
+    },
+    "Bootloader Update" : {
+      "comment" : "Title of the bootloader update screen"
+    },
     "Brought to you by" : {
       "comment" : "Showcase: plaque on the wall naming who made the showcase, above the Meshtastic Solutions name",
       "extractionState" : "extracted_with_value",
@@ -2877,6 +2889,9 @@
         }
       }
     },
+    "Choose Drive" : {
+      "comment" : "Button that opens the file picker to choose the radio's USB drive"
+    },
     "Choose a Preset" : {
       "comment" : "Radio setup preset title",
       "localizations" : {
@@ -3142,6 +3157,9 @@
           }
         }
       }
+    },
+    "Choose the radio's drive" : {
+      "comment" : "Bootloader and factory erase step title"
     },
     "Closing…" : {
       "localizations" : {
@@ -3495,6 +3513,9 @@
           }
         }
       }
+    },
+    "Connect the radio with a USB cable. If it's connected to the app, tap the button. Otherwise press its reset button twice quickly. It shows up as a USB drive." : {
+      "comment" : "Firmware USB screen step: how to put the radio in update mode"
     },
     "Connect to the radio to see its screen." : {
       "localizations" : {
@@ -4598,6 +4619,9 @@
         }
       }
     },
+    "Downloading, checking and writing the file." : {
+      "comment" : "Bootloader update screen message while the file is downloaded and written"
+    },
     "Drawing the map" : {
       "comment" : "Spatial map loading card: drawing the map image laid over the terrain",
       "localizations" : {
@@ -5171,6 +5195,15 @@
         }
       }
     },
+    "Erase" : {
+      "comment" : "Factory erase step title"
+    },
+    "Erase Started" : {
+      "comment" : "Factory erase screen title after the erase file is written"
+    },
+    "Erasing" : {
+      "comment" : "Factory erase screen title while the erase file is downloaded and written"
+    },
     "Error from the node: %@" : {
       "localizations" : {
         "de" : {
@@ -5691,8 +5724,17 @@
         }
       }
     },
+    "If the board isn't recognized, nothing is written. A bootloader for the wrong board can't be fixed over USB." : {
+      "comment" : "Note on the bootloader update screen"
+    },
+    "Install Bootloader" : {
+      "comment" : "Button that writes the bootloader file onto the radio's drive"
+    },
     "Installing firmware %@" : {
       "comment" : "First line of the firmware update Details log; the version with its commit hash"
+    },
+    "Installing the Bootloader" : {
+      "comment" : "Bootloader update screen title while the file is downloaded and written"
     },
     "It restarted but didn't wait for the update. This usually means its bootloader needs updating. Update the bootloader over USB, then try again." : {
       "comment" : "Firmware update screen message when the radio restarted but never entered update mode"
@@ -6322,6 +6364,12 @@
         }
       }
     },
+    "Pick the radio's drive in the file picker, for example FTHR840BOOT or RAK4631. The app reads which board it is from the drive." : {
+      "comment" : "Bootloader update step: choosing the radio's USB drive"
+    },
+    "Pick the radio's drive in the file picker. The app reads its bootloader from the drive to choose the right erase file, and never writes the wrong one." : {
+      "comment" : "Factory erase step: choosing the radio's USB drive"
+    },
     "Pick the readings the small size shows, in order." : {
       "comment" : "Mesh Status widget settings description",
       "localizations" : {
@@ -6619,6 +6667,9 @@
         }
       }
     },
+    "Put the radio in update mode" : {
+      "comment" : "Firmware USB screen step title"
+    },
     "Reading" : {
       "comment" : "Mesh Status widget setting: one reading",
       "localizations" : {
@@ -6861,8 +6912,17 @@
         }
       }
     },
+    "Ready to Erase" : {
+      "comment" : "Factory erase screen title once the erase file is chosen"
+    },
+    "Ready to Install" : {
+      "comment" : "Bootloader update screen title once the board is recognized"
+    },
     "Ready to Update" : {
       "comment" : "Firmware update screen title before the update starts"
+    },
+    "Recognized board %@." : {
+      "comment" : "Bootloader update screen message once the board is recognized; the board ID"
     },
     "Replaces channels" : {
       "comment" : "Printed channel label: scanning it replaces the radio's channels",
@@ -6887,8 +6947,17 @@
         }
       }
     },
+    "Restart Into Update Mode" : {
+      "comment" : "Button that restarts the connected radio into its USB update mode"
+    },
     "Restarting Your Radio" : {
       "comment" : "Firmware update screen title after the transfer while the radio restarts"
+    },
+    "Save Firmware" : {
+      "comment" : "Button that saves the firmware file onto the radio's USB drive"
+    },
+    "Save the firmware onto the radio" : {
+      "comment" : "USB firmware update step title"
     },
     "Searching the Maps" : {
       "comment" : "Cinema loading card: title while the downloaded maps are searched for summits, coastline or buildings",
@@ -7274,6 +7343,9 @@
         }
       }
     },
+    "Step %lld: %@" : {
+      "comment" : "VoiceOver label for a numbered firmware screen step: the step number, then its title"
+    },
     "Stuffy" : {
       "comment" : "CO2 level from 1000 to 2000 ppm",
       "localizations" : {
@@ -7357,8 +7429,35 @@
         }
       }
     },
+    "Tap Save Firmware, go back to Locations in the file picker, choose the radio's drive and tap Save." : {
+      "comment" : "USB firmware update step: how to save the file onto the radio's drive"
+    },
+    "The Bootloader Wasn't Installed" : {
+      "comment" : "Bootloader update screen title after a failure"
+    },
+    "The Meshtastic nRF52 Bootloader makes Bluetooth firmware updates faster and more reliable. It's installed from the radio's USB drive." : {
+      "comment" : "Bootloader update screen message before a drive is chosen"
+    },
+    "The Radio Wasn't Erased" : {
+      "comment" : "Factory erase screen title after a failure"
+    },
     "The app stays open until it finishes" : {
       "comment" : "Firmware update checklist item"
+    },
+    "The bootloader erases its own settings. The installed firmware stays and starts as a brand-new device." : {
+      "comment" : "Factory erase screen message when the bootloader can erase itself"
+    },
+    "The download is checked against a known checksum before anything is written." : {
+      "comment" : "Note on the bootloader update screen"
+    },
+    "The download is checked against a known checksum, and against what the drive reported, before anything is written." : {
+      "comment" : "Note on the factory erase screen"
+    },
+    "The file gets a random name so iOS doesn't reuse an old copy." : {
+      "comment" : "Note on the USB firmware update screen"
+    },
+    "The firmware goes on as a file you save onto the radio's USB drive." : {
+      "comment" : "Message on the USB firmware update screen"
     },
     "The firmware is on your radio. It's restarting now, and the app reconnects on its own." : {
       "comment" : "Firmware update screen message after a successful update"
@@ -7599,6 +7698,9 @@
     "The Update Didn't Finish" : {
       "comment" : "Firmware update screen title after an update fails"
     },
+    "The radio restarts as soon as the file is written, so the file picker may say it couldn't save. That's expected." : {
+      "comment" : "Note on the USB firmware update screen"
+    },
     "These channels make a QR too dense for a 12 mm label. Share fewer channels to print one." : {
       "comment" : "Label printing: the channel QR is too big to print",
       "localizations" : {
@@ -7644,6 +7746,9 @@
           }
         }
       }
+    },
+    "This radio takes the erase image for SoftDevice S140 %@. The firmware is removed too, so install firmware afterwards." : {
+      "comment" : "Factory erase screen message for older bootloaders; the SoftDevice version"
     },
     "This radio's firmware is too old to update from your phone. Update it once from a computer with the Web Flasher, and later updates can come from here." : {
       "comment" : "Shown when an ESP32 radio's firmware predates phone updates"
@@ -7866,8 +7971,14 @@
     "Update Bootloader" : {
       "comment" : "Button that opens the bootloader upgrade from the firmware update screen"
     },
+    "Update Over USB" : {
+      "comment" : "Title of the USB firmware update screen"
+    },
     "Update This Radio From a Computer" : {
       "comment" : "Firmware update screen title when the phone can't update the radio"
+    },
+    "Update the Bootloader" : {
+      "comment" : "Bootloader update screen title before a drive is chosen"
     },
     "Updated %@" : {
       "comment" : "Widget footer. The argument is how long ago, such as 11 minutes ago.",
@@ -7921,6 +8032,9 @@
           }
         }
       }
+    },
+    "Wrote %@. The radio is installing the bootloader and restarts on its own." : {
+      "comment" : "Bootloader update screen message after the file is written; the file name"
     },
     "frequency slot %lld" : {
       "comment" : "Beacon switch prompt; one of the changes listed",
@@ -23973,362 +24087,6 @@
         }
       }
     },
-    "• After the file is written the radio erases itself; the drive disappears and comes back a couple of seconds later." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Nachdem die Datei geschrieben wurde, löscht sich das Funkgerät; das Laufwerk verschwindet und erscheint ein paar Sekunden später wieder."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Después de escribir el archivo, la radio se borra; la unidad desaparece y vuelve a aparecer un par de segundos después."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Une fois le fichier écrit, la radio s’efface ; le lecteur disparaît puis réapparaît quelques secondes plus tard."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Dopo la scrittura del file, la radio si cancella; l’unità scompare e riappare dopo un paio di secondi."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• ファイルの書き込み後、無線機は自身を消去します。ドライブは一度消え、数秒後に再び表示されます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 파일이 기록되면 무선 장치가 스스로를 지우며, 드라이브가 사라졌다가 몇 초 후 다시 나타납니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Po zapisaniu pliku radio samo się wymazuje; dysk znika i pojawia się ponownie po kilku sekundach."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Depois que o arquivo é gravado, o rádio se apaga; a unidade desaparece e volta a aparecer alguns segundos depois."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• После записи файла радиостанция стирает себя; диск исчезает и через пару секунд появляется снова."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Dosya yazıldıktan sonra telsiz kendini siler; sürücü kaybolur ve birkaç saniye sonra yeniden görünür."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Після запису файлу радіостанція стирає себе; диск зникає й за кілька секунд з’являється знову."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 写入文件后，电台会自行擦除；驱动器会消失，并在几秒钟后重新出现。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 寫入檔案後，無線電會自行清除；磁碟機會消失，並在幾秒後再次出現。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 檔案寫入後，無線電會自行清除；磁碟會消失並在幾秒後重新出現。"
-          }
-        }
-      }
-    },
-    "• On a bootloader that erases itself, the installed firmware stays and starts as a brand-new device when you unplug the radio. Install new firmware from the Firmware Updates screen only if you want to." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Bei einem Bootloader, der sich selbst löscht, bleibt die installierte Firmware erhalten und startet als brandneues Gerät, wenn du das Funkgerät trennst. Installiere neue Firmware über „Firmwareaktualisierungen“ nur, wenn du möchtest."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Con un bootloader que se borra a sí mismo, el firmware instalado se conserva y se inicia como un dispositivo nuevo al desconectar la radio. Instala un firmware nuevo desde la pantalla «Actualizaciones de firmware» solo si lo deseas."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Avec un bootloader qui s’efface lui-même, le firmware installé est conservé et démarre comme un appareil neuf lorsque vous débranchez la radio. N’installez un nouveau firmware depuis l’écran « Mises à jour du firmware » que si vous le souhaitez."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Con un bootloader che si cancella da solo, il firmware installato viene mantenuto e si avvia come un dispositivo nuovo quando scolleghi la radio. Installa un nuovo firmware dalla schermata “Aggiornamenti del firmware” solo se lo desideri."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 自身を消去するブートローダーの場合、インストール済みのファームウェアは保持され、無線機を取り外すと新品のデバイスとして起動します。新しいファームウェアは、必要な場合にのみ「ファームウェア更新」画面からインストールしてください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 스스로 지우기를 지원하는 부트로더에서는 설치된 펌웨어가 유지되며, 무선 장치의 연결을 해제하면 완전히 새로운 장치로 시작됩니다. 원하는 경우에만 ‘펌웨어 업데이트’ 화면에서 새 펌웨어를 설치하십시오."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• W bootloaderze, który sam się wymazuje, zainstalowany firmware zostaje i po odłączeniu radia uruchamia się jako zupełnie nowe urządzenie. Nowy firmware instaluj na ekranie aktualizacji oprogramowania tylko wtedy, gdy chcesz."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Em um bootloader que se apaga sozinho, o firmware instalado é mantido e inicia como um dispositivo novo quando você desconecta o rádio. Instale um firmware novo pela tela “Atualizações de Firmware” só se quiser."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Если загрузчик стирает себя сам, установленная прошивка сохраняется и запускается как совершенно новое устройство, когда Вы отключите радиостанцию. Устанавливайте новую прошивку на экране «Обновление прошивки», только если хотите."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Kendini silen bir önyükleyicide yüklü aygıt yazılımı korunur ve telsizi çıkardığınızda yepyeni bir aygıt olarak başlar. Yalnızca isterseniz “Aygıt Yazılımı Güncellemeleri” ekranından yeni aygıt yazılımı yükleyin."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Якщо bootloader стирає себе сам, встановлена прошивка залишається й запускається як абсолютно новий пристрій, коли ви від’єднаєте радіостанцію. Встановлюйте нову прошивку на екрані «Оновлення прошивки», лише якщо хочете."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 对于会自行擦除的引导程序，已安装的固件会保留，拔下电台后将作为全新设备启动。仅在需要时才在“固件升级”屏幕中安装新固件。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 若開機載入程式可自行清除，已安裝的韌體會保留，拔除無線電後即會作為全新設備啟動。僅在需要時才從「韌體更新」畫面安裝新韌體。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 在會自行清除的開機載入程式上，已安裝的韌體會保留，當您拔除無線電時會以全新裝置啟動。只有在您需要時才從韌體更新畫面安裝新韌體。"
-          }
-        }
-      }
-    },
-    "• On older bootloaders only the SoftDevice and bootloader remain, so install firmware next from the Firmware Updates screen." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Bei älteren Bootloadern bleiben nur das SoftDevice und der Bootloader erhalten, installiere daher als Nächstes Firmware über „Firmwareaktualisierungen“."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• En los bootloaders más antiguos solo se conservan el SoftDevice y el bootloader, así que a continuación instala el firmware desde la pantalla «Actualizaciones de firmware»."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Sur les bootloaders plus anciens, seuls le SoftDevice et le bootloader sont conservés ; installez donc ensuite un firmware depuis l’écran « Mises à jour du firmware »."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Sui bootloader meno recenti rimangono solo il SoftDevice e il bootloader, quindi ora installa il firmware dalla schermata “Aggiornamenti del firmware”."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 古いブートローダーではSoftDeviceとブートローダーのみが残るため、次に「ファームウェア更新」画面からファームウェアをインストールしてください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 이전 부트로더에서는 SoftDevice와 부트로더만 남으므로, 다음으로 ‘펌웨어 업데이트’ 화면에서 펌웨어를 설치하십시오."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• W starszych bootloaderach zostają tylko SoftDevice i bootloader, więc potem zainstaluj firmware na ekranie aktualizacji oprogramowania."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Em bootloaders mais antigos, só o SoftDevice e o bootloader permanecem, então, em seguida, instale o firmware pela tela “Atualizações de Firmware”."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• На старых загрузчиках остаются только SoftDevice и загрузчик, поэтому затем установите прошивку на экране «Обновление прошивки»."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Eski önyükleyicilerde yalnızca SoftDevice ve önyükleyici kalır; bu nedenle ardından “Aygıt Yazılımı Güncellemeleri” ekranından aygıt yazılımı yükleyin."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• На старіших bootloader залишаються лише SoftDevice і bootloader, тож далі встановіть прошивку на екрані «Оновлення прошивки»."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 对于较旧的引导程序，仅会保留 SoftDevice 和引导程序，因此接下来请在“固件升级”屏幕中安装固件。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 在較舊的開機載入程式上，只會保留SoftDevice和開機載入程式，因此接下來請從「韌體更新」畫面安裝韌體。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 在較舊的開機載入程式上，只有 SoftDevice 和開機載入程式會保留，因此請接著從韌體更新畫面安裝韌體。"
-          }
-        }
-      }
-    },
-    "• The download is verified against a pinned checksum, and its header is cross-checked against what the drive reported, before anything is written." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Der Download wird vor dem Schreiben anhand einer hinterlegten Prüfsumme überprüft und sein Header mit den Angaben des Laufwerks abgeglichen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• La descarga se verifica mediante una suma de comprobación fija y su cabecera se coteja con lo que informó la unidad, antes de que se escriba nada."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Avant toute écriture, le fichier téléchargé est vérifié par rapport à une somme de contrôle attendue, et son en-tête est comparé aux informations indiquées par le lecteur."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Prima di scrivere qualsiasi dato, il file scaricato viene verificato rispetto al checksum previsto e la sua intestazione viene confrontata con quanto indicato dall’unità."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 書き込みの前に、ダウンロードしたファイルを固定されたチェックサムで検証し、そのヘッダをドライブが報告した内容と照合します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 기록하기 전에 다운로드한 파일을 고정된 체크섬으로 검증하고, 헤더를 드라이브가 보고한 내용과 대조 확인합니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Pobrany plik jest sprawdzany z przypisaną sumą kontrolną, a jego nagłówek porównywany z tym, co zgłosił dysk, zanim cokolwiek zostanie zapisane."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Antes de qualquer gravação, o download é verificado com uma soma de verificação fixa, e o cabeçalho dele é conferido com o que a unidade informou."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Перед любой записью загруженный файл проверяется по ожидаемой контрольной сумме, а его заголовок сверяется с данными, которые сообщил диск."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Hiçbir şey yazılmadan önce indirilen dosya sabitlenmiş bir sağlama toplamıyla doğrulanır ve üst bilgisi sürücünün bildirdikleriyle karşılaştırılır."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Перед будь-яким записом завантажений файл перевіряється за закріпленою контрольною сумою, а його заголовок звіряється з тим, що повідомив диск."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 在写入任何内容之前，会根据固定校验和验证下载的文件，并将其文件头与驱动器报告的信息进行交叉核对。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 寫入任何內容前，會先以預設的檢查碼驗證下載的檔案，並將其標頭與磁碟機回報的資訊交叉比對。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 下載內容會與固定的校驗碼進行驗證，其標頭會與磁碟回報的內容交叉比對，然後才會寫入任何內容。"
-          }
-        }
-      }
-    },
     "📟 [NodeInfo] received for: %@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -27164,95 +26922,6 @@
         }
       }
     },
-    "Bootloader erase — **firmware is kept**" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Bootloader löschen — **Firmware bleibt erhalten**"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Borrado del bootloader — **se conserva el firmware**"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Effacement du bootloader — **le firmware est conservé**"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Cancellazione bootloader: **il firmware viene mantenuto**"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ブートローダーの消去 — **ファームウェアは保持されます**"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "부트로더 지우기 — **펌웨어 유지됨**"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wymazanie przez bootloader — **firmware zostaje**"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Apagar o bootloader — **o firmware é mantido**"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Стирание загрузчика — **прошивка сохраняется**"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Önyükleyiciyi silme — **aygıt yazılımı korunur**"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Стирання bootloader — **прошивка зберігається**"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "擦除引导程序 — **保留固件**"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "清除開機載入程式，**保留韌體**"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "清除開機載入程式——**韌體保留**"
-          }
-        }
-      }
-    },
     "Brazil 902MHz" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -28376,95 +28045,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "中國"
-          }
-        }
-      }
-    },
-    "Choose the drive above to identify the bootloader." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Wähle oben das Laufwerk, um den Bootloader zu erkennen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Elige la unidad de arriba para identificar el gestor de arranque."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Choisissez le lecteur ci-dessus pour identifier le bootloader."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Scegli l’unità qui sopra per identificare il bootloader."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ブートローダーを識別するには、上のドライブを選択してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "부트로더를 식별하려면 위의 드라이브를 선택하십시오."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wybierz dysk powyżej, aby rozpoznać bootloader."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Escolha a unidade acima para identificar o bootloader."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Выберите диск выше, чтобы определить загрузчик."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Önyükleyiciyi tanımlamak için yukarıdaki sürücüyü seçin."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Виберіть диск вище, щоб визначити bootloader."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "选择上方的驱动器以识别引导程序。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "選擇上方的磁碟機以識別開機載入程式。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "選擇上方的磁碟以識別開機載入程式。"
           }
         }
       }
@@ -61952,95 +61532,6 @@
         }
       }
     },
-    "Select the device's drive in the file picker. The app reads the drive's INFO_UF2.TXT to choose the erase file: newer bootloaders erase themselves with one file for every board, older ones need an image matched to their SoftDevice version. The wrong file can never be written." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Wähle in der Dateiauswahl das Laufwerk des Geräts. Die App liest die Datei INFO_UF2.TXT des Laufwerks, um die Löschdatei auszuwählen: Neuere Bootloader löschen sich selbst mit einer Datei für alle Boards, ältere benötigen ein Image, das zu ihrer SoftDevice-Version passt. Eine falsche Datei kann nie geschrieben werden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Selecciona la unidad del dispositivo en el selector de archivos. La app lee el archivo INFO_UF2.TXT de la unidad para elegir el archivo de borrado: los gestores de arranque más recientes se borran con un único archivo válido para todas las placas, mientras que los más antiguos necesitan una imagen que coincida con su versión de SoftDevice. Nunca se escribirá un archivo incorrecto."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Sélectionnez le lecteur de l’appareil dans le sélecteur de fichiers. L’app lit le fichier INFO_UF2.TXT du lecteur pour choisir le fichier d’effacement : les bootloaders récents s’effacent avec un seul fichier valable pour toutes les cartes, les plus anciens nécessitent une image correspondant à leur version de SoftDevice. Un fichier incorrect ne peut jamais être écrit."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Seleziona l’unità del dispositivo nel selettore di file. L’app legge il file INFO_UF2.TXT dell’unità per scegliere il file di cancellazione: i bootloader più recenti si cancellano con un unico file valido per tutte le schede, quelli meno recenti richiedono un’immagine corrispondente alla loro versione di SoftDevice. Non è mai possibile scrivere il file sbagliato."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ファイルピッカーでデバイスのドライブを選択してください。アプリはドライブのINFO_UF2.TXTを読み取って消去ファイルを選びます。新しいブートローダーはすべてのボード共通の1つのファイルで自身を消去し、古いブートローダーにはSoftDeviceのバージョンに合ったイメージが必要です。誤ったファイルが書き込まれることはありません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "파일 선택기에서 장치의 드라이브를 선택하십시오. 앱은 드라이브의 INFO_UF2.TXT를 읽어 지우기 파일을 선택합니다. 최신 부트로더는 모든 보드에 공통인 파일 하나로 스스로 지우며, 이전 부트로더는 SoftDevice 버전에 맞는 이미지가 필요합니다. 잘못된 파일은 절대 기록되지 않습니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wybierz dysk urządzenia w oknie wyboru plików. Aplikacja odczyta plik INFO_UF2.TXT z dysku, aby wybrać plik wymazania: nowsze bootloadery wymazują się jednym plikiem dla każdej płytki, starsze wymagają obrazu dopasowanego do wersji SoftDevice. Złego pliku nie da się zapisać."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Escolha a unidade do dispositivo no seletor de arquivos. O app lê o INFO_UF2.TXT da unidade para escolher o arquivo de apagamento: bootloaders mais novos se apagam com um único arquivo para todas as placas; os mais antigos precisam de uma imagem compatível com a versão do SoftDevice. Um arquivo errado nunca será gravado."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Выберите диск устройства в окне выбора файлов. Приложение читает файл INFO_UF2.TXT на диске, чтобы выбрать файл стирания: новые загрузчики стираются одним файлом, общим для всех плат, а старым нужен образ, соответствующий их версии SoftDevice. Неподходящий файл записать невозможно."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Dosya seçicide aygıtın sürücüsünü seçin. Uygulama, silme dosyasını seçmek için sürücüdeki INFO_UF2.TXT dosyasını okur: Yeni önyükleyiciler tüm kartlar için tek bir dosyayla kendilerini siler, eski önyükleyiciler ise SoftDevice sürümleriyle eşleşen bir görüntü gerektirir. Yanlış dosya hiçbir zaman yazılamaz."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Виберіть диск пристрою у вікні вибору файлів. Застосунок читає файл INFO_UF2.TXT на диску, щоб вибрати файл стирання: новіші bootloader стирають себе одним файлом для всіх плат, а старішим потрібен образ, що відповідає їхній версії SoftDevice. Неправильний файл ніколи не буде записано."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "在文件选择器中选择设备的驱动器。App 会读取驱动器上的 INFO_UF2.TXT 来选择擦除文件：较新的引导程序使用适用于所有电路板的同一个文件自行擦除，较旧的引导程序则需要与其 SoftDevice 版本匹配的镜像。绝不会写入错误的文件。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "在檔案選擇器中選擇設備的磁碟機。App會讀取磁碟機上的INFO_UF2.TXT來選擇清除檔案：較新的開機載入程式使用適用於所有主機板的同一個檔案自行清除，較舊的則需要與其SoftDevice版本相符的映像檔。絕不會寫入錯誤的檔案。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在檔案選擇器中選擇裝置的磁碟。應用程式讀取磁碟的 INFO_UF2.TXT 以選擇清除檔案：較新的開機載入程式使用適用於每塊電路板的單一檔案自行清除，較舊的則需要與其 SoftDevice 版本相符的映像檔。錯誤的檔案永遠不會被寫入。"
-          }
-        }
-      }
-    },
     "Sending..." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -76439,96 +75930,6 @@
       },
       "shouldTranslate" : false
     },
-    "• After the file is written the device installs the bootloader and reboots itself; the drive disappears and comes back." : {
-      "comment" : "A note that the bootloader is installed and the drive is reset.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Nachdem die Datei geschrieben wurde, installiert das Gerät den Bootloader und startet von selbst neu; das Laufwerk verschwindet und erscheint wieder."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Después de escribir el archivo, el dispositivo instala el gestor de arranque y se reinicia; la unidad desaparece y vuelve."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Une fois le fichier écrit, l’appareil installe le bootloader et redémarre de lui-même ; le lecteur disparaît puis réapparaît."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Dopo la scrittura del file, il dispositivo installa il bootloader e si riavvia automaticamente; l’unità scompare e poi riappare."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• ファイルの書き込み後、デバイスはブートローダーをインストールして自動的に再起動します。ドライブは一度消えてから再び表示されます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 파일이 기록되면 장치가 부트로더를 설치하고 자동으로 재부팅되며, 드라이브가 사라졌다가 다시 나타납니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Po zapisaniu pliku urządzenie instaluje bootloader i samo się restartuje; dysk znika i pojawia się ponownie."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Depois que o arquivo é gravado, o dispositivo instala o bootloader e reinicia sozinho; a unidade desaparece e volta a aparecer."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• После записи файла устройство устанавливает загрузчик и само перезагружается; диск исчезает и появляется снова."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Dosya yazıldıktan sonra aygıt önyükleyiciyi yükler ve kendiliğinden yeniden başlar; sürücü kaybolur ve yeniden görünür."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Після запису файлу пристрій установлює bootloader і самостійно перезапускається; диск зникає й з’являється знову."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 写入文件后，设备会安装引导程序并自动重启；驱动器会消失然后重新出现。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 寫入檔案後，設備會安裝開機載入程式並自動重新啟動；磁碟機會消失後再次出現。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 寫入檔案後，裝置會安裝開機載入程式並自行重新啟動；磁碟機會消失並再次出現。"
-          }
-        }
-      }
-    },
     "• After the file is written the radio erases itself and reboots back into the bootloader; the drive disappears and comes back." : {
       "comment" : "A note that describes the process of erasing a radio.",
       "isCommentAutoGenerated" : true,
@@ -76609,96 +76010,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "• 寫入檔案後，無線電會自行清除並重新啟動回開機載入程式；磁碟機會消失並再次出現。"
-          }
-        }
-      }
-    },
-    "• If the board is not recognized nothing is written — a bootloader for the wrong board cannot be recovered over USB." : {
-      "comment" : "A note that explains the bootloader upgrade process.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Wird das Board nicht erkannt, wird nichts geschrieben — ein Bootloader für das falsche Board lässt sich nicht über USB wiederherstellen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Si no se reconoce la placa, no se escribe nada — no se puede recuperar un bootloader para la placa equivocada a través de USB."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Si la carte n’est pas reconnue, rien n’est écrit — un bootloader destiné à une autre carte ne peut pas être récupéré par USB."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Se la scheda non viene riconosciuta, non viene scritto nulla: un bootloader per la scheda sbagliata non può essere ripristinato tramite USB."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• ボードを認識できない場合は何も書き込まれません。誤ったボード用のブートローダーを書き込むと、USB経由で復旧できなくなります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 보드를 인식하지 못하면 아무것도 기록하지 않습니다. 잘못된 보드용 부트로더가 설치되면 USB로 복구할 수 없습니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Jeśli płytka nie zostanie rozpoznana, nic nie jest zapisywane — bootloadera dla złej płytki nie da się naprawić przez USB."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Se a placa não for reconhecida, nada é gravado — um bootloader para a placa errada não pode ser recuperado via USB."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Если плата не распознана, ничего не записывается — загрузчик для неподходящей платы невозможно восстановить по USB."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Kart tanınmazsa hiçbir şey yazılmaz — yanlış kart için yazılan bir önyükleyiciden USB üzerinden kurtarma yapılamaz."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Якщо плату не розпізнано, нічого не записується — bootloader для неправильної плати неможливо відновити через USB."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 如果无法识别主板，则不会写入任何内容。写入了错误主板的引导程序后，无法通过 USB 恢复。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 若無法辨識主機板，則不會寫入任何內容。寫入不符主機板的開機載入程式後，便無法透過USB復原。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 如果主機板無法識別則不會寫入任何內容 — 錯誤主機板的開機載入程式無法透過 USB 復原。"
           }
         }
       }
@@ -76787,364 +76098,6 @@
         }
       }
     },
-    "• Navigate all the way back to **Locations** in the file picker." : {
-      "comment" : "A step in the process of exporting a firmware file.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Gehe zum **Standorten** in der Dateiauswahl zurück."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vuelva a navegar hasta las **Ubicaciones** en el selector de archivos."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Retournez à **Localisations** dans le picker de fichiers."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Vai indietro fino a **Posizioni** nel picker di file"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "ファイル選択器から**場所**まで完全に戻ってください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 파일 선택기에서 **위치** 화면으로 돌아가세요."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• W oknie wyboru plików cofnij się aż do **Miejsca**."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Volte até o final da tela de seleção de locais."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• В окне выбора файлов вернитесь назад до раздела **Места**."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Dosya seçicide **Konumlar** bölümüne kadar geri gidin."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Поверніться до розділу **Місця** у виборі файлів."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "回到文件选择器中，找到所有位置"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "回到文件選單中的**位置**"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 在檔案選擇器中一路返回到 **位置**。"
-          }
-        }
-      }
-    },
-    "• Select your USB device and tap **Save**." : {
-      "comment" : "A step in the process of saving the firmware to a USB.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wähle dein USB-Gerät und tippe auf **Speichern**."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seleccione su dispositivo USB y haga clic en **Guardar**."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sélectionnez votre périphérique USB et appuyez sur **Sauvegarder**."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Seleziona il tuo dispositivo USB e premi **Salva**."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "USBデバイスを選択し、**保存**を押してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• USB 장치를 선택한 다음 **저장**을 누르세요."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Wybierz urządzenie USB i stuknij **Zachowaj**."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Escolha seu dispositivo USB e toque em **Salvar**."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Выберите USB-устройство и нажмите **Сохранить**."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• USB aygıtınızı seçin ve **Kaydet** düğmesine dokunun."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Виберіть USB-пристрій і натисніть **Зберегти**."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "请选择您的USB设备并点击**保存**"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "選擇您的USB設備並按下**儲存**"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 選擇您的 USB 裝置並點一下 **儲存**。"
-          }
-        }
-      }
-    },
-    "• Tap the **Save Firmware to USB** button below." : {
-      "comment" : "A step in the firmware update process.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Drücke die Schaltfläche \"Firmware speichern auf USB\" unten."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Presiona el botón **Guardar Firmware en USB** a continuación."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Appuyez sur le bouton **Sauvegarder le firmware sur USB** ci-dessous."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tocca il pulsante \"Salva Firmware su USB\" sotto."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "USBにファームウェアを保存するボタンをタップしてください"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 아래의 **펌웨어를 USB에 저장** 버튼을 누르세요."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Stuknij przycisk **Zapisz firmware na USB** poniżej."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Toque no botão **Salvar Firmware no USB** abaixo."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Нажмите кнопку **Сохранить прошивку на USB** ниже."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Aşağıdaki **Aygıt Yazılımını USB’ye Kaydet** düğmesine dokunun."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Натисніть кнопку **Зберегти прошивку на USB** нижче."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "点击下面的**将固件保存到USB**按钮"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "請按下下方的**將固件儲存到USB**按鈕"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 點一下下方的 **將韌體儲存到 USB** 按鈕。"
-          }
-        }
-      }
-    },
-    "• The download is verified against a pinned checksum before anything is written." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Der Download wird vor dem Schreiben anhand einer hinterlegten Prüfsumme überprüft."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• La descarga se verifica mediante una suma de comprobación fija antes de que se escriba nada."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Avant toute écriture, le fichier téléchargé est vérifié par rapport à une somme de contrôle attendue."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Prima di scrivere qualsiasi dato, il file scaricato viene verificato rispetto al checksum previsto."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 書き込みの前に、ダウンロードしたファイルを固定されたチェックサムで検証します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 기록하기 전에 다운로드한 파일을 고정된 체크섬으로 검증합니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Pobrany plik jest sprawdzany z przypisaną sumą kontrolną, zanim cokolwiek zostanie zapisane."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• O download é verificado com uma soma de verificação fixa antes de qualquer gravação."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Перед любой записью загруженный файл проверяется по ожидаемой контрольной сумме."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Hiçbir şey yazılmadan önce indirilen dosya sabitlenmiş bir sağlama toplamıyla doğrulanır."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Перед будь-яким записом завантажений файл перевіряється за закріпленою контрольною сумою."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 在写入任何内容之前，会根据固定校验和验证下载的文件。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• 寫入任何內容前，會先以預設的檢查碼驗證下載的檔案。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 下載會在寫入任何內容之前根據固定的檢查碼進行驗證。"
-          }
-        }
-      }
-    },
     "• The download is verified against a pinned checksum, and its flash address is cross-checked against the reported SoftDevice, before anything is written." : {
       "comment" : "A note that describes the verification process.",
       "isCommentAutoGenerated" : true,
@@ -77225,186 +76178,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "• 下載會根據固定的檢查碼進行驗證，並在寫入任何內容之前根據報告的 SoftDevice 交叉檢查其快閃記憶體位址。"
-          }
-        }
-      }
-    },
-    "• The filename will be a random string ending in `.uf2` to prevent iOS caching." : {
-      "comment" : "A note that the filename of the downloaded firmware is random.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Der Dateiname wird eine zufällige Zeichenkette mit der Endung `.uf2` sein, um iOS-Caching zu verhindern."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El nombre del archivo será una cadena aleatoria que termina en `.uf2` para evitar el caché de iOS."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Le nom du fichier téléchargé sera une chaîne aléatoire terminant par `.uf2` pour empêcher le cache iOS."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Il nome del file di firmware scaricato sarà una stringa casuale terminante con `.uf2` per prevenire la memorizzazione in cache su iOS."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "ダウンロードしたファームウェアのファイル名は、iOSのキャッシュを防ぐために`.uf2`で終わるランダムな文字列になります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 다운로드된 펌웨어 파일 이름은 iOS 캐싱을 방지하기 위해 `.uf2`로 끝나는 임의의 문자열입니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Nazwa pliku będzie losowym ciągiem kończącym się na `.uf2`, aby iOS nie użył pamięci podręcznej."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "O nome do arquivo será uma string aleatória terminando em `.uf2` para evitar a cache do iOS."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Имя файла будет случайной строкой с окончанием `.uf2`, чтобы iOS не кэшировала его."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• iOS’in önbelleğe almasını önlemek için dosya adı `.uf2` ile biten rastgele bir karakter dizisi olur."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Ім’я файлу буде випадковим рядком із закінченням `.uf2`, щоб уникнути кешування iOS."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "下载的固件文件名将是一个随机字符串，以`.uf2`结尾，以防止iOS缓存。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "下載的軟體名稱將是隨機生成的字符串，以`.uf2`結尾，以防止iOS的緩存。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 檔案名稱會是以 `.uf2` 結尾的隨機字串，以避免 iOS 快取。"
-          }
-        }
-      }
-    },
-    "• You may see an error saying the file could not be saved. This is normal, as the device disconnects immediately after updating." : {
-      "comment" : "A note that explains why you may see an error when saving the firmware.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Du siehst möglicherweise einen Fehler, der besagt, dass das Datei nicht gespeichert werden konnte. Das ist normal, da das Gerät sofort nach dem Update entkoppelt wird."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Puede que veas un error diciendo que el archivo no pudo ser guardado. Esto es normal, ya que el dispositivo se desconecta inmediatamente después de actualizarse."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Vous pourriez voir une erreur indiquant que le fichier ne pouvait pas être sauvegardé. Ceci est normal, car le dispositif se déconnexe immédiatement après l' mise à jour."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Potresti vedere un errore che dice che il file non può essere salvato. Questo è normale, poiché il dispositivo si disconnette immediatamente dopo l'aggiornamento."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "デバイスが更新した後すぐに切断されるため、ファイルを保存できないというエラーが表示されることがあります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 업데이트가 완료되면 장치 연결이 바로 끊기므로 파일 저장 실패 오류가 표시될 수 있습니다. 이는 정상적인 현상입니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Może pojawić się błąd, że nie udało się zapisać pliku. To normalne, bo urządzenie rozłącza się zaraz po aktualizacji."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Você pode ver um erro dizendo que o arquivo não pode ser salvo. Isso é normal, pois o dispositivo desliga imediatamente após a atualização."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Может появиться ошибка о том, что файл не удалось сохранить. Это нормально, так как устройство отключается сразу после обновления."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "• Dosyanın kaydedilemediğini belirten bir hata görebilirsiniz. Aygıtın bağlantısı güncellemeden hemen sonra kesildiği için bu normaldir."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Ви можете побачити помилку, що файл не вдалося зберегти. Це нормально, бо пристрій від’єднується одразу після оновлення."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "您可能会看到一个错误提示文件无法保存，这是正常的，因为设备在更新后立即断开连接。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "更新後，設備會立即斷開連線，因此可能會出現無法儲存檔案的錯誤。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 您可能會看到檔案無法儲存的錯誤訊息。這是正常現象，因為裝置更新後會立即中斷連線。"
           }
         }
       }
@@ -98981,96 +97754,6 @@
         }
       }
     },
-    "Bootloader Upgrade" : {
-      "comment" : "A title for the bootloader upgrade sheet.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Bootloader-Upgrade"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actualizar Bootloader"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Mise à niveau du bootloader"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Aggiornamento bootloader"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ブートローダーのアップグレード"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "부트로더 업그레이드"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Aktualizacja bootloadera"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Atualização do bootloader"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Обновление загрузчика"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Önyükleyici Yükseltmesi"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Оновлення bootloader"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "引导程序升级"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "開機載入程式升級"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "開機載入程式升級"
-          }
-        }
-      }
-    },
     "Boots remaining: %u" : {
       "localizations" : {
         "de" : {
@@ -106942,184 +105625,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇區域"
-          }
-        }
-      }
-    },
-    "Choose Bootloader Drive" : {
-      "comment" : "A button that lets the user choose a bootloader drive.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Bootloader-Laufwerk wählen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elegir unidad del Bootloader"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Choisir le lecteur du bootloader"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Scegli unità bootloader"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ブートローダードライブを選択"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "부트로더 드라이브 선택"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wybierz dysk bootloadera"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Escolher unidade do bootloader"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Выбрать диск загрузчика"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Önyükleyici Sürücüsünü Seç"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Вибрати диск bootloader"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "选择引导程序驱动器"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "選擇開機載入程式磁碟機"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "選擇開機載入程式磁碟機"
-          }
-        }
-      }
-    },
-    "Choose the drive above to identify the board." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Wähle oben das Laufwerk, um das Board zu erkennen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elija la unidad de arriba para identificar la placa."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Choisissez le lecteur ci-dessus pour identifier la carte."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Scegli l’unità qui sopra per identificare la scheda."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ボードを識別するには、上のドライブを選択してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "보드를 식별하려면 위의 드라이브를 선택하십시오."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wybierz dysk powyżej, aby rozpoznać płytkę."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Escolha a unidade acima para identificar a placa."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Выберите диск выше, чтобы определить плату."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Kartı tanımlamak için yukarıdaki sürücüyü seçin."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Виберіть диск вище, щоб визначити плату."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "选择上方的驱动器以识别电路板。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "選擇上方的磁碟機以識別主機板。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "選擇上方的磁碟機以識別主機板。"
           }
         }
       }
@@ -131919,94 +130424,6 @@
         }
       }
     },
-    "Downloading, verifying and writing…" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Wird geladen, geprüft und geschrieben …"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Descargar, verificar y grabar…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Téléchargement, vérification et écriture…"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Download, verifica e scrittura in corso…"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ダウンロード、検証、書き込み中…"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "다운로드, 확인 및 쓰기 중…"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Pobieranie, weryfikacja i zapis…"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Baixando, verificando e gravando…"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Загрузка, проверка и запись…"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "İndiriliyor, doğrulanıyor ve yazılıyor…"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Завантаження, перевірка і запис…"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "正在下载、验证并写入…"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "正在下載、驗證並寫入⋯"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在下載、驗證和寫入…"
-          }
-        }
-      }
-    },
     "Downloads about %@ of street map and elevation data for a %@ area around the mesh." : {
       "comment" : "Spatial map: offline map download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km",
       "localizations" : {
@@ -150663,96 +149080,6 @@
         }
       }
     },
-    "For security reasons, iOS cannot write directly to external USB devices. You must save the file manually." : {
-      "comment" : "A message explaining that the firmware must be saved manually.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Um Sicherheitsgründen kann iOS nicht direkt auf externe USB-Geräte schreiben. Sie müssen das Datei manuell speichern."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Por razones de seguridad, iOS no puede escribir directamente en dispositivos USB externos. Debes guardar el archivo manualmente."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Pour des raisons de sécurité, iOS ne peut pas écrire directement sur les dispositifs USB externes. Vous devez enregistrer le fichier manuellement."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Per motivi di sicurezza, iOS non può scrivere direttamente sui dispositivi USB esterni. Devi salvare il file manualmente."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "セキュリティのため、iOSは外部USBデバイスに直接書き込むことができません。ファイルを手動で保存してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "보안상의 이유로 iOS에서는 외부 USB 장치에 직접 파일을 쓸 수 없습니다. 파일을 수동으로 저장해야 합니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ze względów bezpieczeństwa iOS nie może zapisywać bezpośrednio na zewnętrznych urządzeniach USB. Musisz zapisać plik ręcznie."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Por motivos de segurança, o iOS não pode escrever diretamente em dispositivos USB externos. Você deve salvar o arquivo manualmente."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "По соображениям безопасности iOS не может записывать данные напрямую на внешние USB-устройства. Сохраните файл вручную."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Güvenlik nedeniyle iOS, harici USB aygıtlarına doğrudan yazamaz. Dosyayı elle kaydetmeniz gerekir."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "З міркувань безпеки iOS не може записувати напряму на зовнішні USB-пристрої. Потрібно зберегти файл вручну."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "为了安全起见，iOS 无法直接写入外部 USB 设备，您必须手动保存文件。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "為了安全起見，iOS 無法直接寫入外部 USB 設備。您必須手動保存檔案。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "基於安全考量，iOS 無法直接寫入外接 USB 裝置。您必須手動儲存檔案。"
-          }
-        }
-      }
-    },
     "Forget Stored Passphrase" : {
       "localizations" : {
         "de" : {
@@ -164395,96 +162722,6 @@
         }
       }
     },
-    "If connected, use the button below to reboot into DFU. Otherwise, press your device's reset button twice rapidly." : {
-      "comment" : "A description of how to reboot into DFU mode.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wenn das Gerät verbunden ist, drücke die untenstehende Taste, um in DFU-Modus zu booten. Andernfalls drücke zweimal schnell auf die Reset-Taste deines Geräts."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Si está conectado, use el botón de abajo para reiniciar en modo DFU. De lo contrario, presione el botón de reinicio de su dispositivo dos veces rápidamente."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Si connecte, utilisez le bouton ci-dessous pour redémarrer en mode DFU. Sinon, appuyez deux fois rapidement sur le bouton de réinitialisation de votre appareil."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Se collegato, utilizza il pulsante sottostante per riavviare in modalità DFU. Altrimenti, premi il pulsante di ripristino del tuo dispositivo due volte rapidamente."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "接続されている場合は、以下のボタンを押してDFUモードにリセットしてください。そうでない場合は、デバイスのリセットボタンを2回速く押してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "연결된 경우 아래 버튼을 사용하여 DFU 모드로 진입합니다. 또는 장치의 리셋 버튼을 빠르게 두 번 누르세요."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Jeśli urządzenie jest połączone, użyj przycisku poniżej, aby uruchomić je ponownie w trybie DFU. W przeciwnym razie szybko naciśnij dwa razy przycisk reset urządzenia."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Se conectado, use o botão abaixo para reiniciar em DFU. Caso contrário, pressione o botão de reinício do seu dispositivo duas vezes rapidamente."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Если устройство подключено, используйте кнопку ниже для перезагрузки в режим DFU. В противном случае дважды быстро нажмите кнопку сброса на устройстве."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Bağlıysa DFU modunda yeniden başlatmak için aşağıdaki düğmeyi kullanın. Bağlı değilse aygıtınızın sıfırlama düğmesine hızlıca iki kez basın."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Якщо підключено, скористайтеся кнопкою нижче, щоб перезапустити в DFU. Інакше двічі швидко натисніть кнопку reset на пристрої."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "如果已连接，请按下下面的按钮重启到DFU模式。否则，请快速按下您的设备重置按钮两次。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "如果已連線，請按下下方按鈕重啟 DFU 模式。否則，請快速按下您的設備重置按鈕兩下。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "若已連線，請使用下方按鈕重新啟動進入 DFU。否則，請快速按兩下裝置的重設按鈕。"
-          }
-        }
-      }
-    },
     "If DOP is set, use HDOP / VDOP values instead of PDOP" : {
       "localizations" : {
         "da" : {
@@ -167002,96 +165239,6 @@
         }
       }
     },
-    "Important Notes" : {
-      "comment" : "A section of the UF2 firmware update",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wichtige Hinweise"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notas Importantes"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Important Notes"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nota Importante"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "重要なメモ"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "중요 안내 사항"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ważne uwagi"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Notas Importantes"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Важные примечания"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Önemli Notlar"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Важливі примітки"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "重要提示"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "重要提示"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重要提示"
-          }
-        }
-      }
-    },
     "Imported Offline Map" : {
       "comment" : "Name of an imported offline map.",
       "isCommentAutoGenerated" : true,
@@ -168981,94 +167128,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "安裝"
-          }
-        }
-      }
-    },
-    "Install Bootloader Update" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Bootloader-Update installieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Instalar actualización del gestor de arranque"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Installer la mise à jour du bootloader"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Installa aggiornamento bootloader"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ブートローダーのアップデートをインストール"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "부트로더 업데이트 설치"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Zainstaluj aktualizację bootloadera"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Instalar Atualização do Bootloader"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Установить обновление загрузчика"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Önyükleyici Güncellemesini Yükle"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Установити оновлення bootloader"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "安装引导程序更新"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "安裝開機載入程式更新"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "安裝開機載入程式更新"
           }
         }
       }
@@ -171017,95 +169076,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "繼續等待"
-          }
-        }
-      }
-    },
-    "Keep your device close to your phone during the update." : {
-      "comment" : "OTA update tip: keep device close",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Halte dein Gerät während des Updates in der Nähe deines Telefons."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantén tu dispositivo cerca de tu teléfono durante la actualización."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Gardez votre appareil près de votre téléphone pendant la mise à jour."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Tieni il dispositivo vicino al telefono durante l’aggiornamento."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "アップデート中はデバイスをスマートフォンに近づけておいてください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "업데이트하는 동안 장치를 휴대폰 가까이에 두십시오."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Trzymaj urządzenie blisko telefonu podczas aktualizacji."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Mantenha o dispositivo próximo ao telefone durante a atualização."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Во время обновления держите устройство рядом с телефоном."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Güncelleme sırasında aygıtınızı telefonunuza yakın tutun."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Під час оновлення тримайте пристрій поруч із телефоном."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "更新期间，请让设备靠近您的手机。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "更新期間，請將設備放在手機附近。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在更新期間，請將您的裝置靠近您的手機。"
           }
         }
       }
@@ -262692,276 +260662,6 @@
         }
       }
     },
-    "Place your device in DFU mode and connect it via USB." : {
-      "comment" : "A description of how to reset your device into DFU mode.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Schalte dein Gerät in DFU-Modus und verbinde es über USB."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coloca tu dispositivo en modo DFU y conectalo a través de USB."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Placez votre appareil en mode DFU et connectez-le via USB."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Posiziona il tuo dispositivo in modalità DFU e collega tramite USB."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "デバイスをDFUモードに設定し、USB経由で接続してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "장치를 DFU 모드로 전환한 다음 USB로 연결하세요."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Przełącz urządzenie w tryb DFU i podłącz je przez USB."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Coloque seu dispositivo em modo DFU e conecte-o via USB."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Переведите устройство в режим DFU и подключите его по USB."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Aygıtınızı DFU moduna alın ve USB ile bağlayın."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Переведіть пристрій у режим DFU та підключіть його через USB."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "将设备置于DFU模式并通过USB连接。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "將設備放入DFU模式並通過USB連接"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "將裝置置於 DFU 模式並透過 USB 連接。"
-          }
-        }
-      }
-    },
-    "Place your device in DFU mode and connect it via USB. It appears as a USB drive." : {
-      "comment" : "A description of how to connect a device to the bootloader.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Schalte dein Gerät in den DFU-Modus und verbinde es über USB. Es erscheint als USB-Laufwerk."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pon tu dispositivo en modo DFU y conéctalo mediante USB. Aparecerá como una unidad USB."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Placez votre appareil en mode DFU et connectez-le via USB. Il apparaît comme un disque USB."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Metti il dispositivo in modalità DFU e collegalo tramite USB. Verrà visualizzato come unità USB."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "デバイスをDFUモードに設定し、USB経由で接続してください。USBドライブとして表示されます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "장치를 DFU 모드로 전환한 다음 USB로 연결하십시오. 장치가 USB 드라이브로 표시됩니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Przełącz urządzenie w tryb DFU i podłącz je przez USB. Pojawi się jako dysk USB."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Coloque o dispositivo em modo DFU e conecte-o via USB. Ele aparece como uma unidade USB."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Переведите устройство в режим DFU и подключите его по USB. Оно появится как USB-накопитель."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Aygıtınızı DFU moduna alın ve USB ile bağlayın. Aygıt bir USB sürücüsü olarak görünür."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Переведіть пристрій у режим DFU та підключіть його через USB. Він відобразиться як USB-накопичувач."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "将设备置于 DFU 模式并通过 USB 连接。设备会显示为 USB 驱动器。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "將您的設備置於DFU模式並透過USB連接。設備會顯示為USB磁碟機。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "將您的裝置置於 DFU 模式並透過 USB 連線。它會顯示為 USB 磁碟機。"
-          }
-        }
-      }
-    },
-    "Place your device in DFU mode and connect it via USB. It appears as a USB drive. A radio that cannot boot can still enter DFU with a double press of its reset button." : {
-      "comment" : "A description of how to boot a radio into DFU mode.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Schalte dein Gerät in den DFU-Modus und verbinde es über USB. Es erscheint als USB-Laufwerk. Ein Funkgerät, das nicht starten kann, lässt sich trotzdem durch zweimaliges Drücken der Reset-Taste in den DFU-Modus versetzen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coloca tu dispositivo en modo DFU y conéctalo mediante USB. Aparecerá como una unidad USB. Una radio que no arranca puede entrar en modo DFU pulsando dos veces su botón de reinicio."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Placez votre appareil en mode DFU et connectez-le via USB. Il apparaît comme un disque USB. Une radio qui ne parvient pas à démarrer peut tout de même passer en mode DFU en appuyant deux fois sur son bouton de réinitialisation."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Metti il dispositivo in modalità DFU e collegalo tramite USB. Verrà visualizzato come unità USB. Una radio che non riesce ad avviarsi può comunque entrare in modalità DFU premendo due volte il pulsante di ripristino."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "デバイスをDFUモードに設定し、USB経由で接続してください。USBドライブとして表示されます。起動できない無線機でも、リセットボタンを2回押すとDFUモードに入れます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "장치를 DFU 모드로 전환한 다음 USB로 연결하십시오. 장치가 USB 드라이브로 표시됩니다. 부팅할 수 없는 무선 장치도 리셋 버튼을 두 번 누르면 DFU 모드로 진입할 수 있습니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Przełącz urządzenie w tryb DFU i podłącz je przez USB. Pojawi się jako dysk USB. Radio, które się nie uruchamia, nadal można przełączyć w DFU, naciskając dwa razy przycisk reset."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Coloque o dispositivo em modo DFU e conecte-o via USB. Ele aparece como uma unidade USB. Um rádio que não consegue inicializar ainda pode entrar em DFU se você pressionar o botão de reinício duas vezes."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Переведите устройство в режим DFU и подключите его по USB. Оно появится как USB-накопитель. Радиостанцию, которая не загружается, все равно можно перевести в режим DFU двойным нажатием кнопки сброса."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Aygıtınızı DFU moduna alın ve USB ile bağlayın. Aygıt bir USB sürücüsü olarak görünür. Açılamayan bir telsiz, sıfırlama düğmesine iki kez basılarak yine de DFU moduna alınabilir."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Переведіть пристрій у режим DFU та підключіть його через USB. Він відобразиться як USB-накопичувач. Радіостанцію, яка не може завантажитися, все одно можна перевести в DFU подвійним натисканням кнопки reset."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "将设备置于 DFU 模式并通过 USB 连接。设备会显示为 USB 驱动器。无法启动的电台仍可通过连按两次重置按钮进入 DFU 模式。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "將您的設備置於DFU模式並透過USB連接。設備會顯示為USB磁碟機。無法開機的無線電仍可透過按兩下重置按鈕進入DFU模式。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "將您的裝置置於 DFU 模式並透過 USB 連線。它會顯示為 USB 磁碟機。無法開機的無線電仍可以透過雙擊其重設按鈕進入 DFU。"
-          }
-        }
-      }
-    },
     "Placement" : {
       "localizations" : {
         "de" : {
@@ -263505,180 +261205,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "請先連線裝置來進行設定。"
-          }
-        }
-      }
-    },
-    "Please do not leave this screen until the update is complete. You can safely play Chirpy Hop while waiting!" : {
-      "comment" : "Notice displayed during OTA firmware update",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Bitte verlasse diesen Bildschirm nicht, bis das Update abgeschlossen ist. Während du wartest, kannst du bedenkenlos Chirpy Hop spielen!"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Por favor, no abandone esta pantalla hasta que la actualización se complete. ¡Puede jugar a Chirpy Hop mientras espera!"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Veuillez ne pas quitter cet écran avant la fin de la mise à jour. En attendant, vous pouvez jouer à Chirpy Hop sans risque !"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Non uscire da questa schermata finché l’aggiornamento non è completato. Nell’attesa puoi giocare tranquillamente a Chirpy Hop!"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "アップデートが完了するまで、この画面から移動しないでください。待っている間はChirpy Hopを安心してプレイできます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "업데이트가 완료될 때까지 이 화면을 벗어나지 마십시오. 기다리는 동안 Chirpy Hop을 안심하고 플레이할 수 있습니다!"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nie opuszczaj tego ekranu, dopóki aktualizacja się nie zakończy. W międzyczasie możesz spokojnie zagrać w Chirpy Hop!"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Não saia desta tela até a atualização terminar. Enquanto espera, você pode jogar Chirpy Hop sem problemas!"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Не покидайте этот экран, пока обновление не завершится. А пока можно спокойно сыграть в Chirpy Hop!"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Güncelleme tamamlanana kadar bu ekrandan ayrılmayın. Beklerken gönül rahatlığıyla Chirpy Hop oynayabilirsiniz!"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Не залишайте цей екран, доки оновлення не завершиться. Поки чекаєте, можна спокійно зіграти в Chirpy Hop!"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "更新完成前请勿离开此屏幕。等待期间，您可以放心玩 Chirpy Hop！"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "更新完成前請勿離開此畫面。等待期間，您可以放心玩Chirpy跳躍！"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "請勿在更新完成前離開此畫面。您可以在等待時安全地玩 Chirpy 跳躍！"
-          }
-        }
-      }
-    },
-    "Please do not leave this screen until this process is complete." : {
-      "comment" : "A warning to not leave the screen until the update is complete.",
-      "extractionState" : "stale",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Bitte bleibe auf dieser Seite, bis der Update-Prozess abgeschlossen ist."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Por favor, no abandones esta pantalla hasta completar el proceso."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Veuillez ne pas quitter cette écran jusqu'à ce que ce processus soit terminé."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Per favore, non uscire da questa schermata fino a quando questo processo non sarà completato."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "このプロセスを完了するまで画面を離さないでください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 과정이 완료될 때까지 이 화면을 벗어나지 마세요."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Por favor, não saia desta tela até que o processo seja concluído."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Не покидайте этот экран, пока процесс не завершится."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Bu işlem tamamlanana kadar bu ekrandan ayrılmayın."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Не залишайте цей екран, доки процес не завершиться."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "请不要离开此屏幕，直到更新完成。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "請勿離開此螢幕，直到此過程完成。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此程序完成前請勿離開此畫面。"
           }
         }
       }
@@ -274186,96 +271712,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "收件人需要您的金鑰"
-          }
-        }
-      }
-    },
-    "Recognized **%@**" : {
-      "comment" : "A label that displays a checkmark and a message that the bootloader is recognized. The argument is the name of the recognized bootloader.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "**%@** erkannt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reconozido **%@**"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "**%@** reconnu"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Riconosciuto: **%@**"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "**%@**を認識しました"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "**%@** 인식됨"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Rozpoznano **%@**"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "**%@** reconhecido"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Распознано: **%@**"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Tanındı: **%@**"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Розпізнано **%@**"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "已识别 **%@**"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "已識別**%@**"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已識別 **%@**"
           }
         }
       }
@@ -286997,94 +284433,6 @@
         }
       }
     },
-    "Save Firmware to USB" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Firmware speichern auf USB"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardar Firmware en USB"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sauvegarder le firmware sur USB"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Salva il Firmware sul USB"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "ファームウェアをUSBに保存"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "펌웨어를 USB에 저장"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Zapisz firmware na USB"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Salve o Firmware no USB"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Сохранить прошивку на USB"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Aygıt Yazılımını USB’ye Kaydet"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Зберегти прошивку на USB"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "将固件保存到USB"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "將固件儲存到USB"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "將韌體儲存到USB"
-          }
-        }
-      }
-    },
     "Save TAK Identity" : {
       "comment" : "A button to save the TAK Identity settings.",
       "isCommentAutoGenerated" : true,
@@ -291560,96 +288908,6 @@
         }
       }
     },
-    "Select the device's drive in the file picker (for example FTHR840BOOT or RAK4631). The board is identified from the INFO_UF2.TXT file the bootloader publishes there." : {
-      "comment" : "A description of the step to select the bootloader drive.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Wähle in der Dateiauswahl das Laufwerk des Geräts (zum Beispiel FTHR840BOOT oder RAK4631). Das Board wird anhand der Datei INFO_UF2.TXT erkannt, die der Bootloader dort bereitstellt."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seleccione la unidad del dispositivo en el selector de archivos (por ejemplo, FTHR840BOOT o RAK4631). La placa se identifica a partir del archivo INFO_UF2.TXT que el gestor de arranque publica allí."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Sélectionnez le lecteur de l’appareil dans le sélecteur de fichiers (par exemple FTHR840BOOT ou RAK4631). La carte est identifiée à partir du fichier INFO_UF2.TXT que le bootloader y publie."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Seleziona l’unità del dispositivo nel selettore di file (ad esempio FTHR840BOOT o RAK4631). La scheda viene identificata dal file INFO_UF2.TXT che il bootloader pubblica sull’unità."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ファイルピッカーでデバイスのドライブ（FTHR840BOOTやRAK4631など）を選択してください。ボードは、ブートローダーがそのドライブに置くINFO_UF2.TXTファイルから識別されます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "파일 선택기에서 장치의 드라이브(예: FTHR840BOOT 또는 RAK4631)를 선택하십시오. 보드는 부트로더가 해당 드라이브에 제공하는 INFO_UF2.TXT 파일로 식별됩니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wybierz dysk urządzenia w oknie wyboru plików (na przykład FTHR840BOOT lub RAK4631). Płytka jest rozpoznawana na podstawie pliku INFO_UF2.TXT, który publikuje tam bootloader."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Escolha a unidade do dispositivo no seletor de arquivos (por exemplo, FTHR840BOOT ou RAK4631). A placa é identificada pelo arquivo INFO_UF2.TXT que o bootloader disponibiliza nela."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Выберите диск устройства в окне выбора файлов (например, FTHR840BOOT или RAK4631). Плата определяется по файлу INFO_UF2.TXT, который загрузчик размещает на этом диске."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Dosya seçicide aygıtın sürücüsünü seçin (örneğin FTHR840BOOT veya RAK4631). Kart, önyükleyicinin bu sürücüde yayımladığı INFO_UF2.TXT dosyasından tanımlanır."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Виберіть диск пристрою у вікні вибору файлів (наприклад, FTHR840BOOT або RAK4631). Плата визначається за файлом INFO_UF2.TXT, який bootloader розміщує на цьому диску."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "在文件选择器中选择设备的驱动器（例如 FTHR840BOOT 或 RAK4631）。系统将根据引导程序在该驱动器上提供的 INFO_UF2.TXT 文件识别电路板。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "在檔案選擇器中選擇設備的磁碟機（例如FTHR840BOOT或RAK4631）。主機板會透過開機載入程式在該磁碟機上提供的INFO_UF2.TXT檔案識別。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在檔案選擇器中選取裝置的磁碟機（例如 FTHR840BOOT 或 RAK4631）。主機板從開機載入程式在那裡發布的 INFO_UF2.TXT 檔案識別。"
-          }
-        }
-      }
-    },
     "Select the device's drive in the file picker. The erase image is chosen from the SoftDevice version the drive reports, so the wrong image can never be written." : {
       "comment" : "A description of the file picker that lets the user select the drive to erase.",
       "isCommentAutoGenerated" : true,
@@ -294054,96 +291312,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "向 Chirpy 發送問題"
-          }
-        }
-      }
-    },
-    "Send Reboot into DFU" : {
-      "comment" : "A button that sends a command to reboot into DFU mode.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Neustart in DFU senden"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enviar reinicio a DFU"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Envoyer le redémarrage en mode DFU"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Invia riavvio in DFU"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "DFUモードへの再起動を送信"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "DFU 모드 재부팅 명령 보내기"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wyślij polecenie restartu do DFU"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Enviar Reinício em Modo DFU"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Отправить перезагрузку в режим DFU"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "DFU Modunda Yeniden Başlatma Gönder"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Надіслати перезапуск у DFU"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "发送重启进入 DFU 指令"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "發送重啟進入DFU指令"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "傳送重新啟動進入 DFU"
           }
         }
       }
@@ -310373,454 +307541,6 @@
         }
       }
     },
-    "Step 1: Connect Device" : {
-      "comment" : "A step in the",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Schritt 1: Gerät verbinden"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paso 1: Conectar Dispositivo"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Étape 1 : Connexion du dispositif"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Passaggio 1: Collegare Dispositivo"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "ステップ1: デバイスを接続"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1단계: 기기 연결"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Krok 1: Podłącz urządzenie"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Passo 1: Conectar Dispositivo"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Шаг 1: подключите устройство"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Adım 1: Aygıtı Bağlama"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Крок 1: підключіть пристрій"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "步骤 1：连接设备"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "步驟1：連接設備"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "步驟 1：連接裝置"
-          }
-        }
-      }
-    },
-    "Step 2: Choose the Bootloader Drive" : {
-      "comment" : "A label for the second step of the bootloader upgrade process.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Schritt 2: Bootloader-Laufwerk wählen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paso 2: Elija la unidad del gestor de arranque"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Étape 2 : Choisir le lecteur du bootloader"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Passaggio 2: Scegli l’unità bootloader"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ステップ2: ブートローダードライブを選択"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "2단계: 부트로더 드라이브 선택"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Krok 2: Wybierz dysk bootloadera"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Passo 2: Escolher a Unidade do Bootloader"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Шаг 2: выберите диск загрузчика"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Adım 2: Önyükleyici Sürücüsünü Seçme"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Крок 2: виберіть диск bootloader"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "步骤 2：选择引导程序驱动器"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "步驟2：選擇開機載入程式磁碟機"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "步驟 2：選擇開機載入程式磁碟機"
-          }
-        }
-      }
-    },
-    "Step 2: Save the File" : {
-      "comment" : "A step in",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Schritt 2: Datei speichern"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paso 2: Guardar el archivo"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Étape 2: Sauvegarder le fichier"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Passaggio 2: Salva il File"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "ステップ2: ファイルを保存"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2단계: 파일 저장"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Krok 2: Zapisz plik"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Passo 2: Salvar o Arquivo"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Шаг 2: сохраните файл"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Adım 2: Dosyayı Kaydetme"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Крок 2: збережіть файл"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "步骤 2：保存文件"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "步驟 2：儲存檔案"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "步驟 2：儲存檔案"
-          }
-        }
-      }
-    },
-    "Step 3: Erase" : {
-      "comment" : "A label for the third step in the factory erase process.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Schritt 3: Löschen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paso 3: Borrar"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Étape 3 : Effacer"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Passaggio 3: Cancella"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ステップ3: 消去"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "3단계: 지우기"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Krok 3: Wymazanie"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Passo 3: Apagar"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Шаг 3: стирание"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Adım 3: Silme"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Крок 3: стирання"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "步骤 3：擦除"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "步驟3：清除"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "步驟 3：清除"
-          }
-        }
-      }
-    },
-    "Step 3: Install" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Schritt 3: Installieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paso 3: Instalar"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Étape 3 : Installer"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Passaggio 3: Installa"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "ステップ3: インストール"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "3단계: 설치"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Krok 3: Instalacja"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Passo 3: Instalar"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Шаг 3: установка"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Adım 3: Yükleme"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Крок 3: встановлення"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "步骤 3：安装"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "步驟3：安裝"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "步驟 3：安裝"
-          }
-        }
-      }
-    },
     "Stickers" : {
       "comment" : "A tab for displaying stickers.",
       "isCommentAutoGenerated" : true,
@@ -320375,94 +317095,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtastic nRF52 開機載入程式（前稱 OTAFIX）讓藍牙韌體更新更快、更可靠。原廠清除會透過開機載入程式磁碟機，清除無線電模組的快閃記憶體，這是韌體無法啟動時的復原方式。"
-          }
-        }
-      }
-    },
-    "The Meshtastic nRF52 Bootloader (formerly OTAFIX) makes Bluetooth firmware updates faster and more reliable. The upgrade is written from the device's own bootloader drive." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Der Meshtastic-nRF52-Bootloader (früher OTAFIX) macht Firmware-Updates über Bluetooth schneller und zuverlässiger. Das Upgrade wird über das eigene Bootloader-Laufwerk des Geräts geschrieben."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "El gestor de arranque Meshtastic nRF52 (antes OTAFIX) hace que las actualizaciones de firmware por Bluetooth sean más rápidas y fiables. La actualización se escribe desde la propia unidad del gestor de arranque del dispositivo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Le bootloader Meshtastic nRF52 (anciennement OTAFIX) rend les mises à jour du firmware par Bluetooth plus rapides et plus fiables. La mise à niveau est écrite depuis le lecteur du bootloader de l’appareil lui-même."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Il bootloader Meshtastic nRF52 (in precedenza OTAFIX) rende gli aggiornamenti firmware via Bluetooth più rapidi e affidabili. L’aggiornamento viene scritto dall’unità bootloader del dispositivo stesso."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Meshtastic nRF52ブートローダー（旧称OTAFIX）を使用すると、Bluetoothによるファームウェアアップデートをより高速かつ確実に行えます。アップグレードはデバイス自体のブートローダードライブから書き込まれます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Meshtastic nRF52 부트로더(이전 명칭 OTAFIX)는 Bluetooth 펌웨어 업데이트를 더 빠르고 안정적으로 만들어 줍니다. 업그레이드는 장치 자체의 부트로더 드라이브를 통해 기록됩니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Meshtastic nRF52 Bootloader (dawniej OTAFIX) sprawia, że aktualizacje przez Bluetooth są szybsze i bardziej niezawodne. Aktualizacja jest zapisywana z dysku bootloadera samego urządzenia."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "O bootloader Meshtastic nRF52 (antigo OTAFIX) deixa as atualizações de firmware via Bluetooth mais rápidas e confiáveis. A atualização é gravada pela própria unidade do bootloader do dispositivo."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "С загрузчиком Meshtastic nRF52 (ранее OTAFIX) обновление прошивки по Bluetooth проходит быстрее и надежнее. Обновление записывается с собственного диска загрузчика устройства."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Meshtastic nRF52 önyükleyicisi (eski adıyla OTAFIX), Bluetooth aygıt yazılımı güncellemelerini daha hızlı ve daha güvenilir hâle getirir. Yükseltme, aygıtın kendi önyükleyici sürücüsünden yazılır."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Meshtastic nRF52 Bootloader (раніше OTAFIX) робить оновлення прошивки через Bluetooth швидшим і надійнішим. Оновлення записується з власного диска bootloader пристрою."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Meshtastic nRF52 引导程序（原 OTAFIX）可让 Bluetooth 固件更新更快、更可靠。升级将通过设备自身的引导程序驱动器写入。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Meshtastic nRF52開機載入程式（前稱OTAFIX）可讓Bluetooth韌體更新更快速、更可靠。升級會透過設備本身的開機載入程式磁碟機寫入。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meshtastic nRF52 開機載入程式（前稱 OTAFIX）讓藍牙韌體更新更快、更可靠。升級檔會透過裝置本身的開機載入程式磁碟機寫入。"
           }
         }
       }
@@ -338746,96 +335378,6 @@
         }
       }
     },
-    "UF2 Firmware Update" : {
-      "comment" : "A title for the UF2",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "UF2 Firmware Update"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actualización de Firmware UF2"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Mise à jour de firmware UF2"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Aggiornamento firmware UF2"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "UF2 ファームウェアアップデート"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UF2 펌웨어 업데이트"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Aktualizacja oprogramowania UF2"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Atualização de Firmware UF2"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Обновление прошивки UF2"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "UF2 Aygıt Yazılımı Güncellemesi"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Оновлення прошивки UF2"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "UF2 固件更新"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "UF2 軟體更新"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UF2 韌體更新"
-          }
-        }
-      }
-    },
     "Un-Favorite" : {
       "localizations" : {
         "da" : {
@@ -353486,96 +350028,6 @@
         }
       }
     },
-    "Wrote %@. The device is installing the bootloader and will reboot on its own." : {
-      "comment" : "A label that shows a checkmark and a message that the bootloader has been successfully installed. The argument is the name of the file that was written.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "%@ geschrieben. Das Gerät installiert den Bootloader und startet von selbst neu."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grabó %@. El dispositivo está instalando el gestor de arranque y se reiniciará automáticamente."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "%@ écrit. L’appareil installe le bootloader et redémarrera de lui-même."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "%@ scritto. Il dispositivo sta installando il bootloader e si riavvierà automaticamente."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "%@を書き込みました。デバイスはブートローダーをインストール中で、自動的に再起動します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "%@을(를) 썼습니다. 장치가 부트로더를 설치하는 중이며 자동으로 재부팅됩니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Zapisano %@. Urządzenie instaluje bootloader i samo się uruchomi ponownie."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "%@ gravado. O dispositivo está instalando o bootloader e vai reiniciar sozinho."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Файл %@ записан. Устройство устанавливает загрузчик и перезагрузится само."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Yazılan dosya: %@. Aygıt önyükleyiciyi yüklüyor ve kendiliğinden yeniden başlayacak."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "%@ записано. Пристрій установлює bootloader і перезапуститься самостійно."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "已写入 %@。设备正在安装引导程序，完成后将自动重启。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "已寫入「%@」。設備正在安裝開機載入程式，完成後將自動重新啟動。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已寫入 %@。裝置正在安裝開機載入程式，並將自行重新啟動。"
-          }
-        }
-      }
-    },
     "x" : {
       "localizations" : {
         "da" : {
@@ -354484,95 +350936,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您最多可以保留 %lld 個離線地圖。移除一個以下載另一個。"
-          }
-        }
-      }
-    },
-    "You can safely play Chirpy Hop while waiting for the update to complete." : {
-      "comment" : "OTA update tip: safe to play game",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Während du auf den Abschluss des Updates wartest, kannst du bedenkenlos Chirpy Hop spielen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Puedes jugar a Chirpy Hop sin problemas mientras esperas a que finalice la actualización."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "En attendant la fin de la mise à jour, vous pouvez jouer à Chirpy Hop sans risque."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Nell’attesa che l’aggiornamento venga completato, puoi giocare tranquillamente a Chirpy Hop."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "アップデートの完了を待っている間は、Chirpy Hopを安心してプレイできます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "업데이트가 완료되기를 기다리는 동안 Chirpy Hop을 안심하고 플레이할 수 있습니다."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Czekając na zakończenie aktualizacji, możesz spokojnie zagrać w Chirpy Hop."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Enquanto espera a atualização terminar, você pode jogar Chirpy Hop sem problemas."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Пока обновление не завершится, можно спокойно сыграть в Chirpy Hop."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Güncellemenin tamamlanmasını beklerken gönül rahatlığıyla Chirpy Hop oynayabilirsiniz."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "Поки триває оновлення, можна спокійно зіграти в Chirpy Hop."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "等待更新完成期间，您可以放心玩 Chirpy Hop。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "等待更新完成期間，您可以放心玩Chirpy跳躍。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "您可以在等待更新完成時安全地玩 Chirpy 跳躍。"
           }
         }
       }

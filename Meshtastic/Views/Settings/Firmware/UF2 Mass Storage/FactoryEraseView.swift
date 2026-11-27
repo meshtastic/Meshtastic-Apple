@@ -23,9 +23,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct FactoryEraseView: View {
-	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) var dismiss
-	@Environment(\.modelContext) var context
 
 	/// Which erase the drive supports, and so which header check gates the write.
 	enum Method: Equatable {
@@ -53,96 +51,60 @@ struct FactoryEraseView: View {
 	@State private var lastFault: BootloaderFault?
 
 	var body: some View {
-		SheetNavigationStack {
-			ScrollView {
-				VStack(spacing: 20) {
+		FirmwareUpdateScreen(
+			title: Text("Factory Erase", comment: "Title of the factory erase screen"),
+			onClose: { dismiss() },
+			allowsSwipeToClose: phase != .installing
+		) {
+			FirmwareUpdateCard(title: cardTitle, message: cardMessage) {
+				if phase == .installing {
+					FirmwareUpdateProgressBar(progress: 0, isIndeterminate: true)
+						.accessibilityLabel(cardTitle)
+				}
+			}
 
-					HStack(alignment: .top, spacing: 12) {
-						Image(systemName: "exclamationmark.triangle.fill")
-							.font(.title2)
-							.foregroundStyle(.orange)
+			FirmwareUSBUpdateModeStep()
 
-						Text("Factory erase permanently removes the radio's owner, channels, identity keys, settings, Bluetooth bonds, and node database. Nothing is restored automatically.")
-							.font(.callout)
-					}
-					.padding()
-					.background(Color.secondary.opacity(0.1))
-					.clipShape(RoundedRectangle(cornerRadius: 12))
-
-					Divider()
-
-					VStack(alignment: .leading, spacing: 12) {
-						Label("Step 1: Connect Device", systemImage: "1.circle.fill")
-							.font(.headline)
-
-						Text("Place your device in DFU mode and connect it via USB. It appears as a USB drive. A radio that cannot boot can still enter DFU with a double press of its reset button.")
-							.fixedSize(horizontal: false, vertical: true)
-
-						rebootIntoDFUButton()
-					}
-
-					Divider()
-
-					VStack(alignment: .leading, spacing: 12) {
-						Label("Step 2: Choose the Bootloader Drive", systemImage: "2.circle.fill")
-							.font(.headline)
-
-						Text("Select the device's drive in the file picker. The app reads the drive's INFO_UF2.TXT to choose the erase file: newer bootloaders erase themselves with one file for every board, older ones need an image matched to their SoftDevice version. The wrong file can never be written.")
-							.font(.callout)
-							.fixedSize(horizontal: false, vertical: true)
-
-						chooseDriveButton()
-
-						if let lastFault {
-							BootloaderFaultNotice(fault: lastFault)
-						}
-					}
-
-					Divider()
-
-					VStack(alignment: .leading, spacing: 12) {
-						Label("Step 3: Erase", systemImage: "3.circle.fill")
-							.font(.headline)
-
-						statusView()
-					}
-
-					Divider()
-
-					VStack(alignment: .leading, spacing: 10) {
-						Label("Important Notes", systemImage: "info.circle")
-							.font(.caption.bold())
-							.foregroundStyle(.secondary)
-
-						Text("• The download is verified against a pinned checksum, and its header is cross-checked against what the drive reported, before anything is written.")
-						Text("• After the file is written the radio erases itself; the drive disappears and comes back a couple of seconds later.")
-						Text("• On a bootloader that erases itself, the installed firmware stays and starts as a brand-new device when you unplug the radio. Install new firmware from the Firmware Updates screen only if you want to.")
-						Text("• On older bootloaders only the SoftDevice and bootloader remain, so install firmware next from the Firmware Updates screen.")
-					}
-					.font(.caption)
+			FirmwareUpdateStep(
+				number: 2,
+				title: String(localized: "Choose the radio's drive", comment: "Bootloader and factory erase step title")
+			) {
+				Text("Pick the radio's drive in the file picker. The app reads its bootloader from the drive to choose the right erase file, and never writes the wrong one.",
+					 comment: "Factory erase step: choosing the radio's USB drive")
 					.foregroundStyle(.secondary)
-				}
-				.padding()
-			}
-			#if targetEnvironment(macCatalyst)
-			.scrollIndicators(.visible)
-			#endif
-			.navigationTitle("Factory Erase")
-			.navigationBarTitleDisplayMode(.inline)
-			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button {
-						dismiss()
-					} label: {
-						Image(systemName: "xmark")
-					}
-					.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the factory erase sheet"))
+					.fixedSize(horizontal: false, vertical: true)
+				chooseDriveButton()
+				if let lastFault {
+					BootloaderFaultNotice(fault: lastFault)
 				}
 			}
+
+			FirmwareUpdateStep(
+				number: 3,
+				title: String(localized: "Erase", comment: "Factory erase step title")
+			) {
+				if case .resolved(_, let entry) = phase {
+					Text(entry.image.fileName)
+						.font(.caption.monospaced())
+						.foregroundStyle(.secondary)
+				}
+				Button(role: .destructive) {
+					showConfirmation = true
+				} label: {
+					Text("Erase This Radio", comment: "Button that writes the factory erase file onto the radio's drive")
+						.frame(maxWidth: .infinity)
+				}
+				// The destructive role colors it red; a tint would override that.
+				.buttonStyle(.borderedProminent)
+				.controlSize(.large)
+				.disabled(!isResolved)
+			}
+
+			FirmwareUpdateNotes(notes: [
+				String(localized: "The download is checked against a known checksum, and against what the drive reported, before anything is written.", comment: "Note on the factory erase screen"),
+				String(localized: "After the file is written the radio erases itself. Its drive disappears and comes back a couple of seconds later.", comment: "Note on the factory erase screen")
+			])
 		}
-		#if targetEnvironment(macCatalyst)
-		.frame(minHeight: 780)
-		#endif
 		.fileImporter(
 			isPresented: $isPickingDrive,
 			allowedContentTypes: [.folder],
@@ -161,112 +123,61 @@ struct FactoryEraseView: View {
 		}
 	}
 
-	// MARK: - Steps
+	// MARK: - Wording
 
-	@ViewBuilder
-	func rebootIntoDFUButton() -> some View {
-		Button {
-			let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
-			if let connectedNode, let user = connectedNode.user {
-				Task {
-					do {
-						try await accessoryManager.sendEnterDfuMode(fromUser: user, toUser: user)
-					} catch {
-						Logger.mesh.error("Reboot into DFU for factory erase failed")
-					}
-				}
-			}
-		} label: {
-			Label("Send Reboot into DFU", systemImage: "square.and.arrow.down")
-		}
-		.buttonStyle(.borderedProminent)
-		.tint(.accentFill)
-		.controlSize(.large)
-		.frame(maxWidth: .infinity)
-		.disabled(accessoryManager.activeDeviceNum == nil)
+	private var isResolved: Bool {
+		if case .resolved = phase { return true }
+		return false
 	}
+
+	private var cardTitle: String {
+		switch phase {
+		case .idle:
+			return String(localized: "Erase This Radio", comment: "Factory erase screen title before a drive is chosen")
+		case .resolved:
+			return String(localized: "Ready to Erase", comment: "Factory erase screen title once the erase file is chosen")
+		case .installing:
+			return String(localized: "Erasing", comment: "Factory erase screen title while the erase file is downloaded and written")
+		case .done:
+			return String(localized: "Erase Started", comment: "Factory erase screen title after the erase file is written")
+		case .failed:
+			return String(localized: "The Radio Wasn't Erased", comment: "Factory erase screen title after a failure")
+		}
+	}
+
+	private var cardMessage: String {
+		switch phase {
+		case .idle:
+			return String(localized: "Factory erase permanently removes the radio's owner, channels, identity keys, settings, Bluetooth bonds, and node database. Nothing is restored automatically.")
+		case .resolved(.bootloader, _):
+			return String(localized: "The bootloader erases its own settings. The installed firmware stays and starts as a brand-new device.", comment: "Factory erase screen message when the bootloader can erase itself")
+		case .resolved(.softDevice(let variant), _):
+			return String(localized: "This radio takes the erase image for SoftDevice S140 \(variant.rawValue). The firmware is removed too, so install firmware afterwards.", comment: "Factory erase screen message for older bootloaders; the SoftDevice version")
+		case .installing:
+			return String(localized: "Downloading, checking and writing the file.", comment: "Bootloader update screen message while the file is downloaded and written")
+		case .done(.bootloader):
+			return String(localized: "Erase file written. The radio is wiping its settings and comes back as a bootloader drive in a few seconds. Unplug it to start the installed firmware as a brand-new device, or install firmware from the Firmware Updates screen.")
+		case .done(.softDevice):
+			return String(localized: "Erase image written. The radio is wiping its flash and will reboot into the bootloader — install firmware next from the Firmware Updates screen.")
+		case .failed(let message):
+			return message
+		}
+	}
+
+	// MARK: - Steps
 
 	@ViewBuilder
 	func chooseDriveButton() -> some View {
 		Button {
 			isPickingDrive = true
 		} label: {
-			Label("Choose Bootloader Drive", systemImage: "externaldrive")
+			Text("Choose Drive", comment: "Button that opens the file picker to choose the radio's USB drive")
+				.frame(maxWidth: .infinity)
 		}
 		.hostedWindowOnly()
-		.buttonStyle(.borderedProminent)
-		.tint(.accentFill)
+		.buttonStyle(.bordered)
 		.controlSize(.large)
-		.frame(maxWidth: .infinity)
 		.disabled(phase == .installing)
-	}
-
-	@ViewBuilder
-	func statusView() -> some View {
-		switch phase {
-		case .idle:
-			Text("Choose the drive above to identify the bootloader.")
-				.font(.callout)
-				.foregroundStyle(.secondary)
-
-		case .resolved(let method, let entry):
-			VStack(alignment: .leading, spacing: 8) {
-				Label {
-					switch method {
-					case .bootloader:
-						Text("Bootloader erase — **firmware is kept**")
-					case .softDevice(let variant):
-						Text("SoftDevice **S140 \(variant.rawValue)** — firmware is removed")
-					}
-				} icon: {
-					Image(systemName: "checkmark.seal.fill")
-						.foregroundStyle(.green)
-				}
-				Text(entry.image.fileName)
-					.font(.caption.monospaced())
-					.foregroundStyle(.secondary)
-				Button(role: .destructive) {
-					showConfirmation = true
-				} label: {
-					Label("Erase This Radio", systemImage: "externaldrive.badge.xmark")
-				}
-				.buttonStyle(.borderedProminent)
-				.tint(.red)
-				.controlSize(.large)
-				.frame(maxWidth: .infinity)
-			}
-
-		case .installing:
-			HStack(spacing: 10) {
-				ProgressView()
-				Text("Downloading, verifying and writing…")
-					.font(.callout)
-			}
-
-		case .done(let method):
-			Label {
-				switch method {
-				case .bootloader:
-					Text("Erase file written. The radio is wiping its settings and comes back as a bootloader drive in a few seconds. Unplug it to start the installed firmware as a brand-new device, or install firmware from the Firmware Updates screen.")
-						.font(.callout)
-				case .softDevice:
-					Text("Erase image written. The radio is wiping its flash and will reboot into the bootloader — install firmware next from the Firmware Updates screen.")
-						.font(.callout)
-				}
-			} icon: {
-				Image(systemName: "checkmark.circle.fill")
-					.foregroundStyle(.green)
-			}
-
-		case .failed(let message):
-			Label {
-				Text(message)
-					.font(.callout)
-			} icon: {
-				Image(systemName: "exclamationmark.triangle.fill")
-					.foregroundStyle(.orange)
-			}
-		}
 	}
 
 	// MARK: - Drive handling
