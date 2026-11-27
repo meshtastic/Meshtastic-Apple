@@ -31,6 +31,11 @@ jobs:
         # 26.4 or later: mvt-tools 3.x, which VectorTiles needs, declares Swift tools 6.3.
         run: sudo xcode-select -s /Applications/Xcode_26.4.1.app/Contents/Developer
 
+      - name: List iPhone simulators
+        # The destination names no iOS version, so the newest runtime this Xcode has is used.
+        # Listed so a missing device is obvious from the log.
+        run: xcrun simctl list devices available | grep -E "^-- |iPhone"
+
       - name: Run unit tests
         run: |
           set -o pipefail
@@ -59,7 +64,7 @@ jobs:
           if ! xcodebuild test \
             -workspace Meshtastic.xcworkspace \
             -scheme Meshtastic \
-            -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.4' \
+            -destination 'platform=iOS Simulator,name=iPhone 17' \
             -only-testing:MeshtasticTests \
             "${skip_tests[@]}" \
             2>&1 | tee /tmp/xcodebuild-unit.log | tail -30; then
