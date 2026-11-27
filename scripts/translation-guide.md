@@ -32,6 +32,7 @@ Bluetooth, IAQ, ATAK, WinTAK, mPWRD-OS, iOS, macOS, CarPlay, SiriKit.
 | ko | Formal 합쇼체 |
 | es, fr, it, ja, tr, zh-Hans, zh-Hant, zh-Hant-TW | Professional, siz-form in Turkish |
 | pl | Informal, ty-form, matching the Meshtastic Android Polish translation |
+| tr | Natural, concise technical Turkish (polite *siz* or neutral imperative in UI labels, matching Apple's Turkish UI conventions) |
 | da, ru, sr, uk | Match the existing community translations |
 
 ## Settled terms
@@ -67,3 +68,22 @@ Bluetooth, IAQ, ATAK, WinTAK, mPWRD-OS, iOS, macOS, CarPlay, SiriKit.
 | pl | Live Activity | Aktywność na żywo |
 | pl | Points of Interest | Ciekawe miejsca |
 | pl | firmware update | aktualizacja oprogramowania |
+| tr | notifications | Bildirimler (Apple platform term) |
+| tr | node, nodes | düğüm, düğümler |
+| tr | hop, hops | atlama, atlamalar |
+| tr | mesh | mesh (or mesh ağı where clarity helps) |
+| tr | beacon | işaret (or beacon in technical labels) |
+| tr | preset, modem preset names | ön ayar; modem preset names kept in English |
+| tr | spread factor, coding rate, duty cycle | Kept in English (or yayılma faktörü / kodlama oranı in explanatory help text) |
+| tr | device roles (CLIENT, ROUTER…) | Kept in English |
+| tr | Store & Forward, PAX Counter, Range Test, Mesh Beacon, Lockdown | Kept in English |
+| tr | Neighbor Info | Komşu Bilgisi |
+| tr | Trace Route | Rota İzleme |
+| tr | Local Stats | Yerel İstatistikler |
+| tr | Device/Power/Environment Metrics | Cihaz / Güç / Ortam Metrikleri |
+| tr | Host Metrics | Ana Bilgisayar Metrikleri |
+| tr | logs | günlükler |
+| tr | Remote admin | Uzaktan yönetim |
+| tr | Live Activity | Canlı Etkinlik (Apple platform term) |
+| tr | Points of Interest | İlgi Çekici Noktalar |
+| tr | firmware update | aygıt yazılımı güncellemesi |
