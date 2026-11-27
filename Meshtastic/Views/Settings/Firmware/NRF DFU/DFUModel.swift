@@ -202,6 +202,7 @@ extension DFUViewModel: DFUServiceDelegate {
 		switch state {
 		case .starting:
 			self.state = .starting
+			self.statusMessage = state.description
 		case .completed:
 			self.isRestarting = false
 			self.state = .success

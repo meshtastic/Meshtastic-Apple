@@ -73,7 +73,8 @@ struct FirmwareUpdateView: View {
 
 	let stage: FirmwareUpdateStage
 	let progress: Double
-	/// The update library's own status or error text, shown under Details.
+	/// The update library's current status or error text. Each change is kept, with its
+	/// time, in the Details log.
 	var detail: String = ""
 	var isStartDisabled = false
 	let onStart: () -> Void
@@ -82,6 +83,8 @@ struct FirmwareUpdateView: View {
 
 	@State private var showChirpyGame = false
 	@State private var showStopConfirmation = false
+	/// Every status the update library reported since Update was tapped, oldest first.
+	@State private var detailLog: [DetailLine] = []
 	/// Height of everything under the navigation bar, so the sheet can be just that tall.
 	@State private var contentHeight: CGFloat = 0
 	/// The inline navigation bar above the content.
@@ -95,14 +98,22 @@ struct FirmwareUpdateView: View {
 					actions
 						// Rounded rectangles, not the default capsule, to match the rest of the app.
 						.buttonBorderShape(.roundedRectangle(radius: 12))
-					if !detail.isEmpty, stage != .ready, !isUnavailable {
+					if !detailLog.isEmpty, stage != .ready, !isUnavailable {
 						DisclosureGroup {
-							Text(detail)
-								.font(.footnote.monospaced())
-								.foregroundStyle(.secondary)
-								.textSelection(.enabled)
-								.frame(maxWidth: .infinity, alignment: .leading)
-								.padding(.top, 4)
+							VStack(alignment: .leading, spacing: 4) {
+								ForEach(detailLog) { line in
+									HStack(alignment: .firstTextBaseline, spacing: 8) {
+										Text(line.time, format: .dateTime.hour().minute().second())
+											.foregroundStyle(.tertiary)
+										Text(line.text)
+											.foregroundStyle(.secondary)
+									}
+								}
+							}
+							.font(.footnote.monospaced())
+							.textSelection(.enabled)
+							.frame(maxWidth: .infinity, alignment: .leading)
+							.padding(.top, 4)
 						} label: {
 							Text("Details", comment: "Disclosure on the firmware update screen that shows the update library's own status text")
 								.font(.subheadline)
@@ -157,10 +168,26 @@ struct FirmwareUpdateView: View {
 				 comment: "Explains what happens to the device when an update is abandoned")
 		}
 		.firmwareUpdateGame(isPresented: $showChirpyGame, status: gameStatus)
+		.onChange(of: detail, initial: true) { _, text in record(text) }
 		// Keep the screen on while this is open, the way the map does: a phone that sleeps
 		// mid-transfer can drop the Bluetooth link and stall the update.
 		.onAppear { UIApplication.shared.isIdleTimerDisabled = true }
 		.onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
+	}
+
+	// MARK: - Details log
+
+	private struct DetailLine: Identifiable {
+		let id = UUID()
+		let time: Date
+		let text: String
+	}
+
+	/// Adds a status to the log once the update has started, skipping repeats in a row.
+	private func record(_ text: String) {
+		let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard !text.isEmpty, stage != .ready, !isUnavailable, detailLog.last?.text != text else { return }
+		detailLog.append(DetailLine(time: Date(), text: text))
 	}
 
 	// MARK: - Card
