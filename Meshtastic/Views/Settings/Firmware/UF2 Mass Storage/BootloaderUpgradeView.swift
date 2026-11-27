@@ -21,9 +21,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct BootloaderUpgradeView: View {
-	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) var dismiss
-	@Environment(\.modelContext) var context
 
 	/// The connected node's build target, for boards whose stock bootloader shares another board's Board-ID.
 	var platformioTarget: String?
@@ -47,102 +45,61 @@ struct BootloaderUpgradeView: View {
 	@State private var lastFault: BootloaderFault?
 
 	var body: some View {
-		SheetNavigationStack {
-			ScrollView {
-				VStack(spacing: 20) {
+		FirmwareUpdateScreen(
+			title: Text("Bootloader Update", comment: "Title of the bootloader update screen"),
+			onClose: { dismiss() },
+			allowsSwipeToClose: phase != .installing
+		) {
+			FirmwareUpdateCard(title: cardTitle, message: cardMessage) {
+				if phase == .installing {
+					FirmwareUpdateProgressBar(progress: 0, isIndeterminate: true)
+						.accessibilityLabel(cardTitle)
+				}
+			}
 
-					HStack(alignment: .top, spacing: 12) {
-						Image(systemName: "memorychip")
-							.font(.title2)
-							.foregroundStyle(.blue)
+			FirmwareUSBUpdateModeStep()
 
-						Text("The Meshtastic nRF52 Bootloader (formerly OTAFIX) makes Bluetooth firmware updates faster and more reliable. The upgrade is written from the device's own bootloader drive.")
-							.font(.callout)
-					}
-					.padding()
-					.background(Color.secondary.opacity(0.1))
-					.clipShape(RoundedRectangle(cornerRadius: 12))
-
-					Divider()
-
-					VStack(alignment: .leading, spacing: 12) {
-						Label("Step 1: Connect Device", systemImage: "1.circle.fill")
-							.font(.headline)
-
-						Text("Place your device in DFU mode and connect it via USB. It appears as a USB drive.")
-							.fixedSize(horizontal: false, vertical: true)
-
-						Text("If connected, use the button below to reboot into DFU. Otherwise, press your device's reset button twice rapidly.")
-							.font(.caption)
-							.foregroundStyle(.secondary)
-
-						rebootIntoDFUButton()
-					}
-
-					Divider()
-
-					VStack(alignment: .leading, spacing: 12) {
-						Label("Step 2: Choose the Bootloader Drive", systemImage: "2.circle.fill")
-							.font(.headline)
-
-						Text("Select the device's drive in the file picker (for example FTHR840BOOT or RAK4631). The board is identified from the INFO_UF2.TXT file the bootloader publishes there.")
-							.font(.callout)
-							.fixedSize(horizontal: false, vertical: true)
-
-						chooseDriveButton()
-
-						if let lastFault {
-							BootloaderFaultNotice(fault: lastFault)
-						}
-					}
-
-					Divider()
-
-					VStack(alignment: .leading, spacing: 12) {
-						Label("Step 3: Install", systemImage: "3.circle.fill")
-							.font(.headline)
-
-						statusView()
-					}
-
-					Divider()
-
-					VStack(alignment: .leading, spacing: 10) {
-						Label("Important Notes", systemImage: "info.circle")
-							.font(.caption.bold())
-							.foregroundStyle(.secondary)
-
-						Text("• The download is verified against a pinned checksum before anything is written.")
-						Text("• After the file is written the device installs the bootloader and reboots itself; the drive disappears and comes back.")
-						Text("• If the board is not recognized nothing is written — a bootloader for the wrong board cannot be recovered over USB.")
-					}
-					.font(.caption)
+			FirmwareUpdateStep(
+				number: 2,
+				title: String(localized: "Choose the radio's drive", comment: "Bootloader and factory erase step title")
+			) {
+				Text("Pick the radio's drive in the file picker, for example FTHR840BOOT or RAK4631. The app reads which board it is from the drive.",
+					 comment: "Bootloader update step: choosing the radio's USB drive")
 					.foregroundStyle(.secondary)
-				}
-				.padding()
-			}
-			// Catalyst sizes the sheet from the window and hides scroll bars at
-			// rest — same treatment as UF2MassStorageView so the bottom section
-			// never reads as cut off.
-			#if targetEnvironment(macCatalyst)
-			.scrollIndicators(.visible)
-			#endif
-			.navigationTitle("Bootloader Upgrade")
-			.navigationBarTitleDisplayMode(.inline)
-			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button {
-						dismiss()
-					} label: {
-						Image(systemName: "xmark")
-					}
-					.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the bootloader upgrade sheet"))
+					.fixedSize(horizontal: false, vertical: true)
+				chooseDriveButton()
+				if let lastFault {
+					BootloaderFaultNotice(fault: lastFault)
 				}
 			}
+
+			FirmwareUpdateStep(
+				number: 3,
+				title: String(localized: "Install", comment: "Bootloader update step title")
+			) {
+				if case .resolved(_, let image) = phase {
+					Text(image.fileName)
+						.font(.caption.monospaced())
+						.foregroundStyle(.secondary)
+				}
+				Button {
+					install()
+				} label: {
+					Text("Install Bootloader", comment: "Button that writes the bootloader file onto the radio's drive")
+						.frame(maxWidth: .infinity)
+				}
+				.buttonStyle(.borderedProminent)
+				.tint(.accentFill)
+				.controlSize(.large)
+				.disabled(!isResolved)
+			}
+
+			FirmwareUpdateNotes(notes: [
+				String(localized: "The download is checked against a known checksum before anything is written.", comment: "Note on the bootloader update screen"),
+				String(localized: "After the file is written the radio installs the bootloader and restarts. Its drive disappears and comes back.", comment: "Note on the bootloader update screen"),
+				String(localized: "If the board isn't recognized, nothing is written. A bootloader for the wrong board can't be fixed over USB.", comment: "Note on the bootloader update screen")
+			])
 		}
-		#if targetEnvironment(macCatalyst)
-		.frame(minHeight: 780)
-		#endif
 		.fileImporter(
 			isPresented: $isPickingDrive,
 			allowedContentTypes: [.folder],
@@ -155,101 +112,57 @@ struct BootloaderUpgradeView: View {
 		}
 	}
 
-	// MARK: - Steps
+	// MARK: - Wording
 
-	@ViewBuilder
-	func rebootIntoDFUButton() -> some View {
-		Button {
-			let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
-			if let connectedNode, let user = connectedNode.user {
-				Task {
-					do {
-						try await accessoryManager.sendEnterDfuMode(fromUser: user, toUser: user)
-					} catch {
-						Logger.mesh.error("Reboot into DFU for bootloader upgrade failed")
-					}
-				}
-			}
-		} label: {
-			Label("Send Reboot into DFU", systemImage: "square.and.arrow.down")
-		}
-		.buttonStyle(.borderedProminent)
-		.tint(.accentFill)
-		.controlSize(.large)
-		.frame(maxWidth: .infinity)
-		.disabled(accessoryManager.activeDeviceNum == nil)
+	private var isResolved: Bool {
+		if case .resolved = phase { return true }
+		return false
 	}
+
+	private var cardTitle: String {
+		switch phase {
+		case .idle:
+			return String(localized: "Update the Bootloader", comment: "Bootloader update screen title before a drive is chosen")
+		case .resolved:
+			return String(localized: "Ready to Install", comment: "Bootloader update screen title once the board is recognized")
+		case .installing:
+			return String(localized: "Installing the Bootloader", comment: "Bootloader update screen title while the file is downloaded and written")
+		case .done:
+			return String(localized: "Bootloader Installed", comment: "Bootloader update screen title after the file is written")
+		case .failed:
+			return String(localized: "The Bootloader Wasn't Installed", comment: "Bootloader update screen title after a failure")
+		}
+	}
+
+	private var cardMessage: String {
+		switch phase {
+		case .idle:
+			return String(localized: "The Meshtastic nRF52 Bootloader makes Bluetooth firmware updates faster and more reliable. It's installed from the radio's USB drive.", comment: "Bootloader update screen message before a drive is chosen")
+		case .resolved(let boardID, _):
+			return String(localized: "Recognized board \(boardID).", comment: "Bootloader update screen message once the board is recognized; the board ID")
+		case .installing:
+			return String(localized: "Downloading, checking and writing the file.", comment: "Bootloader update screen message while the file is downloaded and written")
+		case .done(let fileName):
+			return String(localized: "Wrote \(fileName). The radio is installing the bootloader and restarts on its own.", comment: "Bootloader update screen message after the file is written; the file name")
+		case .failed(let message):
+			return message
+		}
+	}
+
+	// MARK: - Steps
 
 	@ViewBuilder
 	func chooseDriveButton() -> some View {
 		Button {
 			isPickingDrive = true
 		} label: {
-			Label("Choose Bootloader Drive", systemImage: "externaldrive")
+			Text("Choose Drive", comment: "Button that opens the file picker to choose the radio's USB drive")
+				.frame(maxWidth: .infinity)
 		}
 		.hostedWindowOnly()
-		.buttonStyle(.borderedProminent)
-		.tint(.accentFill)
+		.buttonStyle(.bordered)
 		.controlSize(.large)
-		.frame(maxWidth: .infinity)
 		.disabled(phase == .installing)
-	}
-
-	@ViewBuilder
-	func statusView() -> some View {
-		switch phase {
-		case .idle:
-			Text("Choose the drive above to identify the board.")
-				.font(.callout)
-				.foregroundStyle(.secondary)
-
-		case .resolved(let boardID, let image):
-			VStack(alignment: .leading, spacing: 8) {
-				Label {
-					Text("Recognized **\(boardID)**")
-				} icon: {
-					Image(systemName: "checkmark.seal.fill")
-						.foregroundStyle(.green)
-				}
-				Text(image.fileName)
-					.font(.caption.monospaced())
-					.foregroundStyle(.secondary)
-				Button {
-					install()
-				} label: {
-					Label("Install Bootloader Update", systemImage: "arrow.down.circle.fill")
-				}
-				.buttonStyle(.borderedProminent)
-				.tint(.accentFill)
-				.controlSize(.large)
-				.frame(maxWidth: .infinity)
-			}
-
-		case .installing:
-			HStack(spacing: 10) {
-				ProgressView()
-				Text("Downloading, verifying and writing…")
-					.font(.callout)
-			}
-
-		case .done(let fileName):
-			Label {
-				Text("Wrote \(fileName). The device is installing the bootloader and will reboot on its own.")
-					.font(.callout)
-			} icon: {
-				Image(systemName: "checkmark.circle.fill")
-					.foregroundStyle(.green)
-			}
-
-		case .failed(let message):
-			Label {
-				Text(message)
-					.font(.callout)
-			} icon: {
-				Image(systemName: "exclamationmark.triangle.fill")
-					.foregroundStyle(.orange)
-			}
-		}
 	}
 
 	// MARK: - Drive handling

@@ -9,6 +9,7 @@ import SwiftUI
 import OSLog
 
 struct NRFDFUSheet: View {
+	@Environment(\.firmwareUpdateRadio) private var radio
 	@Environment(\.dismiss) var dismiss
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@StateObject private var dfuViewModel = DFUViewModel()
@@ -56,6 +57,7 @@ struct NRFDFUSheet: View {
 		.hostedSheet(isPresented: $showBootloaderUpgrade) {
 			if let platformioTarget {
 				BootloaderUpgradeView(platformioTarget: platformioTarget)
+					.environment(\.firmwareUpdateRadio, radio?.withoutFirmware)
 			}
 		}
 		.onDisappear {

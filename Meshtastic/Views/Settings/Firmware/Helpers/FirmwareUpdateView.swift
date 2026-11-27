@@ -55,6 +55,11 @@ struct FirmwareUpdateRadio {
 	let firmwareVersion: String?
 	/// The exact build going on, with its commit hash, for the Details log.
 	var firmwareBuild: String?
+
+	/// The same radio with no firmware going on, for the bootloader and erase screens.
+	var withoutFirmware: FirmwareUpdateRadio {
+		FirmwareUpdateRadio(hardware: hardware, pioEnv: pioEnv, name: name, firmwareVersion: nil)
+	}
 }
 
 extension EnvironmentValues {
@@ -114,71 +119,46 @@ struct FirmwareUpdateView: View {
 	@State private var showStopConfirmation = false
 	/// Every status the update library reported since Update was tapped, oldest first.
 	@State private var detailLog: [DetailLine] = []
-	/// Height of everything under the navigation bar, so the sheet can be just that tall.
-	@State private var contentHeight: CGFloat = 0
-	/// The inline navigation bar above the content.
-	private static let navigationBarHeight: CGFloat = 64
 
 	var body: some View {
-		SheetNavigationStack {
-			ScrollView {
-				VStack(spacing: 20) {
-					card
-					actions
-						// Rounded rectangles, not the default capsule, to match the rest of the app.
-						.buttonBorderShape(.roundedRectangle(radius: 12))
-					if !detailLog.isEmpty, stage != .ready, !isUnavailable {
-						DisclosureGroup {
-							VStack(alignment: .leading, spacing: 4) {
-								ForEach(detailLog) { line in
-									HStack(alignment: .firstTextBaseline, spacing: 8) {
-										Text(line.time, format: .dateTime.hour().minute().second())
-											.foregroundStyle(.tertiary)
-										Text(line.text)
-											.foregroundStyle(.secondary)
-									}
-								}
+		FirmwareUpdateScreen(
+			title: Text("Firmware Update", comment: "Title of the firmware update screen"),
+			onClose: {
+				// Always a way out. An update can stall somewhere the app can't recover
+				// from, and a disabled close button leaves force-quitting as the only exit.
+				if stage.isUnderWay {
+					showStopConfirmation = true
+				} else {
+					onDismiss()
+				}
+			},
+			allowsSwipeToClose: false
+		) {
+			card
+			actions
+			if !detailLog.isEmpty, stage != .ready, !isUnavailable {
+				DisclosureGroup {
+					VStack(alignment: .leading, spacing: 4) {
+						ForEach(detailLog) { line in
+							HStack(alignment: .firstTextBaseline, spacing: 8) {
+								Text(line.time, format: .dateTime.hour().minute().second())
+									.foregroundStyle(.tertiary)
+								Text(line.text)
+									.foregroundStyle(.secondary)
 							}
-							.font(.footnote.monospaced())
-							.textSelection(.enabled)
-							.frame(maxWidth: .infinity, alignment: .leading)
-							.padding(.top, 4)
-						} label: {
-							Text("Details", comment: "Disclosure on the firmware update screen that shows the update library's own status text")
-								.font(.subheadline)
 						}
-						.padding(.horizontal, 4)
 					}
+					.font(.footnote.monospaced())
+					.textSelection(.enabled)
+					.frame(maxWidth: .infinity, alignment: .leading)
+					.padding(.top, 4)
+				} label: {
+					Text("Details", comment: "Disclosure on the firmware update screen that shows the update library's own status text")
+						.font(.subheadline)
 				}
-				.padding(20)
-				.frame(maxWidth: 560)
-				.frame(maxWidth: .infinity)
-				.onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
-			}
-			.background(Color(.systemGroupedBackground))
-			.navigationTitle(Text("Firmware Update", comment: "Title of the firmware update screen"))
-			.navigationBarTitleDisplayMode(.inline)
-			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button {
-						// Always a way out. An update can stall somewhere the app can't recover
-						// from, and a disabled close button leaves force-quitting as the only exit.
-						if stage.isUnderWay {
-							showStopConfirmation = true
-						} else {
-							onDismiss()
-						}
-					} label: {
-						Image(systemName: "xmark")
-					}
-					.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
-				}
+				.padding(.horizontal, 4)
 			}
 		}
-		.interactiveDismissDisabled(true)
-		// Only as tall as the content, growing when Details opens. A sheet taller than the
-		// screen stops at full height and the content scrolls.
-		.presentationDetents(contentHeight > 0 ? [.height(contentHeight + Self.navigationBarHeight)] : [.large])
 		.hostedConfirmation(
 			Text("Stop the update?", comment: "Title of the confirmation shown when closing an update in progress"),
 			isPresented: $showStopConfirmation,
@@ -198,10 +178,6 @@ struct FirmwareUpdateView: View {
 		}
 		.firmwareUpdateGame(isPresented: $showChirpyGame, status: gameStatus)
 		.onChange(of: detail, initial: true) { _, text in record(text) }
-		// Keep the screen on while this is open, the way the map does: a phone that sleeps
-		// mid-transfer can drop the Bluetooth link and stall the update.
-		.onAppear { UIApplication.shared.isIdleTimerDisabled = true }
-		.onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
 	}
 
 	// MARK: - Details log
@@ -229,34 +205,7 @@ struct FirmwareUpdateView: View {
 	// MARK: - Card
 
 	private var card: some View {
-		VStack(spacing: 16) {
-			if let radio {
-				FirmwareHeroImage(hardware: radio.hardware, pioEnv: radio.pioEnv)
-					.frame(maxHeight: 140)
-					.accessibilityHidden(true)
-				VStack(spacing: 4) {
-					Text(radio.name)
-						.font(.headline)
-						.multilineTextAlignment(.center)
-					if let version = radio.firmwareVersion {
-						Text("Firmware \(version)", comment: "The firmware version being installed, under the radio's name on the update screen")
-							.font(.subheadline)
-							.foregroundStyle(.secondary)
-					}
-				}
-			}
-
-			VStack(spacing: 6) {
-				Text(title)
-					.font(.title3.bold())
-					.multilineTextAlignment(.center)
-				Text(message)
-					.font(.callout)
-					.foregroundStyle(.secondary)
-					.multilineTextAlignment(.center)
-					.fixedSize(horizontal: false, vertical: true)
-			}
-
+		FirmwareUpdateCard(title: title, message: message) {
 			if stage == .ready {
 				readyChecklist
 			} else if stage != .failed, !isUnavailable {
@@ -268,10 +217,6 @@ struct FirmwareUpdateView: View {
 				.accessibilityValue(stage == .sending ? Text(progress, format: .percent.precision(.fractionLength(0))) : Text(""))
 			}
 		}
-		.padding(20)
-		.frame(maxWidth: .infinity)
-		.background(Color(.secondarySystemGroupedBackground))
-		.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 	}
 
 	private var readyChecklist: some View {
