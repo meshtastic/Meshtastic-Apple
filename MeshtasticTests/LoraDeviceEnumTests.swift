@@ -1146,4 +1146,26 @@ struct LoRaChannelCalculatorTests {
 
 		#expect(abs(calculator.radioFrequencyMHz(slot: 1) - 902.125) < 0.001)
 	}
+
+	private func presetCalculator(_ region: RegionCodes, _ preset: ModemPresets) -> LoRaChannelCalculator {
+		LoRaChannelCalculator(
+			regionCode: region.rawValue,
+			usePreset: true,
+			modemPreset: preset.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+	}
+
+	@Test("KZ_863 is standard LoRa, so LongFast has 20 slots")
+	func kz863IsNotWideLoRa() {
+		#expect(presetCalculator(.kz863, .longFast).numChannels() == 20)
+	}
+
+	@Test("2.4 GHz widens LongFast but keeps NarrowFast at 62.5 kHz")
+	func lora24WidensOnlyPresetsWithAWideVariant() {
+		#expect(presetCalculator(.lora24, .longFast).numChannels() == 103)
+		#expect(presetCalculator(.lora24, .narrowFast).numChannels() == 1336)
+	}
 }
