@@ -166,6 +166,7 @@
 		3026281785101DB699D06321 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		3191C07890D78978DBD3794B /* MeshtasticDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModel.xcdatamodel; sourceTree = "<group>"; };
 		3213438021C94F7AA7D793B2 /* MeshtasticDataModelV 37.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 37.xcdatamodel"; sourceTree = "<group>"; };
+		3784293F623B7F0570312801 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = tr; path = tr.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		391CFE3B9D9A0171B3C3C8E9 /* mqtt_roots.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = mqtt_roots.json; sourceTree = "<group>"; };
 		39F62F9EFBE4C40C44059CA8 /* MeshtasticDataModelV 55.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 55.xcdatamodel"; sourceTree = "<group>"; };
 		3A1DD2267690F9B5200EFA73 /* MeshtasticDataModelV 24.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 24.xcdatamodel"; sourceTree = "<group>"; };
@@ -1210,6 +1211,7 @@
 				"pt-BR",
 				ru,
 				sr,
+				tr,
 				uk,
 				"zh-Hans",
 				"zh-Hant",
@@ -1491,6 +1493,7 @@
 				5927E5660D36A603597524F8 /* pt-BR */,
 				E4FC9164DF840C79496963DD /* ru */,
 				9DBED19900EBE8EC0F488AC6 /* sr */,
+				3784293F623B7F0570312801 /* tr */,
 				79D0E50414CB20BC27C5EA43 /* uk */,
 				9C0850C36BB4CC43CFB1DB8F /* zh-Hans */,
 				BD1780B27CE8A3FF56E1C632 /* zh-Hant */,
