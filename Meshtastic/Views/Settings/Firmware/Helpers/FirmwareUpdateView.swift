@@ -53,6 +53,8 @@ struct FirmwareUpdateRadio {
 	let name: String
 	/// The firmware version going on, when known, without the commit hash.
 	let firmwareVersion: String?
+	/// The exact build going on, with its commit hash, for the Details log.
+	var firmwareBuild: String?
 }
 
 extension EnvironmentValues {
@@ -60,11 +62,21 @@ extension EnvironmentValues {
 }
 
 /// Reads the firmware version out of a firmware file name, as people know it: `2.8.3` from
-/// `firmware-…-2.8.3.eb99f95.zip`, without the build's commit hash.
+/// `firmware-…-2.8.3.eb99f95.zip`, without the build's commit hash. Takes the last
+/// version-shaped run whose major number is plausible, so a date earlier in the name, as in
+/// `backup-2026.11.27-heltec-v3-2.7.18.fb3bf78.bin`, isn't mistaken for it.
 enum FirmwareFileVersion {
 	static func version(in fileName: String) -> String? {
-		guard let match = fileName.firstMatch(of: /(\d+\.\d+\.\d+)/) else { return nil }
-		return String(match.1)
+		fileName.matches(of: /(\d+)\.(\d+)\.(\d+)/)
+			.last { (Int($0.1) ?? .max) < 100 }
+			.map { "\($0.1).\($0.2).\($0.3)" }
+	}
+
+	/// The exact build, with the commit hash when the name has one: `2.8.3.eb99f95`.
+	static func build(in fileName: String) -> String? {
+		fileName.matches(of: /(\d+)\.(\d+)\.(\d+)(\.[0-9a-f]{6,})?/)
+			.last { (Int($0.1) ?? .max) < 100 }
+			.map { "\($0.1).\($0.2).\($0.3)\($0.4 ?? "")" }
 	}
 }
 
@@ -183,10 +195,17 @@ struct FirmwareUpdateView: View {
 		let text: String
 	}
 
-	/// Adds a status to the log once the update has started, skipping repeats in a row.
+	/// Adds a status to the log once the update has started, skipping repeats in a row. The
+	/// first entry names the exact build going on.
 	private func record(_ text: String) {
 		let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
 		guard !text.isEmpty, stage != .ready, !isUnavailable, detailLog.last?.text != text else { return }
+		if detailLog.isEmpty, let build = radio?.firmwareBuild ?? radio?.firmwareVersion {
+			detailLog.append(DetailLine(
+				time: Date(),
+				text: String(localized: "Installing firmware \(build)", comment: "First line of the firmware update Details log; the version with its commit hash")
+			))
+		}
 		detailLog.append(DetailLine(time: Date(), text: text))
 	}
 
@@ -353,7 +372,7 @@ struct FirmwareUpdateView: View {
 		case .restarting:
 			return String(localized: "Your radio is starting the new firmware. The app reconnects on its own.", comment: "Firmware update screen message after the transfer while the radio restarts")
 		case .done:
-			return String(localized: "Your radio is running the new firmware. The app reconnects on its own.", comment: "Firmware update screen message after a successful update")
+			return String(localized: "The firmware is on your radio. It's restarting now, and the app reconnects on its own.", comment: "Firmware update screen message after a successful update")
 		case .failed:
 			return String(localized: "Something interrupted the update. Move your phone close to the radio and try again.", comment: "Firmware update screen message after an update fails")
 		case .unavailable(let reason):

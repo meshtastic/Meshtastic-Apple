@@ -38,6 +38,10 @@ struct FirmwareOTAUpdateSheetTests {
 		#expect(FirmwareFileVersion.version(in: "firmware-heltec-v3-2.7.18.fb3bf78.bin") == "2.7.18")
 		#expect(FirmwareFileVersion.version(in: "firmware-rak4631-2.8.1.uf2") == "2.8.1")
 		#expect(FirmwareFileVersion.version(in: "my-custom-build.zip") == nil)
+		#expect(FirmwareFileVersion.version(in: "backup-2026.11.27-heltec-v3-2.7.18.fb3bf78.bin") == "2.7.18")
+		#expect(FirmwareFileVersion.build(in: "firmware-seeed_wio_tracker_L1-2.8.3.eb99f95-ota.zip") == "2.8.3.eb99f95")
+		#expect(FirmwareFileVersion.build(in: "backup-2026.11.27-heltec-v3-2.7.18.fb3bf78.bin") == "2.7.18.fb3bf78")
+		#expect(FirmwareFileVersion.build(in: "firmware-rak4631-2.8.1.uf2") == "2.8.1")
 	}
 
 	@Test("DFUUpdateState isError property correctly identifies error states")

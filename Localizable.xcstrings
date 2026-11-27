@@ -5679,6 +5679,9 @@
         }
       }
     },
+    "Installing firmware %@" : {
+      "comment" : "First line of the firmware update Details log; the version with its commit hash"
+    },
     "JOIN MY MESH" : {
       "comment" : "Printed channel label header, in capitals like HELLO MY NODE IS",
       "localizations" : {
@@ -7338,6 +7341,9 @@
     },
     "The app stays open until it finishes" : {
       "comment" : "Firmware update checklist item"
+    },
+    "The firmware is on your radio. It's restarting now, and the app reconnects on its own." : {
+      "comment" : "Firmware update screen message after a successful update"
     },
     "The print was canceled on the printer." : {
       "comment" : "Label printer error",
@@ -16490,9 +16496,6 @@
     },
     "Your radio is restarting into update mode. Keep the app open and your phone near the radio." : {
       "comment" : "Firmware update screen message while the radio restarts into update mode"
-    },
-    "Your radio is running the new firmware. The app reconnects on its own." : {
-      "comment" : "Firmware update screen message after a successful update"
     },
     "Your radio is starting the new firmware. The app reconnects on its own." : {
       "comment" : "Firmware update screen message after the transfer while the radio restarts"

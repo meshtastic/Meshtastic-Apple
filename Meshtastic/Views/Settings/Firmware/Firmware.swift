@@ -353,7 +353,8 @@ private struct FirmwareContentView: View {
 			hardware: hardware,
 			pioEnv: node.myInfo?.pioEnv,
 			name: longName.isEmpty ? (hardware.displayName ?? "") : longName,
-			firmwareVersion: FirmwareFileVersion.version(in: firmwareFile.lastPathComponent)
+			firmwareVersion: FirmwareFileVersion.version(in: firmwareFile.lastPathComponent),
+			firmwareBuild: FirmwareFileVersion.build(in: firmwareFile.lastPathComponent)
 		)
 	}
 	
