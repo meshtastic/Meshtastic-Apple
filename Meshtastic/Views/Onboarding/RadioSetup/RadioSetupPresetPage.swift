@@ -53,7 +53,7 @@ struct RadioSetupPresetPage: View {
 				}
 			}
 		) {
-			OnboardingControlRow(symbol: "dot.radiowaves.left.and.right", title: String(localized: "Preset", comment: "Radio setup row title"), text: recommendation) {
+			OnboardingControlRow(symbol: "dot.radiowaves.left.and.right", title: String(localized: "Preset", comment: "Radio setup row title"), text: recommendation, controlBelow: true) {
 				Picker(String(localized: "Preset", comment: "Radio setup row title"), selection: selection) {
 					ForEach(model.availablePresets(regionInfo: regionInfo)) { preset in
 						Text(preset.description).tag(preset.rawValue)

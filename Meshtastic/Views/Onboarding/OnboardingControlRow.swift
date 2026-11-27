@@ -15,6 +15,8 @@ struct OnboardingControlRow<Control: View>: View {
 	let color: Color
 	let title: String
 	let text: String?
+	/// Puts the control on its own line under the title, for values too long to sit beside it.
+	let controlBelow: Bool
 	let control: () -> Control
 
 	@Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -26,12 +28,14 @@ struct OnboardingControlRow<Control: View>: View {
 		color: Color = .accentColor,
 		title: String,
 		text: String? = nil,
+		controlBelow: Bool = false,
 		@ViewBuilder control: @escaping () -> Control
 	) {
 		self.symbol = symbol
 		self.color = color
 		self.title = title
 		self.text = text
+		self.controlBelow = controlBelow
 		self.control = control
 	}
 
@@ -43,6 +47,23 @@ struct OnboardingControlRow<Control: View>: View {
 				titleAndText
 				control()
 					.frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+			}
+			.frame(maxWidth: .infinity, alignment: .leading)
+		} else if controlBelow {
+			VStack(alignment: .leading, spacing: 6) {
+				HStack(alignment: .center, spacing: 12) {
+					icon
+					titleAndText
+				}
+				// Lined up under the title text rather than the icon. A menu picker otherwise
+				// takes the whole row and centers its label.
+				HStack(spacing: 0) {
+					control()
+						.fixedSize()
+					Spacer(minLength: 0)
+				}
+				.frame(minHeight: 44)
+				.padding(.leading, symbolColumn + 12)
 			}
 			.frame(maxWidth: .infinity, alignment: .leading)
 		} else {
@@ -91,7 +112,7 @@ struct OnboardingControlRow<Control: View>: View {
 			}
 			.labelsHidden()
 		}
-		OnboardingControlRow(symbol: "dot.radiowaves.left.and.right", title: "Preset", text: "Recommended for United States: Long Range - Turbo") {
+		OnboardingControlRow(symbol: "dot.radiowaves.left.and.right", title: "Preset", text: "Recommended for United States: Long Range - Turbo", controlBelow: true) {
 			Picker("Preset", selection: $region) {
 				Text("Long Range - Turbo").tag(1)
 				Text("Long Range - Fast").tag(3)
