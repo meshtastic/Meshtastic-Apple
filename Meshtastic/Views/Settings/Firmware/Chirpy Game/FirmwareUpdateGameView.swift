@@ -10,11 +10,10 @@ struct FirmwareUpdateGameButton: View {
 			isPresented = true
 		} label: {
 			Label("Play Chirpy Hop", systemImage: "gamecontroller.fill")
-				.frame(maxWidth: .infinity)
+				.font(.subheadline)
 		}
-		.buttonStyle(.borderedProminent)
-		.tint(.accentFill)
-		.controlSize(.large)
+		// A quiet extra, not a call to action: the update itself needs nothing from the user.
+		.buttonStyle(.borderless)
 		.disabled(!status.canPlay)
 		.accessibilityIdentifier("chirpy-ota-game-button")
 	}
