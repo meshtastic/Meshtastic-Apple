@@ -51,7 +51,7 @@ struct FirmwareUpdateRadio {
 	let pioEnv: String?
 	/// The radio's own name, falling back to the hardware's.
 	let name: String
-	/// The firmware version going on, when known.
+	/// The firmware version going on, when known, without the commit hash.
 	let firmwareVersion: String?
 }
 
@@ -59,10 +59,11 @@ extension EnvironmentValues {
 	@Entry var firmwareUpdateRadio: FirmwareUpdateRadio?
 }
 
-/// Reads a firmware version such as `2.8.3.eb99f95` out of a firmware file name.
+/// Reads the firmware version out of a firmware file name, as people know it: `2.8.3` from
+/// `firmware-…-2.8.3.eb99f95.zip`, without the build's commit hash.
 enum FirmwareFileVersion {
 	static func version(in fileName: String) -> String? {
-		guard let match = fileName.firstMatch(of: /(\d+\.\d+\.\d+(?:\.[0-9a-f]{6,})?)/) else { return nil }
+		guard let match = fileName.firstMatch(of: /(\d+\.\d+\.\d+)/) else { return nil }
 		return String(match.1)
 	}
 }

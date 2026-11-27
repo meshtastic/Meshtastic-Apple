@@ -32,10 +32,10 @@ struct FirmwareOTAUpdateSheetTests {
 		#expect(!FirmwareUpdateStage.unavailable(reason: "x").isUnderWay)
 	}
 
-	@Test("The firmware version is read from release file names")
+	@Test("The firmware version is read from release file names, without the commit hash")
 	func testFirmwareFileVersion() {
-		#expect(FirmwareFileVersion.version(in: "firmware-seeed_wio_tracker_L1-2.8.3.eb99f95-ota.zip") == "2.8.3.eb99f95")
-		#expect(FirmwareFileVersion.version(in: "firmware-heltec-v3-2.7.18.fb3bf78.bin") == "2.7.18.fb3bf78")
+		#expect(FirmwareFileVersion.version(in: "firmware-seeed_wio_tracker_L1-2.8.3.eb99f95-ota.zip") == "2.8.3")
+		#expect(FirmwareFileVersion.version(in: "firmware-heltec-v3-2.7.18.fb3bf78.bin") == "2.7.18")
 		#expect(FirmwareFileVersion.version(in: "firmware-rak4631-2.8.1.uf2") == "2.8.1")
 		#expect(FirmwareFileVersion.version(in: "my-custom-build.zip") == nil)
 	}
