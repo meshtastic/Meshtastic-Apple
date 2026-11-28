@@ -189,6 +189,8 @@ private struct FirmwareContentView: View {
 	@State var showFactoryErase = false
 	@State private var isDownloadingUpdate = false
 	@State private var updateDownloadFailed = false
+	/// The card's download, cancelled if the page closes before it finishes.
+	@State private var updateTask: Task<Void, Never>?
 	@State private var showsAdvanced = false
 
 	struct RowInstallation: Identifiable {
@@ -298,6 +300,10 @@ private struct FirmwareContentView: View {
 		}
 		.navigationTitle("Firmware Updates")
 		.navigationBarTitleDisplayMode(.inline)
+		.onDisappear {
+			updateTask?.cancel()
+			updateTask = nil
+		}
 		.onChange(of: meshtasticAPI.isLoadingFirmwareList) { _, isLoading in
 			if !isLoading {
 				firmwareList.refresh()
@@ -359,9 +365,10 @@ private struct FirmwareContentView: View {
 				.font(.subheadline)
 				.foregroundStyle(.secondary)
 		}
-		if let current, !current.isEmpty, let file = latestStableFile,
-		   file.status != .unavailable,
-		   FirmwareUpdateNotificationPolicy.isUpdateAvailable(current: current, latestStable: file.versionId) {
+		let isBehind = current.flatMap { current in
+			latestStableFile.map { FirmwareUpdateNotificationPolicy.isUpdateAvailable(current: current, latestStable: $0.versionId) }
+		} ?? false
+		if isBehind, let file = latestStableFile, file.status != .unavailable {
 			VStack(spacing: 10) {
 				Text("Stable \(FirmwareUpdateNotificationPolicy.normalizedVersion(file.versionId)) is available.", comment: "Firmware Updates card when the radio is behind the latest stable release; the version")
 					.font(.callout)
@@ -373,7 +380,11 @@ private struct FirmwareContentView: View {
 						.multilineTextAlignment(.center)
 				}
 				Button {
-					Task { await installLatestStable(file) }
+					guard updateTask == nil else { return }
+					updateTask = Task {
+						await installLatestStable(file)
+						updateTask = nil
+					}
 				} label: {
 					HStack(spacing: 6) {
 						if isDownloadingUpdate {
@@ -392,7 +403,7 @@ private struct FirmwareContentView: View {
 				.disabled(isDownloadingUpdate)
 			}
 			.padding(.top, 4)
-		} else if latestStableFile != nil, current?.isEmpty == false {
+		} else if !isBehind, latestStableFile != nil, current?.isEmpty == false {
 			Label {
 				Text("Up to date with the latest stable release", comment: "Firmware Updates card when the radio runs the latest stable release or newer")
 			} icon: {
@@ -412,6 +423,7 @@ private struct FirmwareContentView: View {
 			if file.status != .downloaded {
 				try await file.download()
 			}
+			try Task.checkCancellation()
 			rowInstallation = RowInstallation(type: file.firmwareType, url: file.localUrl)
 		} catch is CancellationError {
 		} catch {
