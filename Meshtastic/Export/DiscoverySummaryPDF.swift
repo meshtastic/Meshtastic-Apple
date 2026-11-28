@@ -398,10 +398,10 @@ enum DiscoverySummaryPDF {
 		}
 
 		// Calculate bounding region with padding
-		var minLat = allCoords.map(\.latitude).min()!
-		var maxLat = allCoords.map(\.latitude).max()!
-		var minLon = allCoords.map(\.longitude).min()!
-		var maxLon = allCoords.map(\.longitude).max()!
+		let minLat = allCoords.map(\.latitude).min()!
+		let maxLat = allCoords.map(\.latitude).max()!
+		let minLon = allCoords.map(\.longitude).min()!
+		let maxLon = allCoords.map(\.longitude).max()!
 
 		let latSpan = max((maxLat - minLat) * 1.6, 0.005)
 		let lonSpan = max((maxLon - minLon) * 1.6, 0.005)
