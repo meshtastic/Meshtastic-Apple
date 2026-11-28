@@ -11140,7 +11140,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Bu düğümde bir kabuk açar; gerekirse önce uzak yönetici oturumu başlatır"
+            "value" : "Bu düğümde bir kabuk açar; gerekirse önce uzaktan yönetim oturumu başlatır"
           }
         },
         "uk" : {
@@ -12791,7 +12791,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Uzak yönetici oturumu etkin"
+            "value" : "Uzaktan yönetim oturumu etkin"
           }
         },
         "uk" : {
@@ -14016,7 +14016,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Uzak yönetici oturumu başlatılıyor…"
+            "value" : "Uzaktan yönetim oturumu başlatılıyor…"
           }
         },
         "uk" : {
@@ -30211,7 +30211,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "aygıt ölçümleri"
+            "value" : "cihaz metrikleri"
           }
         },
         "uk" : {
@@ -58850,7 +58850,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "güç ölçümleri"
+            "value" : "güç metrikleri"
           }
         },
         "uk" : {
@@ -80117,7 +80117,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Paylaşılan bir ilgi çekici yer. Oluşturmak için haritaya dokunup basılı tutun."
+            "value" : "Paylaşılan bir ilgi çekici nokta. Oluşturmak için haritaya dokunup basılı tutun."
           }
         },
         "uk" : {
@@ -85597,7 +85597,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "hava kalitesi ölçümleri"
+            "value" : "hava kalitesi metrikleri"
           }
         },
         "uk" : {
@@ -85679,7 +85679,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Hava Kalitesi Ölçümleri"
+            "value" : "Hava Kalitesi Metrikleri"
           }
         },
         "uk" : {
@@ -85767,7 +85767,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Hava Kalitesi Ölçümleri Etkin"
+            "value" : "Hava Kalitesi Metrikleri Etkin"
           }
         },
         "uk" : {
@@ -85856,7 +85856,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Hava Kalitesi Ölçüm Kaydı"
+            "value" : "Hava Kalitesi Metrik Kaydı"
           }
         },
         "uk" : {
@@ -98343,7 +98343,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Aygıt Ölçümlerini Yayınla"
+            "value" : "Cihaz Metriklerini Yayınla"
           }
         },
         "uk" : {
@@ -119614,7 +119614,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Tüm hava kalitesi ölçümleri silinsin mi?"
+            "value" : "Tüm hava kalitesi metrikleri silinsin mi?"
           }
         },
         "uk" : {
@@ -119902,7 +119902,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Tüm aygıt ölçümleri silinsin mi?"
+            "value" : "Tüm cihaz metrikleri silinsin mi?"
           }
         },
         "uk" : {
@@ -120002,7 +120002,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Tüm ortam ölçümleri silinsin mi?"
+            "value" : "Tüm ortam metrikleri silinsin mi?"
           }
         },
         "uk" : {
@@ -120091,7 +120091,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Tüm ana bilgisayar ölçümleri silinsin mi?"
+            "value" : "Tüm ana bilgisayar metrikleri silinsin mi?"
           }
         },
         "uk" : {
@@ -121146,7 +121146,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Güç ölçümleri silinsin mi?"
+            "value" : "Güç metrikleri silinsin mi?"
           }
         },
         "uk" : {
@@ -124006,7 +124006,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Aygıt Ölçümleri"
+            "value" : "Cihaz Metrikleri"
           }
         },
         "uk" : {
@@ -124106,7 +124106,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Aygıt Ölçüm Kaydı"
+            "value" : "Cihaz Metrik Kaydı"
           }
         },
         "uk" : {
@@ -133230,7 +133230,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Aygıt ölçümlerinin mesh ağına yayınlanmasını etkinleştirir. Devre dışıyken ölçümler yalnızca bağlı istemcilere gönderilir."
+            "value" : "Cihaz metriklerinin mesh ağına yayınlanmasını etkinleştirir. Devre dışıyken ölçümler yalnızca bağlı istemcilere gönderilir."
           }
         },
         "uk" : {
@@ -136684,7 +136684,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "ortam ölçümleri"
+            "value" : "ortam metrikleri"
           }
         },
         "uk" : {
@@ -136766,7 +136766,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Ortam Ölçümleri"
+            "value" : "Ortam Metrikleri"
           }
         },
         "uk" : {
@@ -136854,7 +136854,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Ortam Ölçümleri Etkin"
+            "value" : "Ortam Metrikleri Etkin"
           }
         },
         "uk" : {
@@ -136954,7 +136954,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Ortam Ölçüm Kaydı"
+            "value" : "Ortam Metrik Kaydı"
           }
         },
         "uk" : {
@@ -159124,7 +159124,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "ana bilgisayar ölçümleri"
+            "value" : "ana bilgisayar metrikleri"
           }
         },
         "uk" : {
@@ -159213,7 +159213,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Ana Bilgisayar Ölçüm Kaydı"
+            "value" : "Ana Bilgisayar Metrik Kaydı"
           }
         },
         "uk" : {
@@ -159671,7 +159671,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Hava kalitesi ölçümlerinin mesh üzerinden gönderilme sıklığı. Varsayılan: 30 dakika."
+            "value" : "Hava kalitesi metriklerinin mesh üzerinden gönderilme sıklığı. Varsayılan: 30 dakika."
           }
         },
         "uk" : {
@@ -159765,7 +159765,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Aygıt ölçümlerinin mesh üzerinden gönderilme sıklığı. Varsayılan: 30 dakika."
+            "value" : "Cihaz metriklerinin mesh üzerinden gönderilme sıklığı. Varsayılan: 30 dakika."
           }
         },
         "uk" : {
@@ -159859,7 +159859,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Ortam ölçümlerinin mesh üzerinden gönderilme sıklığı. Varsayılan: 30 dakika."
+            "value" : "Ortam metriklerinin mesh üzerinden gönderilme sıklığı. Varsayılan: 30 dakika."
           }
         },
         "uk" : {
@@ -159953,7 +159953,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Güç ölçümlerinin mesh üzerinden gönderilme sıklığı. Varsayılan: 30 dakika."
+            "value" : "Güç metriklerinin mesh üzerinden gönderilme sıklığı. Varsayılan: 30 dakika."
           }
         },
         "uk" : {
@@ -165666,7 +165666,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Patikaları, yolları ve ilgi çekici yerleri içerir."
+            "value" : "Patikaları, yolları ve ilgi çekici noktaları içerir."
           }
         },
         "uk" : {
@@ -165756,7 +165756,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Patikaları, yolları, ilgi çekici yerleri ve kabartma gölgelendirmesi ile eş yükselti eğrileri için arazi verilerini içerir."
+            "value" : "Patikaları, yolları, ilgi çekici noktaları ve kabartma gölgelendirmesi ile eş yükselti eğrileri için arazi verilerini içerir."
           }
         },
         "uk" : {
@@ -241748,7 +241748,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Hava Kalitesi Ölçümü Yok"
+            "value" : "Hava Kalitesi Metriği Yok"
           }
         },
         "uk" : {
@@ -242732,7 +242732,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Aygıt Ölçümü Yok"
+            "value" : "Cihaz Metriği Yok"
           }
         },
         "uk" : {
@@ -242922,7 +242922,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Ortam Ölçümü Yok"
+            "value" : "Ortam Metriği Yok"
           }
         },
         "uk" : {
@@ -243283,7 +243283,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Ana Bilgisayar Ölçümü Yok"
+            "value" : "Ana Bilgisayar Metriği Yok"
           }
         },
         "uk" : {
@@ -244808,7 +244808,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Güç Ölçümü Yok"
+            "value" : "Güç Metriği Yok"
           }
         },
         "uk" : {
@@ -261627,7 +261627,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "İlgi Çekici Yerler"
+            "value" : "İlgi Çekici Noktalar"
           }
         },
         "uk" : {
@@ -264130,7 +264130,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Güç Ölçümleri"
+            "value" : "Güç Metrikleri"
           }
         },
         "uk" : {
@@ -264230,7 +264230,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Güç Ölçüm Kaydı"
+            "value" : "Güç Metrik Kaydı"
           }
         },
         "uk" : {
@@ -273834,7 +273834,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Uzak yönetim"
+            "value" : "Uzaktan yönetim"
           }
         },
         "uk" : {
@@ -273928,7 +273928,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Uzak yönetim: %@"
+            "value" : "Uzaktan yönetim: %@"
           }
         },
         "uk" : {
@@ -276534,7 +276534,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Hava Kalitesi Ölçümlerini İste"
+            "value" : "Hava Kalitesi Metriklerini İste"
           }
         },
         "uk" : {
@@ -276617,7 +276617,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Aygıt Ölçümlerini İste"
+            "value" : "Cihaz Metriklerini İste"
           }
         },
         "uk" : {
@@ -276700,7 +276700,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Ortam Ölçümlerini İste"
+            "value" : "Ortam Metriklerini İste"
           }
         },
         "uk" : {
@@ -276783,7 +276783,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Ana Bilgisayar Ölçümlerini İste"
+            "value" : "Ana Bilgisayar Metriklerini İste"
           }
         },
         "uk" : {
@@ -277132,7 +277132,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "machine_translated",
-            "value" : "Güç Ölçümlerini İste"
+            "value" : "Güç Metriklerini İste"
           }
         },
         "uk" : {
