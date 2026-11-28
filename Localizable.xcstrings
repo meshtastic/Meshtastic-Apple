@@ -768,6 +768,12 @@
             "value" : "%lld개 노드"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld węzłów"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -1613,6 +1619,12 @@
             "value" : "Ajoute %lld canaux"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodaje kanały: %lld"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -1817,6 +1829,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "すべてのメッセージ"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wszystkie wiadomości"
           }
         },
         "pt-BR" : {
@@ -2628,6 +2646,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "ch使用率"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ChUtil"
           }
         },
         "pt-BR" : {
@@ -4006,6 +4030,12 @@
             "value" : "Control 키"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Control"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -4729,6 +4759,12 @@
             "value" : "重複"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Duplikaty"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -5410,6 +5446,12 @@
             "value" : "대피 필요"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ewakuuj się"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -5847,6 +5889,12 @@
             "value" : "最小ホップ数"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Minimalna liczba skoków"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -5923,6 +5971,12 @@
             "value" : "%lldホップ以上のトレースルートはまだありません"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak trasy z co najmniej %lld skokami"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -5974,6 +6028,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "未読メッセージはありません"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak nieprzeczytanych wiadomości"
           }
         },
         "pt-BR" : {
@@ -6176,6 +6236,12 @@
             "value" : "中継パケット数"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekazane pakiety"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -6282,6 +6348,12 @@
             "value" : "表示するメッセージを選択します。"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz wiadomości do pokazania."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -6333,6 +6405,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "マップに表示するノードを選択します。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz węzły pokazywane na mapie."
           }
         },
         "pt-BR" : {
@@ -6392,6 +6470,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "小サイズに表示する測定値を順番に選択します。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz odczyty pokazywane w małym rozmiarze, w kolejności."
           }
         },
         "pt-BR" : {
@@ -6463,6 +6547,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "나쁨"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Słaba"
           }
         },
         "pt-BR" : {
@@ -6694,6 +6784,12 @@
             "value" : "測定値"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odczyt"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -6830,6 +6926,12 @@
             "value" : "測定値"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odczyty"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -6881,6 +6983,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "表示する測定値の数"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazane odczyty"
           }
         },
         "pt-BR" : {
@@ -7092,6 +7200,12 @@
             "value" : "ラベルを表示"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż etykiety"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -7143,6 +7257,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "最新のトレースルート、またはこのホップ数以上の最新のトレースルートを表示します。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż najnowszą trasę albo najnowszą z co najmniej tyloma skokami."
           }
         },
         "pt-BR" : {
@@ -7389,6 +7509,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "답답함"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Duszno"
           }
         },
         "pt-BR" : {
@@ -7803,6 +7929,12 @@
             "value" : "未読メッセージ"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nieprzeczytane wiadomości"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -7854,6 +7986,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "未読のみ"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tylko nieprzeczytane"
           }
         },
         "pt-BR" : {
@@ -7925,6 +8063,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "위험"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niebezpieczna"
           }
         },
         "pt-BR" : {
@@ -10165,6 +10309,12 @@
             "value" : "다음 측정값, %lld/%lld페이지"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Następne odczyty, strona %lld z %lld"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -10246,6 +10396,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "다음 텔레메트리 측정값"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Następne odczyty telemetrii"
           }
         },
         "pt-BR" : {
@@ -11471,6 +11627,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "페이지 수"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Strony"
           }
         },
         "pt-BR" : {
@@ -14433,6 +14595,12 @@
         "ko" : {
           "stringUnit" : {
             "state" : "machine_translated",
+            "value" : "Tab"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Tab"
           }
         },
@@ -20248,6 +20416,12 @@
             "value" : "%lld홉"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skoki: %lld"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -20806,6 +20980,12 @@
             "value" : "아직 수신되지 않음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jeszcze nie słyszany"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -20887,6 +21067,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "최근 노드에 없음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie ma go wśród ostatnich węzłów"
           }
         },
         "pt-BR" : {
@@ -22543,6 +22729,12 @@
             "value" : "%@까지 업데이트됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacje do %@."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -23886,6 +24078,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "%lld일 전"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld d temu"
           }
         },
         "pt-BR" : {
@@ -26203,6 +26401,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "나쁨"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zła"
           }
         },
         "pt-BR" : {
@@ -31856,6 +32060,12 @@
             "value" : "극심한 오염"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skrajnie zanieczyszczone"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -34208,6 +34418,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "방금"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przed chwilą"
           }
         },
         "pt-BR" : {
@@ -55225,6 +55441,12 @@
             "value" : "수신 기록 없음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nigdy nie słyszany"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -57629,6 +57851,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "노드를 선택하고, 제외할 측정값이 있으면 함께 선택하십시오."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz węzeł i odczyty, które chcesz pominąć."
           }
         },
         "pt-BR" : {
@@ -63031,6 +63259,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "텔레메트리 위젯에 다음 측정값을 표시합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuje następne odczyty na widżecie Telemetria."
           }
         },
         "pt-BR" : {
@@ -72491,6 +72725,12 @@
             }
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skoki: %d"
+          }
+        },
         "pt-BR" : {
           "variations" : {
             "plural" : {
@@ -75113,6 +75353,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld 개 읽지 않음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nieprzeczytane: %lld"
           }
         },
         "pt-BR" : {
@@ -82993,6 +83239,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "이 Meshtastic 연락처를 노드에 추가하겠습니까?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodać ten kontakt Meshtastic do węzłów?"
           }
         },
         "pt-BR" : {
@@ -92102,6 +92354,12 @@
             "value" : "노드를 초기 설정으로 재설정하시겠습니까?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czy na pewno chcesz przywrócić ustawienia fabryczne węzła?"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -99992,6 +100250,12 @@
             "value" : "취소됨: %d"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Anulowane: %d"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -103876,6 +104140,12 @@
             "value" : "채널 번호는 0부터 7 사이여야 합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Numer kanału musi być od 0 do 7."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -104242,6 +104512,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "채널 URL"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "URL kanału"
           }
         },
         "pt-BR" : {
@@ -108799,6 +109075,12 @@
             "value" : "간결"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kompaktowy"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -112606,6 +112888,12 @@
             "value" : "연락처 URL"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "URL kontaktu"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -114326,6 +114614,12 @@
             "value" : "노드를 찾을 수 없습니다"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie znaleziono węzła"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -115653,6 +115947,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "개수"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Liczba"
           }
         },
         "pt-BR" : {
@@ -121574,6 +121874,12 @@
             "value" : "제품 설명은 100바이트 이하로 작성해주세요."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Opis musi mieć mniej niż 100 bajtów"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -126179,6 +126485,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "현재 연결된 노드를 연결 해제"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozłącz połączony węzeł"
           }
         },
         "pt-BR" : {
@@ -131933,6 +132245,12 @@
             "value" : "동쪽"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wschód"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -137110,6 +137428,12 @@
             "value" : "선택한 노드의 환경, 대기질 및 전력 측정값입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odczyty środowiskowe, jakości powietrza i zasilania z wybranego węzła."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -139858,6 +140182,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "매우 좋음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Doskonała"
           }
         },
         "pt-BR" : {
@@ -144092,6 +144422,12 @@
             "value" : "아니요"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fałsz"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -144732,6 +145068,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "특정 노드의 최신 위치를 가져옵니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobierz ostatnią pozycję wybranego węzła"
           }
         },
         "pt-BR" : {
@@ -152001,6 +152343,12 @@
             "value" : "노드 위치 가져오기"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobierz pozycję węzła"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -152358,6 +152706,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "좋음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dobra"
           }
         },
         "pt-BR" : {
@@ -154277,6 +154631,12 @@
             "value" : "돌풍 %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Porywy %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -154529,6 +154889,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "하드 리셋"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Twardy reset"
           }
         },
         "pt-BR" : {
@@ -155355,6 +155721,12 @@
             "value" : "심한 오염"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mocno zanieczyszczone"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -155961,6 +156333,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "숨긴 측정값"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryte odczyty"
           }
         },
         "pt-BR" : {
@@ -157484,6 +157862,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "HIGH"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "WYSOKIE"
           }
         },
         "pt-BR" : {
@@ -159286,6 +159670,12 @@
             "value" : "시간"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Godzina"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -160662,6 +161052,12 @@
             "value" : "습도"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wilgotność"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -161868,6 +162264,12 @@
             "value" : "IAQ"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "IAQ"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -161959,6 +162361,12 @@
         "ko" : {
           "stringUnit" : {
             "state" : "machine_translated",
+            "value" : "IAQ "
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "IAQ "
           }
         },
@@ -162143,6 +162551,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "아이콘"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ikona"
           }
         },
         "pt-BR" : {
@@ -165278,6 +165692,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "설정뿐만 아니라 키와 BLE 페어링 정보도 모두 삭제됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oprócz konfiguracji zostaną usunięte klucze i powiązania BLE"
           }
         },
         "pt-BR" : {
@@ -169038,6 +169458,12 @@
             "value" : "키"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "klucz"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -169688,6 +170114,12 @@
         "ko" : {
           "stringUnit" : {
             "state" : "machine_translated",
+            "value" : "lan"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "lan"
           }
         },
@@ -170852,6 +171284,12 @@
             "value" : "위도(도 단위, 예: 37.7749)"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szerokość geograficzna w stopniach (np. 52.2297)"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -170938,6 +171376,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "위도는 -90도와 90도 사이여야 합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szerokość geograficzna musi być od -90 do 90 stopni"
           }
         },
         "pt-BR" : {
@@ -171494,6 +171938,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "구형"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Starsze"
           }
         },
         "pt-BR" : {
@@ -172121,6 +172571,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "약간 오염"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lekko zanieczyszczone"
           }
         },
         "pt-BR" : {
@@ -178728,6 +179184,12 @@
             "value" : "도 단위의 경도(예: -122.4194)"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Długość geograficzna w stopniach (np. 21.0122)"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -178814,6 +179276,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "경도는 -180도 이상 180도 이하여야 합니다"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Długość geograficzna musi być od -180 do 180 stopni"
           }
         },
         "pt-BR" : {
@@ -184135,6 +184603,12 @@
         "ko" : {
           "stringUnit" : {
             "state" : "machine_translated",
+            "value" : "Meshtastic"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Meshtastic"
           }
         },
@@ -233572,6 +234046,12 @@
             "value" : "메시지 내용이 200바이트를 초과합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Treść wiadomości przekracza 200 bajtów."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -235903,6 +236383,12 @@
             "value" : "보통"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Umiarkowana"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -235984,6 +236470,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "중간 오염"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Umiarkowanie zanieczyszczone"
           }
         },
         "pt-BR" : {
@@ -238151,6 +238643,12 @@
             "value" : "이모지 한 개만 입력해야 합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Musi to być jedno emoji"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -238699,6 +239197,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이름은 30바이트 미만이어야 합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwa musi mieć mniej niż 30 bajtów"
           }
         },
         "pt-BR" : {
@@ -241561,6 +242065,12 @@
             "value" : "없음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "nil"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -242253,6 +242763,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "연결된 노드 없음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak połączonego węzła"
           }
         },
         "pt-BR" : {
@@ -244318,6 +244834,12 @@
             "value" : "아직 텔레메트리를 보고한 노드가 없음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Żaden węzeł nie wysłał jeszcze telemetrii"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -246160,6 +246682,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "이 노드의 텔레메트리 없음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak telemetrii z tego węzła"
           }
         },
         "pt-BR" : {
@@ -249558,6 +250086,12 @@
             "value" : "북동쪽"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Północny wschód"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -249639,6 +250173,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "북서쪽"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Północny zachód"
           }
         },
         "pt-BR" : {
@@ -251642,6 +252182,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "객체"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obiekt"
           }
         },
         "pt-BR" : {
@@ -259264,6 +259810,12 @@
             "value" : "경로"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ścieżka"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -259935,6 +260487,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "현재 연결된 노드를 공장 초기화합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przywróć ustawienia fabryczne połączonego węzła"
           }
         },
         "pt-BR" : {
@@ -261346,6 +261904,12 @@
             "value" : "PM1.0"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PM1.0"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -261429,6 +261993,12 @@
             "value" : "PM10"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PM10"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -261509,6 +262079,12 @@
         "ko" : {
           "stringUnit" : {
             "state" : "machine_translated",
+            "value" : "PM2.5"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "PM2.5"
           }
         },
@@ -265620,6 +266196,12 @@
             "value" : "압력"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ciśnienie"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -265796,6 +266378,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "기본"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "główny"
           }
         },
         "pt-BR" : {
@@ -266270,6 +266858,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "개인정보 보호"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "prywatność"
           }
         },
         "pt-BR" : {
@@ -267589,6 +268183,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "확인"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poproś o potwierdzenie"
           }
         },
         "pt-BR" : {
@@ -269255,6 +269855,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "강우량"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Deszcz"
           }
         },
         "pt-BR" : {
@@ -273458,6 +274064,12 @@
             "value" : "중계: %d"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekazane: %d"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -275526,6 +276138,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "교체"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zastąp"
           }
         },
         "pt-BR" : {
@@ -277739,6 +278357,12 @@
             "value" : "초기화"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "reset"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -278994,6 +279618,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "연결된 노드 재시작"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uruchom ponownie połączony węzeł"
           }
         },
         "pt-BR" : {
@@ -284302,6 +284932,12 @@
             "value" : "채널 설정 저장"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisz ustawienia kanałów"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -286289,6 +286925,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "보조"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "dodatkowy"
           }
         },
         "pt-BR" : {
@@ -288949,6 +289591,12 @@
             "value" : "선택한 채널이 연결된 무선 장치에 추가됩니다. 기존 채널과 LoRa 설정은 유지됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybrane kanały zostaną dopisane do połączonego radia. Istniejące kanały i ustawienia LoRa zostaną zachowane."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -289031,6 +289679,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "선택한 채널이 연결된 무선 장치의 채널 목록을 대체합니다. QR 코드의 LoRa 설정이 적용됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybrane kanały zastąpią listę kanałów połączonego radia. Zostaną też zastosowane ustawienia LoRa z kodu QR."
           }
         },
         "pt-BR" : {
@@ -289798,6 +290452,12 @@
             "value" : "특정 Meshtastic 채널로 메시지 보내기"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij wiadomość na wybrany kanał Meshtastic"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -289890,6 +290550,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "특정 Meshtastic 노드로 메시지 보내기"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij wiadomość do wybranego węzła Meshtastic"
           }
         },
         "pt-BR" : {
@@ -290080,6 +290746,12 @@
             "value" : "연결된 노드에 종료 명령 보내기"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyłącz połączony węzeł"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -290172,6 +290844,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "웨이포인트 보내기"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij punkt"
           }
         },
         "pt-BR" : {
@@ -295879,6 +296557,12 @@
             "value" : "매우 심한 오염"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Silnie zanieczyszczone"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -296226,6 +296910,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "공유"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "udostępnij"
           }
         },
         "pt-BR" : {
@@ -297924,6 +298614,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "공장 초기화를 수행하기 전에 확인 대화상자를 표시합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż okno potwierdzenia przed przywróceniem ustawień fabrycznych"
           }
         },
         "pt-BR" : {
@@ -300618,6 +301314,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "노드를 종료할까요?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyłączyć węzeł?"
           }
         },
         "pt-BR" : {
@@ -303817,6 +304519,12 @@
             "value" : "SNR"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SNR"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -304971,6 +305679,12 @@
             "value" : "남쪽"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Południe"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -305054,6 +305768,12 @@
             "value" : "남동쪽"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Południowy wschód"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -305135,6 +305855,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "남서쪽"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Południowy zachód"
           }
         },
         "pt-BR" : {
@@ -310992,6 +311718,12 @@
             "value" : "Meshtastic 채널 URL을 가져와 채널 설정을 저장합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przyjmuje URL kanału Meshtastic i zapisuje ustawienia kanału."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -311078,6 +311810,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtastic 연락처 URL을 가져와 노드 데이터베이스에 저장합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przyjmuje URL kontaktu Meshtastic i zapisuje go w bazie węzłów"
           }
         },
         "pt-BR" : {
@@ -315726,6 +316464,12 @@
             "value" : "현재 이슬점은 %@입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Punkt rosy wynosi teraz %@."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -320308,6 +321052,12 @@
             "value" : "채널 설정 URL"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "URL ustawień kanału"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -320394,6 +321144,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "추가할 노드의 URL"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "URL węzła do dodania"
           }
         },
         "pt-BR" : {
@@ -325229,6 +325985,12 @@
             "value" : "이 노드는 노드 추적 위젯에 표시되고 있습니다. 다른 노드를 선택하거나 이 노드가 다시 수신될 때까지 위젯에는 이 노드가 더 이상 노드 목록에 없다고 표시됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ten węzeł jest na widżecie Node Tracker. Widżet pokaże, że węzła nie ma już na liście, dopóki nie wybierzesz innego węzła albo ten nie zostanie znów usłyszany."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -326633,6 +327395,12 @@
             "value" : "연결된 Meshtastic 무선 장치에 채널이 추가됩니다. LoRa 설정은 변경되지 않습니다. 계속하시겠습니까?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To doda kanały do połączonego radia Meshtastic. Ustawienia LoRa się nie zmienią. Kontynuować?"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -326989,6 +327757,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "연결된 Meshtastic 무선 장치의 채널과 LoRa 설정이 ‘교체’됩니다. 계속하시겠습니까?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To ZASTĄPI kanały i ustawienia LoRa w połączonym radiu Meshtastic. Kontynuować?"
           }
         },
         "pt-BR" : {
@@ -335257,6 +336031,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "사용할 수 없음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niedostępne"
           }
         },
         "pt-BR" : {
@@ -344567,6 +345347,12 @@
             "value" : "보기"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Widok"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -347657,6 +348443,12 @@
             "value" : "서쪽"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zachód"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -349384,6 +350176,12 @@
             "value" : "시간 창"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Okno"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -349815,6 +350613,12 @@
             "value" : "x"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "x"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -350176,6 +350980,12 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "y"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "y"
           }
         },
