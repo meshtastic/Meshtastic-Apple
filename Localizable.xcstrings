@@ -3646,6 +3646,12 @@
             "value" : "이 장치에 연결하시겠습니까?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połączyć z tym urządzeniem?"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -6123,6 +6129,12 @@
             "value" : "受信パケット数"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odebrane pakiety"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -6227,6 +6239,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "送信パケット数"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłane pakiety"
           }
         },
         "pt-BR" : {
@@ -15531,6 +15549,12 @@
             "value" : "다음 항목이 설정됩니다: %@. %@ 이전 채널 설정은 대체됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To ustawi %@. %@ Twoje dotychczasowe ustawienia kanałów zostaną zastąpione."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -17134,6 +17158,12 @@
             "value" : "무선 장치의 기본 채널 “%@”"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "główny kanał radia na „%@”"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -17217,6 +17247,12 @@
             "value" : "무선 장치가 재부팅 없이 새 메시로 전환됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio przełączy się do nowej sieci bez ponownego uruchomienia."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -17298,6 +17334,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "무선 장치가 재부팅된 후 새 메시에 다시 연결됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio uruchomi się ponownie i połączy z nową siecią."
           }
         },
         "pt-BR" : {
@@ -20075,6 +20117,12 @@
             "value" : "내 무선 장치"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Twoje radio"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -21797,6 +21845,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "왼쪽으로 스와이프하여 연결을 해제합니다. 길게 눌러 추가 옵션을 표시합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesuń w lewo, aby rozłączyć. Przytrzymaj, aby zobaczyć więcej opcji."
           }
         },
         "pt-BR" : {
@@ -24307,6 +24361,12 @@
             "value" : "2.4GHz"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "2,4 GHz"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -24740,6 +24800,12 @@
             "value" : "메시의 노드가 이 메시지를 확인했습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł w sieci potwierdził tę wiadomość."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -24823,6 +24889,12 @@
             "value" : "노드가 이 메시지를 중계했지만 수신자가 아직 확인하지 않았습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł przekazał tę wiadomość, ale odbiorca jej nie potwierdził."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -24904,6 +24976,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "연락처 %@을(를) 장치에 추가했습니다"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodano kontakt %@ do urządzenia"
           }
         },
         "pt-BR" : {
@@ -25503,6 +25581,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "앱에 연결하거나 단독으로 사용하는 메시지 장치입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Urządzenie połączone z aplikacją lub samodzielne urządzenie do wiadomości."
           }
         },
         "pt-BR" : {
@@ -26460,6 +26544,12 @@
             "value" : "Bluetooth %@ 다시 연결을 시도하고 BLE PIN을 정확히 확인하십시오."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bluetooth %@ Spróbuj połączyć się ponownie i dokładnie sprawdź PIN BLE."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -26804,6 +26894,12 @@
             "value" : "Bluetooth 무선 장치 %@\n\n‘연결’에서 무선 장치를 선택하십시오."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio Bluetooth %@\n\nWybierz radio w zakładce Połącz."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -26885,6 +26981,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "Bluetooth 장치 %@\nPIN %@\n\n연결하면 PIN이 복사됩니다. ‘연결’에서 장치를 선택한 다음, iOS에서 페어링을 요청하면 PIN을 붙여넣으십시오."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio Bluetooth %@\nPIN %@\n\nPIN zostanie skopiowany po połączeniu. Wybierz radio w zakładce Połącz, a potem wklej PIN, gdy iOS poprosi o parowanie."
           }
         },
         "pt-BR" : {
@@ -27146,6 +27248,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "장치를 쉽게 되찾을 수 있도록 기본 채널에 위치를 메시지로 주기적으로 브로드캐스트합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Regularnie wysyła lokalizację jako wiadomość na kanale domyślnym, aby ułatwić odnalezienie urządzenia."
           }
         },
         "pt-BR" : {
@@ -27575,6 +27683,12 @@
             "value" : "사전 정의 메시지 수신됨: %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odebrano wiadomości Canned Messages dla: %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -27745,6 +27859,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "채널 수신됨: %d %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odebrano kanał: %d %@"
           }
         },
         "pt-BR" : {
@@ -28630,6 +28750,12 @@
             "value" : "‘연결’ 화면"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ekran Połącz"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -29069,6 +29195,12 @@
             "value" : "메시지를 보낼 수 없음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się wysłać wiadomości"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -29417,6 +29549,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "메시에 전달됨"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dostarczono do sieci"
           }
         },
         "pt-BR" : {
@@ -30111,6 +30249,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "장치 메타데이터 수신됨, 보낸 노드: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odebrano metadane urządzenia od: %@"
           }
         },
         "pt-BR" : {
@@ -32289,6 +32433,12 @@
             "value" : "펌웨어 알림"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Powiadomienie o firmware"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -32905,6 +33055,12 @@
             "value" : "‘로컬 전용’과 마찬가지로 다른 메시에서 수신한 메시지를 무시하며, 여기에 더해 노드의 알려진 노드 목록에 없는 노드의 메시지도 무시합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ignoruje odebrane wiadomości z obcych sieci, jak Local Only, ale dodatkowo ignoruje też wiadomości od węzłów spoza listy znanych węzłów."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -32986,6 +33142,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "공개된 다른 메시나 복호화할 수 없는 다른 메시에서 수신한 메시지를 무시합니다. 노드의 로컬 기본/보조 채널의 메시지만 중계합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ignoruje odebrane wiadomości z obcych sieci, które są otwarte lub których nie może odszyfrować. Przekazuje tylko wiadomości z lokalnych kanałów głównego i dodatkowych."
           }
         },
         "pt-BR" : {
@@ -33241,6 +33403,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "타워나 산 정상에만 설치하는 인프라 노드입니다. 지붕이나 이동형 노드에는 사용하지 마십시오. 매우 우수한 커버리지가 필요합니다. 노드 목록에 표시됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł infrastruktury tylko na wieży lub szczycie góry. Nie do użytku na dachach ani w węzłach mobilnych. Wymaga wyjątkowego zasięgu. Widoczny na liście węzłów."
           }
         },
         "pt-BR" : {
@@ -54537,6 +54705,12 @@
             "value" : "MyInfo 수신됨: %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odebrano MyInfo: %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -55472,6 +55646,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "%@의 새 웨이포인트"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nowy punkt od %@"
           }
         },
         "pt-BR" : {
@@ -56948,6 +57128,12 @@
             "value" : "전달되지 않음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie dostarczono"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -57286,6 +57472,12 @@
             "value" : "SENSOR, TRACKER 및 TAK_TRACKER 역할에서만 허용됩니다. CLIENT_MUTE 역할과 마찬가지로 모든 중계를 차단합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dozwolone tylko dla ról SENSOR, TRACKER i TAK_TRACKER. Blokuje wszystkie retransmisje, podobnie jak rola CLIENT_MUTE."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -57367,6 +57559,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "핵심 Portnum(NodeInfo, Text, Position, Telemetry, Routing)의 패킷만 중계합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekazuje tylko pakiety z podstawowych portów: NodeInfo, Text, Position, Telemetry i Routing."
           }
         },
         "pt-BR" : {
@@ -59440,6 +59638,12 @@
             "value" : "수신한 메시지가 자체 비공개 채널에 있거나 LoRa 매개변수가 같은 다른 채널에서 온 경우 모두 중계합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekazuje każdą odebraną wiadomość, jeśli była na naszym prywatnym kanale lub na innym kanale z tymi samymi parametrami LoRa."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -59521,6 +59725,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "중계됨, 수신자가 확인하지 않음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekazano, odbiorca nie potwierdził"
           }
         },
         "pt-BR" : {
@@ -59695,6 +59905,12 @@
             "value" : "%2$@에서 노드 %1$@를 즐겨찾기에서 제거"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń węzeł %@ z ulubionych na %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -59776,6 +59992,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "Repeater (지원 중단됨)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Repeater (przestarzała)"
           }
         },
         "pt-BR" : {
@@ -59950,6 +60172,12 @@
             "value" : "사전 정의 메시지 모듈 메시지 요청됨: %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zażądano wiadomości modułu Canned Messages dla węzła: %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -60033,6 +60261,12 @@
             "value" : "RTTTL 설정 모듈 벨소리 요청됨: %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zażądano dzwonka RTTTL z modułu dla węzła: %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -60114,6 +60348,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "메시지 %1$@을(를) %2$@에서 %3$@(으)로 재전송함"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ponownie wysłano wiadomość %@ od %@ do %@"
           }
         },
         "pt-BR" : {
@@ -60809,6 +61049,12 @@
             "value" : "라우팅 수신됨, RequestID: %1$@, ACK 상태: %2$@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odebrano routing dla RequestID: %@, status potwierdzenia: %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -61145,6 +61391,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "‘전체’와 동일하게 작동하지만 패킷 디코딩을 건너뛰고 그대로 중계합니다. Repeater 역할에서만 사용할 수 있습니다. 다른 역할에서 설정하면 ‘전체’로 작동합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak ALL, ale bez dekodowania pakietów, po prostu je retransmituje. Dostępne tylko w roli Repeater. W innych rolach działa jak ALL."
           }
         },
         "pt-BR" : {
@@ -61580,6 +61832,12 @@
             "value" : "전송 중..."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłanie..."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -61661,6 +61919,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "채널을 전송했습니다: %@, 채널 인덱스 %d"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano kanał dla: %@, indeks kanału %d"
           }
         },
         "pt-BR" : {
@@ -61746,6 +62010,12 @@
             "value" : "LoRa 설정을 전송했습니다: %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano LoRa.Config dla: %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -61827,6 +62097,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "노드에 경로 추적 요청을 전송했습니다: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano żądanie śledzenia trasy do węzła: %@"
           }
         },
         "pt-BR" : {
@@ -61912,6 +62188,12 @@
             "value" : "%1$@에서 %2$@(으)로 경로 추적 패킷을 전송했습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano pakiet TraceRoute od: %@ do: %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -61993,6 +62275,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "웨이포인트 패킷을 전송했습니다. 보낸 노드: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano pakiet punktu od: %@"
           }
         },
         "pt-BR" : {
@@ -62078,6 +62366,12 @@
             "value" : "%2$@에서 %3$@(으)로 메시지 %1$@을(를) 전송했습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano wiadomość %@ od %@ do %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -62159,6 +62453,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "%1$@에서 %2$@(으)로 사용자 정보 교환 요청을 전송했습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano prośbę o wymianę informacji o użytkowniku od %@ do %@"
           }
         },
         "pt-BR" : {
@@ -62414,6 +62714,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "%2$@에서 노드 %1$@를 즐겨찾기에 추가"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ustaw węzeł %@ jako ulubiony na %@"
           }
         },
         "pt-BR" : {
@@ -64230,6 +64536,12 @@
             "value" : "텔레메트리 요청 실패"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Żądanie telemetrii nie powiodło się"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -64758,6 +65070,12 @@
             "value" : "무선 장치와의 Bluetooth 연결이 예기치 않게 끊어졌습니다. 기본 무선 장치가 다시 범위 안으로 들어오거나 전원이 다시 켜지면 자동으로 다시 연결됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połączenie Bluetooth z radiem zostało nieoczekiwanie przerwane. Aplikacja połączy się ponownie z preferowanym radiem, gdy wróci ono w zasięg lub zostanie włączone."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -64839,6 +65157,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "무선 장치와의 Bluetooth 연결이 끊어졌습니다. 기본 무선 장치의 전원이 다시 켜지거나 재부팅이 완료되면 자동으로 다시 연결됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połączenie Bluetooth z radiem zostało przerwane. Aplikacja połączy się ponownie z preferowanym radiem, gdy zostanie ono włączone lub skończy się uruchamiać."
           }
         },
         "pt-BR" : {
@@ -65458,6 +65782,12 @@
             "value" : "무선 장치에서는 저장된 페어링 정보가 삭제되었지만 사용자의 기기에서는 삭제되지 않았습니다. 이 문제를 해결하려면 설정 > Bluetooth에서 무선 장치를 지워 더 이상 유효하지 않은 이전 페어링 정보를 삭제해야 합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio usunęło zapisane dane parowania, ale Twoje urządzenie nie. Aby to naprawić, zapomnij radio w Ustawienia > Bluetooth, żeby usunąć stare, już nieważne dane parowania."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -65541,6 +65871,12 @@
             "value" : "페어링이 중단되었습니다. Apple Vision Pro에서는 Bluetooth PIN을 입력할 수 없으므로 무작위 PIN 또는 고정 PIN으로 설정된 무선 장치와 페어링할 수 없습니다. 다른 기기에서 무선 장치의 Bluetooth 페어링 모드를 PIN 없음(Just Works)으로 설정한 다음 다시 연결하십시오."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parowanie przerwane. Apple Vision Pro nie może wpisać PIN-u Bluetooth, więc radio z ustawionym PIN-em losowym lub stałym nie sparuje się z nim. Ustaw na innym urządzeniu tryb parowania Bluetooth radia na Bez PIN-u (Just Works), a potem połącz się ponownie."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -65622,6 +65958,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "무선 장치에서 알 수 없는 전달 오류를 보고했습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio zgłosiło nieznany błąd dostarczenia."
           }
         },
         "pt-BR" : {
@@ -66405,6 +66747,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "경로 추적 요청 결과: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Żądanie śledzenia trasy zwróciło: %@"
           }
         },
         "pt-BR" : {
@@ -68013,6 +68361,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "%@의 대역폭은 미국 규정에 맞지 않습니다. Turbo 프리셋을 권장합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szerokość pasma presetu %@ jest niezgodna z przepisami w USA. Zalecane są presety Turbo."
           }
         },
         "pt-BR" : {
@@ -71952,6 +72306,12 @@
             "value" : "%1$@님이 \"%3$@\"에 %2$@로 반응했습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ reaguje %2$@ na „%3$@”"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -72204,6 +72564,12 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "%d"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "%d"
           }
         },
@@ -72690,6 +73056,12 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "%lld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "%lld"
           }
         },
@@ -79584,6 +79956,12 @@
             "value" : "채널 인덱스 0은 브로드캐스트 패킷이 전송되는 기본 채널을 의미합니다. 펌웨어 2.6.10 이상에서는 위치 데이터가 활성화된 첫 번째 채널에서 브로드캐스트됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kanał o indeksie 0 to kanał główny, na który wysyłane są pakiety rozgłoszeniowe. Od firmware 2.6.10 lokalizacja jest wysyłana z pierwszego kanału, na którym jest włączona."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -79748,6 +80126,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "노드가 이 메시지를 거부했습니다. 경로가 변경되면 다시 시도하세요."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł odrzucił tę wiadomość. Spróbuj ponownie, gdy zmieni się trasa."
           }
         },
         "pt-BR" : {
@@ -80010,6 +80394,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "QR 코드는 노드 간 통신에 필요한 LoRa 설정과 채널을 포함합니다. 기존 채널을 덮어쓰려면 **채널 교체**를 사용하고, 기존 채널에 추가하려면 **채널 추가**를 사용하세요."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kod QR zawiera konfigurację LoRa i kanały potrzebne radiom do komunikacji. Użyj Zastąp kanały, aby nadpisać istniejące kanały, albo Dodaj kanały, aby dopisać je do istniejących."
           }
         },
         "pt-BR" : {
@@ -82363,6 +82753,12 @@
             "value" : "채널 추가"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodaj kanały"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -83800,6 +84196,12 @@
             "value" : "관리자 키가 승인되지 않음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Klucz administratora bez uprawnień"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -83975,6 +84377,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "관리자 세션 만료됨"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sesja administratora wygasła"
           }
         },
         "pt-BR" : {
@@ -84164,6 +84572,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "관리 기능 활성화됨"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Administracja włączona"
           }
         },
         "pt-BR" : {
@@ -95552,6 +95966,12 @@
             "value" : "노드가 보고한 배터리 잔량, 전압, 채널 사용률 및 송신 시간 데이터입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poziom baterii, napięcie, wykorzystanie kanału i czas nadawania zgłaszane przez węzeł."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -103516,6 +103936,12 @@
             "value" : "채널 아이콘"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ikony kanałów"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -103598,6 +104024,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "채널 목록"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Indeks kanału"
           }
         },
         "pt-BR" : {
@@ -104154,6 +104586,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "채널 보안"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bezpieczeństwo kanału"
           }
         },
         "pt-BR" : {
@@ -104873,6 +105311,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "채널 도움말"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pomoc: kanały"
           }
         },
         "pt-BR" : {
@@ -105846,6 +106290,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "올바른 장치 역할 선택"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak wybrać rolę urządzenia"
           }
         },
         "pt-BR" : {
@@ -111690,6 +112140,12 @@
             "value" : "연결된 노드"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połączone radio"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -112694,6 +113150,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "연락처"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kontakty"
           }
         },
         "pt-BR" : {
@@ -114682,6 +115144,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "암호화된 메시지를 보낼 수 없음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się wysłać zaszyfrowanej wiadomości"
           }
         },
         "pt-BR" : {
@@ -117720,6 +118188,12 @@
             "value" : "사용자 지정: %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Własne: %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -117801,6 +118275,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "사용자 지정: %lld초"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Własne: %lld s"
           }
         },
         "pt-BR" : {
@@ -118886,6 +119366,12 @@
             "value" : "디버그 로그%@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Logi debugowania%@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -119073,6 +119559,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "기본 (812.5 kHz)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Domyślna (812,5 kHz)"
           }
         },
         "pt-BR" : {
@@ -122480,6 +122972,12 @@
             "value" : "감지 센서"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czujnik wykrywania"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -122761,6 +123259,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "노드에서 보고하는 감지 센서 이벤트입니다. 움직임이나 문 열림/닫힘 알림 등이 포함됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdarzenia czujnika wykrywania zgłaszane przez węzeł, np. ruch albo otwarcie lub zamknięcie drzwi."
           }
         },
         "pt-BR" : {
@@ -123440,6 +123944,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "장치 설정 문서"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dokumentacja konfiguracji urządzenia"
           }
         },
         "pt-BR" : {
@@ -124446,6 +124956,12 @@
             "value" : "장치 역할"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Role urządzeń"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -125370,6 +125886,12 @@
             "value" : "개인 메시지는 공개 키 기반 구조(PKI)를 사용하여 암호화됩니다. 펌웨어 버전 2.5 이상이 필요합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomości prywatne są szyfrowane kluczem publicznym (PKI). Wymaga firmware w wersji 2.5 lub nowszej."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -125457,6 +125979,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "개인 메시지는 채널의 공유 암호화 키를 사용합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomości prywatne używają klucza współdzielonego kanału."
           }
         },
         "pt-BR" : {
@@ -125549,6 +126077,12 @@
             "value" : "개인 메시지는 채널의 공유 암호화 키를 사용합니다. 펌웨어 2.5 이전 버전의 노드에 표시됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomości prywatne używają klucza współdzielonego kanału. Pokazywane dla węzłów z firmware starszym niż 2.5."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -125631,6 +126165,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "개인 메시지 도움말"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pomoc: wiadomości prywatne"
           }
         },
         "pt-BR" : {
@@ -126268,6 +126808,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "단종"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wycofane"
           }
         },
         "pt-BR" : {
@@ -127506,6 +128052,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "거리 및 방향"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odległość i kierunek"
           }
         },
         "pt-BR" : {
@@ -131506,6 +132058,12 @@
             "value" : "듀티 사이클 제한"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Limit duty cycle"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -131848,6 +132406,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "각 노드는 색상 원 안에 표시되는 짧은 이름(최대 4바이트)과 그 옆에 표시되는 긴 이름을 가집니다. 원의 색상은 노드 번호에 따라 결정됩니다. 짧은 이름에는 이모지 또는 이니셜을 사용할 수 있습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Każdy węzeł ma krótką nazwę (do 4 bajtów) pokazaną w kolorowym kółku i długą nazwę obok niej. Kolor kółka zależy od numeru węzła. Krótką nazwą może być emoji albo inicjały."
           }
         },
         "pt-BR" : {
@@ -132391,6 +132955,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "18시간"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Osiemnaście godzin"
           }
         },
         "pt-BR" : {
@@ -135167,6 +135737,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "암호화된 메시지"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zaszyfrowana wiadomość"
           }
         },
         "pt-BR" : {
@@ -140131,6 +140707,12 @@
             "value" : "강조"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wykrzyknik"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -143556,6 +144138,12 @@
             "value" : "메시에 전달하지 못함"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie dostarczono do sieci"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -144552,6 +145140,12 @@
             "value" : "최근 메시지가 있는 연락처 목록의 맨 위에 즐겨찾기와 노드가 표시됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ulubione i węzły z niedawnymi wiadomościami są na górze listy kontaktów."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -144922,6 +145516,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "15초"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Piętnaście sekund"
           }
         },
         "pt-BR" : {
@@ -147302,6 +147902,12 @@
             "value" : "5시간"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pięć godzin"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -147484,6 +148090,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "5초"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pięć sekund"
           }
         },
         "pt-BR" : {
@@ -147947,6 +148559,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "플래그십"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Flagowe"
           }
         },
         "pt-BR" : {
@@ -148665,6 +149283,12 @@
             "value" : "방향과 함께 따라가기"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Śledź z kierunkiem"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -149126,6 +149750,12 @@
             "value" : "48시간"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czterdzieści osiem godzin"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -149207,6 +149837,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "45초"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czterdzieści pięć sekund"
           }
         },
         "pt-BR" : {
@@ -149470,6 +150106,12 @@
             "value" : "4시간"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cztery godziny"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -149551,6 +150193,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "4초"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cztery sekundy"
           }
         },
         "pt-BR" : {
@@ -153212,6 +153860,12 @@
             "value" : "노드가 보고한 GPS 위치 데이터(위도, 경도, 고도 포함)"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pozycja GPS zgłaszana przez węzeł: szerokość i długość geograficzna oraz wysokość."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -154364,6 +155018,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "하하"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Haha"
           }
         },
         "pt-BR" : {
@@ -162597,6 +163257,12 @@
             "value" : "대기 / 절전"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bezczynny / uśpiony"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -166653,6 +167319,12 @@
             "value" : "위치 정보(암호화되지 않음)"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niezabezpieczony z lokalizacją"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -166735,6 +167407,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MQTT(암호화되지 않음)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niezabezpieczony z MQTT"
           }
         },
         "pt-BR" : {
@@ -167612,6 +168290,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "유효하지 않은 요청"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nieprawidłowe żądanie"
           }
         },
         "pt-BR" : {
@@ -174310,6 +174994,12 @@
             "value" : "로컬 송신 시간 제한으로 인해 일시적으로 전송이 차단되었습니다. 잠시 기다린 후 다시 시도하십시오."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lokalne limity czasu nadawania tymczasowo blokują wysyłanie. Odczekaj przed ponowną próbą."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -175097,6 +175787,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "위치 공유"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Udostępnianie lokalizacji"
           }
         },
         "pt-BR" : {
@@ -178452,6 +179148,12 @@
             "value" : "길게 누르기 동작"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Akcje po przytrzymaniu"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -178538,6 +179240,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "길게 눌러 연락처를 즐겨찾기에 추가하거나 뮤트, 또는 대화를  삭제할 수 있습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przytrzymaj, aby dodać kontakt do ulubionych, wyciszyć go lub usunąć rozmowę."
           }
         },
         "pt-BR" : {
@@ -179371,6 +180079,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "LoRa 지역"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Region LoRa"
           }
         },
         "pt-BR" : {
@@ -181844,6 +182558,12 @@
             "value" : "따라가지 않음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie śledź"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -182016,6 +182736,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "현재 위치 정보 전송에 사용되는 채널임을 나타냅니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oznacza kanał używany obecnie do wysyłania pozycji."
           }
         },
         "pt-BR" : {
@@ -233850,6 +234576,12 @@
             "value" : "메시지가 너무 커서 보낼 수 없음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomość jest za duża, aby ją wysłać"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -234291,6 +235023,12 @@
             "value" : "메시지 상태"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Status wiadomości"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -234557,6 +235295,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "메시지를 너무 빠르게 보내고 있습니다. 잠시 기다린 후 다시 시도하십시오."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomości są wysyłane zbyt szybko. Odczekaj przed ponowną próbą."
           }
         },
         "pt-BR" : {
@@ -240319,6 +241063,12 @@
             "value" : "네트워크 무선 장치 %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio sieciowe %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -241305,6 +242055,12 @@
             "value" : "틈새"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niszowe"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -241644,6 +242400,12 @@
             "value" : "제시간에 수신 확인을 받지 못했습니다. 신호가 더 좋거나 메시 커버리지가 더 넓은 곳에서 다시 시도하십시오."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie otrzymano potwierdzenia na czas. Spróbuj ponownie przy lepszym sygnale lub większym zasięgu sieci."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -241814,6 +242576,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "앱 응답 없음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak odpowiedzi aplikacji"
           }
         },
         "pt-BR" : {
@@ -244235,6 +245003,12 @@
             "value" : "이 메시지를 확인한 노드가 없습니다. 신호가 더 좋거나 메시 커버리지가 더 넓을 때 다시 시도하십시오."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Żaden węzeł nie potwierdził tej wiadomości. Spróbuj ponownie przy lepszym sygnale lub większym zasięgu sieci."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -245137,6 +245911,12 @@
             "value" : "무선 인터페이스 없음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak interfejsu radiowego"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -245735,6 +246515,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "메시에서 대상 노드로 가는 경로를 찾지 못했습니다. 더 많은 노드에 연결할 수 있을 때 다시 시도하십시오."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie znaleziono w sieci trasy do węzła docelowego. Spróbuj ponownie, gdy więcej węzłów będzie osiągalnych."
           }
         },
         "pt-BR" : {
@@ -247610,6 +248396,12 @@
             "value" : "노드 목록 도움말"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pomoc: lista węzłów"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -248868,6 +249660,12 @@
             "value" : "상태 메시지를 브로드캐스트하는 노드가 수신되는 대로 여기에 표시됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzły, które wysyłają wiadomość statusu, pojawiają się tutaj, gdy zostaną usłyszane."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -249912,6 +250710,12 @@
             "value" : "승인되지 않음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak uprawnień"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -250263,6 +251067,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "안전하게 암호화되지 않음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niezabezpieczony"
           }
         },
         "pt-BR" : {
@@ -253081,6 +253891,12 @@
             "value" : "펌웨어 업데이트는 계속 제공되지만 일부 기능이 없을 수 있는 구형 또는 레거시 장치입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Starsze urządzenie, które nadal dostaje aktualizacje firmware, ale może nie mieć niektórych funkcji."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -253647,6 +254463,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "1초"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jedna sekunda"
           }
         },
         "pt-BR" : {
@@ -261695,6 +262517,12 @@
             "value" : "똥"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kupa"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -265242,6 +266070,12 @@
             "value" : "프리셋 기본값 (4/%d)"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Domyślny dla presetu (4/%d)"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -268038,6 +268872,12 @@
             "value" : "공개 키 암호화"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szyfrowanie kluczem publicznym"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -268485,6 +269325,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "물음표"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pytanie"
           }
         },
         "pt-BR" : {
@@ -269798,6 +270644,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "전송 빈도 제한됨"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekroczono limit"
           }
         },
         "pt-BR" : {
@@ -271508,6 +272360,12 @@
             "value" : "수신자 키를 사용할 수 없음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak klucza odbiorcy"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -271589,6 +272447,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "수신자에게 사용자의 키가 필요함"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odbiorca potrzebuje Twojego klucza"
           }
         },
         "pt-BR" : {
@@ -271762,6 +272626,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "모든 기능을 지원하며 활발하게 개발 중인 권장 장치입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zalecane urządzenie z pełną obsługą funkcji i aktywnym rozwojem."
           }
         },
         "pt-BR" : {
@@ -272276,6 +273146,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "메시지가 메시 네트워크를 거쳐 이 노드에 도달한 경로를 보여줍니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisane trasy pokazujące skoki, przez które wiadomość przeszła w sieci, aby dotrzeć do tego węzła."
           }
         },
         "pt-BR" : {
@@ -275614,6 +276490,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "채널 교체"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zastąp kanały"
           }
         },
         "pt-BR" : {
@@ -286920,6 +287802,12 @@
             "value" : "안전하게 암호화됨"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zabezpieczony"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -288040,6 +288928,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "드롭다운에서 노드를 선택하여 연결된 장치 또는 원격 장치를 관리합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz węzeł z listy, aby zarządzać połączonymi lub zdalnymi urządzeniami."
           }
         },
         "pt-BR" : {
@@ -290639,6 +291533,12 @@
             "value" : "채널 메시지와 개인 메시지를 보낼 수 있습니다. 메시지를 길게 눌러 복사, 답장, Tapback, 전송 세부사항 등의 작업을 사용할 수 있습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłaj wiadomości na kanałach i wiadomości prywatne. Przytrzymaj wiadomość, aby zobaczyć akcje, np. kopiuj, odpowiedz, reakcja i szczegóły dostarczenia."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -291994,6 +292894,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "노드에서 보고한 온도, 습도, 기압 등의 센서 데이터입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dane z czujników zgłaszane przez węzeł, np. temperatura, wilgotność i ciśnienie atmosferyczne."
           }
         },
         "pt-BR" : {
@@ -295331,6 +296237,12 @@
             "value" : "무선 장치의 노드 상세 정보에서 상태를 설정하면 여기에 표시됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ustaw status radia w szczegółach jego węzła, aby pojawił się tutaj."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -295794,6 +296706,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "72시간"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Siedemdziesiąt dwie godziny"
           }
         },
         "pt-BR" : {
@@ -296399,6 +297317,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "채널 공유"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Udostępnij kanały"
           }
         },
         "pt-BR" : {
@@ -297489,6 +298413,12 @@
             "value" : "공유 키"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Klucz współdzielony"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -297678,6 +298608,12 @@
             "value" : "짧은 이름 및 긴 이름"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Krótka i długa nazwa"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -297759,6 +298695,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "메시지를 줄인 후 다시 보내십시오."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skróć wiadomość i wyślij ją ponownie."
           }
         },
         "pt-BR" : {
@@ -299828,6 +300770,12 @@
             "value" : "번역된 텍스트 표시 중"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazano przetłumaczony tekst"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -299991,6 +300939,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "GPS 위치를 기반으로 노드까지의 방향과 거리를 표시합니다. 사용 중인 장치와 원격 노드 모두 위치를 공유해야 합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuje kierunek i odległość do węzła na podstawie pozycji GPS. Wymaga, aby Twoje urządzenie i zdalny węzeł udostępniały lokalizację."
           }
         },
         "pt-BR" : {
@@ -301525,6 +302479,12 @@
             "value" : "신호 강도계"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wskaźnik siły sygnału"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -301877,6 +302837,12 @@
             "value" : "신호: 나뿜"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sygnał: zły"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -301957,6 +302923,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "신호: 보통"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sygnał: przeciętny"
           }
         },
         "pt-BR" : {
@@ -302041,6 +303013,12 @@
             "value" : "신호: 좋음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sygnał: dobry"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -302121,6 +303099,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "신호: 매우 나쁨"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sygnał: bardzo zły"
           }
         },
         "pt-BR" : {
@@ -302487,6 +303471,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "서명된 노드"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podpisany węzeł"
           }
         },
         "pt-BR" : {
@@ -303192,6 +304182,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "6시간"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sześć godzin"
           }
         },
         "pt-BR" : {
@@ -304099,6 +305095,12 @@
             "value" : "SNR이 현재 모뎀 프리셋의 기준값보다 높습니다. 강하고 안정적인 신호입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SNR jest powyżej limitu dla obecnego presetu modemu. Silny, niezawodny sygnał."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -304179,6 +305181,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "SNR이 모뎀 프리셋의 기준값보다 훨씬 낮습니다. 이 신호 수준에서는 통신이 어려울 수 있습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SNR jest daleko poniżej limitu presetu modemu. Przy takim sygnale komunikacja jest mało prawdopodobna."
           }
         },
         "pt-BR" : {
@@ -304263,6 +305271,12 @@
             "value" : "SNR이 모뎀 프리셋의 기준값보다 약간 낮습니다. 연결이 불안정할 수 있습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SNR jest nieco poniżej limitu presetu modemu. Połączenie może się przerywać."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -304343,6 +305357,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "SNR이 모뎀 프리셋의 기준값보다 상당히 낮습니다. 패킷 손실과 불안정한 전송이 발생할 수 있습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SNR jest dużo poniżej limitu presetu modemu. Spodziewaj się utraty pakietów i zawodnego dostarczania."
           }
         },
         "pt-BR" : {
@@ -308229,6 +309249,12 @@
             "value" : "스토어 & 포워드 메시지"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomość Store & Forward"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -309321,6 +310347,12 @@
             "value" : "펌웨어 업데이트가 계속 제공되며 특수한 폼 팩터를 갖춘 지원되는 틈새 장치입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obsługiwane niszowe urządzenie z aktywnymi aktualizacjami firmware i nietypową obudową."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -310023,6 +311055,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "노드 전환 중"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przełączanie radia"
           }
         },
         "pt-BR" : {
@@ -312234,6 +313272,12 @@
             "value" : "10초"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dziesięć sekund"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -313206,6 +314250,12 @@
             "value" : "텍스트는 아이콘 및 색상과 함께 표시됩니다. 회색은 전달됨, 주황색은 전송 중 또는 재시도 가능한 경고, 빨간색은 재시도해도 성공하지 않는 영구 실패를 나타냅니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tekst ma ikonę i kolor. Szary oznacza dostarczenie, pomarańczowy wysyłanie lub ostrzeżenie, przy którym warto spróbować ponownie, a czerwony trwały błąd, którego ponowna próba nie naprawi."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -313555,6 +314605,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "관리자 세션 키가 없거나 만료되었거나 유효하지 않습니다. 다시 시도하기 전에 새 세션을 요청하십시오."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Klucz sesji administratora jest brakujący, wygasły lub nieprawidłowy. Poproś o nową sesję przed ponowną próbą."
           }
         },
         "pt-BR" : {
@@ -314326,6 +315382,12 @@
             "value" : "채널은 128비트 또는 256비트 AES 키로 암호화되어 있습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kanał jest szyfrowany 128- lub 256-bitowym kluczem AES."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -314408,6 +315470,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "채널은 안전하게 암호화되어 있지 않으며, 정밀 위치 데이터에 사용됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kanał nie jest bezpiecznie szyfrowany i służy do przesyłania dokładnej lokalizacji."
           }
         },
         "pt-BR" : {
@@ -314494,6 +315562,12 @@
             "value" : "채널은 안전하게 암호화되어 있지 않으며, 정밀 위치 데이터가 MQTT를 통해 인터넷으로 전송되고 있습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kanał nie jest bezpiecznie szyfrowany, a dokładna lokalizacja jest wysyłana do internetu przez MQTT."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -314576,6 +315650,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "채널은 키를 사용하지 않거나 알려진 1바이트 키를 사용하지만, 정밀 위치 데이터에는 사용되지 않습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kanał nie ma klucza lub ma znany 1-bajtowy klucz, ale nie służy do przesyłania dokładnej lokalizacji."
           }
         },
         "pt-BR" : {
@@ -314849,6 +315929,12 @@
             "value" : "대상이 요청을 수신했지만 응답한 앱이나 모듈이 없습니다. 수신자에게 연결할 수 있을 때 다시 시도하십시오."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odbiorca otrzymał żądanie, ale żadna aplikacja ani moduł nie odpowiedziały. Spróbuj ponownie, gdy odbiorca będzie osiągalny."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -314932,6 +316018,12 @@
             "value" : "승인되지 않은 요청이므로 대상이 이 요청을 거부했습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odbiorca odrzucił to żądanie, bo nie ma ono uprawnień."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -315013,6 +316105,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "대상이 이 요청을 유효하지 않은 요청으로 거부했습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odbiorca odrzucił to żądanie jako nieprawidłowe."
           }
         },
         "pt-BR" : {
@@ -316081,6 +317179,12 @@
             "value" : "암호화된 전송 경로를 사용할 수 없습니다. 노드 정보나 키가 동기화될 때까지 기다린 후 다시 시도하십시오."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie można było użyć szyfrowanej ścieżki wysyłania. Poczekaj, aż info o węźle lub klucze się zsynchronizują, i spróbuj ponownie."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -316345,6 +317449,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "전체 레이아웃의 그라데이션 막대는 빨간색(신호 없음)부터 주황색, 노란색을 거쳐 녹색(좋은 신호)까지 전체 신호 품질을 표시합니다. 모뎀 프리셋을 기준으로 SNR과 RSSI를 결합하여 표시합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pasek z gradientem w układzie „Pełna” pokazuje ogólną jakość sygnału, od czerwonego (brak sygnału) przez pomarańczowy i żółty do zielonego (dobry sygnał). Łączy SNR i RSSI względem Twojego presetu modemu."
           }
         },
         "pt-BR" : {
@@ -317065,6 +318175,12 @@
             "value" : "이 노드의 최신 공개 키가 이전에 기록된 키와 일치하지 않습니다. 직접 만나거나 전화로 공개 키를 비교하여 메시지를 주고받는 상대를 확인하세요."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Najnowszy klucz publiczny tego węzła nie zgadza się z wcześniej zapisanym. Sprawdź, z kim piszesz, porównując klucze publiczne osobiście lub przez telefon."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -317147,6 +318263,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "이 노드의 최신 공개 키가 이전에 기록된 키와 일치하지 않습니다. 직접 만나거나 전화로 공개 키를 비교하여 메시지를 주고받는 상대를 확인하십시오. 모든 펌웨어 버전에서 표시됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Najnowszy klucz publiczny tego węzła nie zgadza się z wcześniej zapisanym. Sprawdź, z kim piszesz, porównując klucze publiczne osobiście lub przez telefon. Pokazywane przy każdej wersji firmware."
           }
         },
         "pt-BR" : {
@@ -317321,6 +318443,12 @@
             "value" : "노드가 최근에 확인되었으며 온라인 상태로 간주됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł był niedawno słyszany i jest uznawany za online."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -317401,6 +318529,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "노드가 최근에 확인되지 않았으며, 절전 상태이거나 범위를 벗어났을 수 있습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzła dawno nie słyszano, może być uśpiony lub poza zasięgiem."
           }
         },
         "pt-BR" : {
@@ -317485,6 +318619,12 @@
             "value" : "사용자와 이 노드 사이에서 메시지를 중계하는 중간 노드의 수입니다. 홉이 없으면 직접 통신입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Liczba węzłów pośrednich przekazujących wiadomości między Tobą a tym węzłem. Brak skoków oznacza komunikację bezpośrednią."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -317565,6 +318705,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "숫자가 표시된 원은 노드가 사용하는 채널을 나타냅니다. 기본 채널 0이 아닌 보조 채널을 사용할 때만 표시됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kółko z numerem pokazuje, którego kanału używa węzeł. Widoczne tylko, gdy węzeł jest na kanale dodatkowym (nie na kanale głównym 0)."
           }
         },
         "pt-BR" : {
@@ -318078,6 +319224,12 @@
             "value" : "기본 채널은 브로드캐스트 트래픽을 처리합니다. 위치 아이콘은 내 위치를 전송하는 채널을 나타내며, 구름 아이콘은 MQTT 업링크 및 다운링크를 표시합니다. 별도의 메시지 그룹을 위한 보조 채널을 추가할 수 있습니다. [자세히 알아보기](https://meshtastic.org/docs/configuration/tips/)"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kanał główny obsługuje ruch rozgłoszeniowy. Ikona lokalizacji oznacza kanał, który wysyła Twoją pozycję, a ikony chmury pokazują wysyłanie i odbieranie przez MQTT. Dodaj kanały dodatkowe dla osobnych grup rozmów. [Więcej informacji](https://meshtastic.org/docs/configuration/tips/)"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -318429,6 +319581,12 @@
             "value" : "무선 장치가 이 노드의 서명된 브로드캐스트를 검증했으므로 노드의 신원은 시간이 지나도 일관되지만, 사용자가 직접 검증하지는 않았습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio zweryfikowało podpisane rozgłoszenia tego węzła, więc jego tożsamość jest stała w czasie, ale nie zweryfikowano go osobiście."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -318600,6 +319758,12 @@
             "value" : "수신자가 이 메시지를 확인했습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odbiorca potwierdził tę wiadomość."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -318681,6 +319845,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "수신자가 아직 사용자의 공개 키를 알지 못합니다. 사용자의 노드가 정보를 자동으로 공유할 수 있으니, 동기화된 후 다시 시도하십시오."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odbiorca nie zna jeszcze Twojego klucza publicznego. Twój węzeł może udostępnić swoje informacje automatycznie. Spróbuj ponownie po synchronizacji."
           }
         },
         "pt-BR" : {
@@ -319044,6 +320214,12 @@
             "value" : "원격 노드가 사용자의 관리자 키를 승인하지 않았습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdalny węzeł nie akceptuje Twojego klucza administratora."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -319125,6 +320301,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "%2$@에 %1$@ 요청을 보내지 못했습니다: %3$@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Żądanie %@ od %@ nie powiodło się: %@"
           }
         },
         "pt-BR" : {
@@ -319404,6 +320586,12 @@
             "value" : "발신자에게 이 메시지에 사용할 수 있는 무선 인터페이스가 없습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nadawca nie ma interfejsu radiowego, którego może użyć dla tej wiadomości."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -319485,6 +320673,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "발신자 또는 수신자가 이 메시지에 일치하는 채널/키를 사용할 수 없었습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nadawca lub odbiorca nie mógł użyć pasującego kanału lub klucza dla tej wiadomości."
           }
         },
         "pt-BR" : {
@@ -321375,6 +322569,12 @@
             "value" : "30초"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trzydzieści sekund"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -321456,6 +322656,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "36시간"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trzydzieści sześć godzin"
           }
         },
         "pt-BR" : {
@@ -322540,6 +323746,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "더 이상 지원되지 않으며 펌웨어 업데이트가 제공되지 않는 장치입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To urządzenie nie jest już obsługiwane i nie dostaje aktualizacji firmware."
           }
         },
         "pt-BR" : {
@@ -327256,6 +328468,12 @@
             "value" : "3시간"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trzy godziny"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -327337,6 +328555,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "3초"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trzy sekundy"
           }
         },
         "pt-BR" : {
@@ -327586,6 +328810,12 @@
             "value" : "싫어요"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kciuk w dół"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -327667,6 +328897,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "좋아요"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kciuk w górę"
           }
         },
         "pt-BR" : {
@@ -327839,6 +329075,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "타일 서버"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Serwer kafelków"
           }
         },
         "pt-BR" : {
@@ -332217,6 +333459,12 @@
             "value" : "경로 추적 완료"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Śledzenie trasy zakończone"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -334453,6 +335701,12 @@
             "value" : "12시간"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dwanaście godzin"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -334534,6 +335788,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "24시간"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dwadzieścia cztery godziny"
           }
         },
         "pt-BR" : {
@@ -334720,6 +335980,12 @@
             "value" : "2분"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dwie minuty"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -334801,6 +336067,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "2초"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dwie sekundy"
           }
         },
         "pt-BR" : {
@@ -338767,6 +340039,12 @@
             "value" : "데이터 업데이트 중"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizowanie danych"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -340915,6 +342193,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "옥상 노드에 사용하며, 근처에 있는 여러 Client Mute 노드의 메시지를 더 넓게 전달합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Do węzłów na dachach, aby szerzej rozsyłać wiadomości od wielu pobliskich węzłów w roli Client Mute."
           }
         },
         "pt-BR" : {
@@ -343396,6 +344680,12 @@
             "value" : "검증된 연락처"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zweryfikowany kontakt"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -343567,6 +344857,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "확인된 발신자"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zweryfikowany nadawca"
           }
         },
         "pt-BR" : {
@@ -346094,6 +347390,12 @@
             "value" : "메시에서 이 메시지의 확인 응답을 기다리는 중입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czekam, aż sieć potwierdzi tę wiadomość."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -346632,6 +347934,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "손 흔들기"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Machanie"
           }
         },
         "pt-BR" : {
@@ -350812,6 +352120,12 @@
             "value" : "연락처 QR 코드를 교환하여 이 노드의 키를 직접 만나서 검증했습니다. 목록에 표시되는 가장 높은 신뢰 수준입니다. 펌웨어 2.8 이상의 노드에는 자물쇠 대신 서명 상태가 표시됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Klucz tego węzła został zweryfikowany osobiście, przez wymianę kodów QR kontaktu. To najwyższy poziom zaufania na liście. Węzły z firmware 2.8 lub nowszym pokazują stan podpisu zamiast kłódek."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -351520,6 +352834,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "사용자의 노드에 아직 수신자의 공개 키가 없습니다. 노드 정보가 동기화될 때까지 기다린 후 다시 시도하십시오."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Twój węzeł nie ma jeszcze klucza publicznego odbiorcy. Poczekaj na synchronizację info o węźle i spróbuj ponownie."
           }
         },
         "pt-BR" : {
