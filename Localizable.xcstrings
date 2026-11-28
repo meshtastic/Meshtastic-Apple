@@ -278,6 +278,12 @@
             "value" : "DFU 모드로 재부팅"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : " Uruchom ponownie w trybie DFU"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -607,10 +613,26 @@
       }
     },
     "%@ is behind stable %@." : {
-      "comment" : "Connect screen firmware notice: the radio's firmware version, then the latest stable version"
+      "comment" : "Connect screen firmware notice: the radio's firmware version, then the latest stable version",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ jest starsza niż stabilna %@."
+          }
+        }
+      }
     },
     "%@ is behind stable %@. Use Meshtastic Flasher for this hardware." : {
-      "comment" : "Connect screen firmware notice for radios the app can't update: the radio's firmware version, then the latest stable version"
+      "comment" : "Connect screen firmware notice for radios the app can't update: the radio's firmware version, then the latest stable version",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ jest starsza niż stabilna %@. Do tego sprzętu użyj Meshtastic Flasher."
+          }
+        }
+      }
     },
     "%@, up to date" : {
       "comment" : "Firmware screen: the newest bootloader release, when the radio already has it. The argument is a version, such as 2.6.0.",
@@ -619,6 +641,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "%@, à jour"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@, aktualna"
           }
         },
         "pt-BR" : {
@@ -1514,7 +1542,15 @@
       }
     },
     "A newer bootloader makes Bluetooth updates more reliable. Factory erase wipes the radio and can bring back one that won't start." : {
-      "comment" : "Firmware Updates: footer under the Maintenance section"
+      "comment" : "Firmware Updates: footer under the Maintenance section",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nowszy bootloader sprawia, że aktualizacje przez Bluetooth są bardziej niezawodne. Wymazanie fabryczne czyści radio i może przywrócić takie, które się nie uruchamia."
+          }
+        }
+      }
     },
     "Add a map file you already have. It's copied into the app and added to this list." : {
       "localizations" : {
@@ -1740,10 +1776,26 @@
       }
     },
     "After the file is written the radio erases itself. Its drive disappears and comes back a couple of seconds later." : {
-      "comment" : "Note on the factory erase screen"
+      "comment" : "Note on the factory erase screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Po zapisaniu pliku radio samo się wymaże. Jego dysk zniknie i po kilku sekundach pojawi się ponownie."
+          }
+        }
+      }
     },
     "After the file is written the radio installs the bootloader and restarts. Its drive disappears and comes back." : {
-      "comment" : "Note on the bootloader update screen"
+      "comment" : "Note on the bootloader update screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Po zapisaniu pliku radio zainstaluje bootloader i uruchomi się ponownie. Jego dysk zniknie i pojawi się ponownie."
+          }
+        }
+      }
     },
     "Air" : {
       "comment" : "Short label for airtime in a small widget",
@@ -2325,10 +2377,26 @@
       }
     },
     "Bootloader Installed" : {
-      "comment" : "Bootloader update screen title after the file is written"
+      "comment" : "Bootloader update screen title after the file is written",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bootloader zainstalowany"
+          }
+        }
+      }
     },
     "Bootloader Update" : {
-      "comment" : "Title of the bootloader update screen"
+      "comment" : "Title of the bootloader update screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja bootloadera"
+          }
+        }
+      }
     },
     "Brought to you by" : {
       "comment" : "Showcase: plaque on the wall naming who made the showcase, above the Meshtastic Solutions name",
@@ -2893,7 +2961,15 @@
       }
     },
     "Choose Drive" : {
-      "comment" : "Button that opens the file picker to choose the radio's USB drive"
+      "comment" : "Button that opens the file picker to choose the radio's USB drive",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz dysk"
+          }
+        }
+      }
     },
     "Choose a Preset" : {
       "comment" : "Radio setup preset title",
@@ -3162,7 +3238,15 @@
       }
     },
     "Choose the radio's drive" : {
-      "comment" : "Bootloader and factory erase step title"
+      "comment" : "Bootloader and factory erase step title",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz dysk radia"
+          }
+        }
+      }
     },
     "Closing…" : {
       "localizations" : {
@@ -3518,7 +3602,15 @@
       }
     },
     "Connect the radio with a USB cable. If it's connected to the app, tap the button. Otherwise press its reset button twice quickly. It shows up as a USB drive." : {
-      "comment" : "Firmware USB screen step: how to put the radio in update mode"
+      "comment" : "Firmware USB screen step: how to put the radio in update mode",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podłącz radio kablem USB. Jeśli jest połączone z aplikacją, stuknij przycisk. W przeciwnym razie szybko naciśnij dwa razy jego przycisk reset. Pojawi się jako dysk USB."
+          }
+        }
+      }
     },
     "Connect to the radio to see its screen." : {
       "localizations" : {
@@ -3691,7 +3783,15 @@
       }
     },
     "Connect to your radio over Bluetooth or Wi-Fi to update it from your phone, or update it from a computer with the Web Flasher." : {
-      "comment" : "Shown when the phone has no Bluetooth or Wi-Fi connection to an ESP32 radio it could update"
+      "comment" : "Shown when the phone has no Bluetooth or Wi-Fi connection to an ESP32 radio it could update",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połącz się z radiem przez Bluetooth lub Wi-Fi, aby zaktualizować je z telefonu, albo zaktualizuj je z komputera przez Web Flasher."
+          }
+        }
+      }
     },
     "Connect to your radio to open a remote shell." : {
       "localizations" : {
@@ -4216,7 +4316,14 @@
       }
     },
     "Couldn't download the firmware. Check your internet connection and try again." : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się pobrać firmware'u. Sprawdź połączenie z internetem i spróbuj ponownie."
+          }
+        }
+      }
     },
     "Current Bootloader Version" : {
       "comment" : "Firmware screen: label above the radio's installed nRF52 bootloader version",
@@ -4225,6 +4332,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "Version actuelle du bootloader"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obecna wersja bootloadera"
           }
         },
         "pt-BR" : {
@@ -4454,7 +4567,14 @@
       }
     },
     "Downloading" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobieranie"
+          }
+        }
+      }
     },
     "Downloading Map" : {
       "comment" : "Spatial map loading card: title while the street map for the area downloads",
@@ -4623,7 +4743,15 @@
       }
     },
     "Downloading, checking and writing the file." : {
-      "comment" : "Bootloader update screen message while the file is downloaded and written"
+      "comment" : "Bootloader update screen message while the file is downloaded and written",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobieranie, sprawdzanie i zapisywanie pliku."
+          }
+        }
+      }
     },
     "Drawing the map" : {
       "comment" : "Spatial map loading card: drawing the map image laid over the terrain",
@@ -5199,13 +5327,37 @@
       }
     },
     "Erase" : {
-      "comment" : "Factory erase step title"
+      "comment" : "Factory erase step title",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymaż"
+          }
+        }
+      }
     },
     "Erase Started" : {
-      "comment" : "Factory erase screen title after the erase file is written"
+      "comment" : "Factory erase screen title after the erase file is written",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozpoczęto wymazywanie"
+          }
+        }
+      }
     },
     "Erasing" : {
-      "comment" : "Factory erase screen title while the erase file is downloaded and written"
+      "comment" : "Factory erase screen title while the erase file is downloaded and written",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymazywanie"
+          }
+        }
+      }
     },
     "Error from the node: %@" : {
       "localizations" : {
@@ -5649,7 +5801,15 @@
       }
     },
     "Getting Your Radio Ready" : {
-      "comment" : "Firmware update screen title while the radio restarts into update mode"
+      "comment" : "Firmware update screen title while the radio restarts into update mode",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przygotowywanie radia"
+          }
+        }
+      }
     },
     "Heard %@" : {
       "comment" : "Node Tracker widget footer. The argument is how long ago, such as 5 minutes ago.",
@@ -5728,19 +5888,59 @@
       }
     },
     "If the board isn't recognized, nothing is written. A bootloader for the wrong board can't be fixed over USB." : {
-      "comment" : "Note on the bootloader update screen"
+      "comment" : "Note on the bootloader update screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jeśli płytka nie zostanie rozpoznana, nic nie zostanie zapisane. Bootloadera dla złej płytki nie da się naprawić przez USB."
+          }
+        }
+      }
     },
     "Install Bootloader" : {
-      "comment" : "Button that writes the bootloader file onto the radio's drive"
+      "comment" : "Button that writes the bootloader file onto the radio's drive",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zainstaluj bootloader"
+          }
+        }
+      }
     },
     "Installing firmware %@" : {
-      "comment" : "First line of the firmware update Details log; the version with its commit hash"
+      "comment" : "First line of the firmware update Details log; the version with its commit hash",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalowanie firmware %@"
+          }
+        }
+      }
     },
     "Installing the Bootloader" : {
-      "comment" : "Bootloader update screen title while the file is downloaded and written"
+      "comment" : "Bootloader update screen title while the file is downloaded and written",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalowanie bootloadera"
+          }
+        }
+      }
     },
     "It restarted but didn't wait for the update. This usually means its bootloader needs updating. Update the bootloader over USB, then try again." : {
-      "comment" : "Firmware update screen message when the radio restarted but never entered update mode"
+      "comment" : "Firmware update screen message when the radio restarted but never entered update mode",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio uruchomiło się ponownie, ale nie czekało na aktualizację. Zwykle oznacza to, że trzeba zaktualizować jego bootloader. Zaktualizuj bootloader przez USB i spróbuj ponownie."
+          }
+        }
+      }
     },
     "JOIN MY MESH" : {
       "comment" : "Printed channel label header, in capitals like HELLO MY NODE IS",
@@ -5766,7 +5966,15 @@
       }
     },
     "Keep the app open and your phone near the radio." : {
-      "comment" : "Firmware update screen message while firmware is transferred"
+      "comment" : "Firmware update screen message while firmware is transferred",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie zamykaj aplikacji i trzymaj telefon blisko radia."
+          }
+        }
+      }
     },
     "Label Length" : {
       "comment" : "Label printing sheet: picker for 30 or 40 mm labels",
@@ -5798,6 +6006,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "Dernière version du bootloader"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Najnowsza wersja bootloadera"
           }
         },
         "pt-BR" : {
@@ -6044,7 +6258,15 @@
       }
     },
     "Open the Web Flasher" : {
-      "comment" : "Button that opens flash.meshtastic.org when the phone can't update a radio"
+      "comment" : "Button that opens flash.meshtastic.org when the phone can't update a radio",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz Web Flasher"
+          }
+        }
+      }
     },
     "Other Versions" : {
 
@@ -6368,10 +6590,26 @@
       }
     },
     "Pick the radio's drive in the file picker, for example FTHR840BOOT or RAK4631. The app reads which board it is from the drive." : {
-      "comment" : "Bootloader update step: choosing the radio's USB drive"
+      "comment" : "Bootloader update step: choosing the radio's USB drive",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz dysk radia w selektorze plików, np. FTHR840BOOT lub RAK4631. Aplikacja odczyta z dysku, jaka to płytka."
+          }
+        }
+      }
     },
     "Pick the radio's drive in the file picker. The app reads its bootloader from the drive to choose the right erase file, and never writes the wrong one." : {
-      "comment" : "Factory erase step: choosing the radio's USB drive"
+      "comment" : "Factory erase step: choosing the radio's USB drive",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz dysk radia w selektorze plików. Aplikacja odczyta z dysku jego bootloader, aby wybrać właściwy plik wymazania, i nigdy nie zapisze złego."
+          }
+        }
+      }
     },
     "Pick the readings the small size shows, in order." : {
       "comment" : "Mesh Status widget settings description",
@@ -6671,7 +6909,15 @@
       }
     },
     "Put the radio in update mode" : {
-      "comment" : "Firmware USB screen step title"
+      "comment" : "Firmware USB screen step title",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przełącz radio w tryb aktualizacji"
+          }
+        }
+      }
     },
     "Reading" : {
       "comment" : "Mesh Status widget setting: one reading",
@@ -6916,16 +7162,48 @@
       }
     },
     "Ready to Erase" : {
-      "comment" : "Factory erase screen title once the erase file is chosen"
+      "comment" : "Factory erase screen title once the erase file is chosen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gotowe do wymazania"
+          }
+        }
+      }
     },
     "Ready to Install" : {
-      "comment" : "Bootloader update screen title once the board is recognized"
+      "comment" : "Bootloader update screen title once the board is recognized",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gotowe do instalacji"
+          }
+        }
+      }
     },
     "Ready to Update" : {
-      "comment" : "Firmware update screen title before the update starts"
+      "comment" : "Firmware update screen title before the update starts",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gotowe do aktualizacji"
+          }
+        }
+      }
     },
     "Recognized board %@." : {
-      "comment" : "Bootloader update screen message once the board is recognized; the board ID"
+      "comment" : "Bootloader update screen message once the board is recognized; the board ID",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozpoznano płytkę %@."
+          }
+        }
+      }
     },
     "Replaces channels" : {
       "comment" : "Printed channel label: scanning it replaces the radio's channels",
@@ -6951,16 +7229,48 @@
       }
     },
     "Restart Into Update Mode" : {
-      "comment" : "Button that restarts the connected radio into its USB update mode"
+      "comment" : "Button that restarts the connected radio into its USB update mode",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uruchom ponownie w trybie aktualizacji"
+          }
+        }
+      }
     },
     "Restarting Your Radio" : {
-      "comment" : "Firmware update screen title after the transfer while the radio restarts"
+      "comment" : "Firmware update screen title after the transfer while the radio restarts",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ponowne uruchamianie radia"
+          }
+        }
+      }
     },
     "Save Firmware" : {
-      "comment" : "Button that saves the firmware file onto the radio's USB drive"
+      "comment" : "Button that saves the firmware file onto the radio's USB drive",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisz firmware"
+          }
+        }
+      }
     },
     "Save the firmware onto the radio" : {
-      "comment" : "USB firmware update step title"
+      "comment" : "USB firmware update step title",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisz firmware na radiu"
+          }
+        }
+      }
     },
     "Searching the Maps" : {
       "comment" : "Cinema loading card: title while the downloaded maps are searched for summits, coastline or buildings",
@@ -7069,7 +7379,15 @@
       }
     },
     "Sending Firmware" : {
-      "comment" : "Firmware update screen title while firmware is transferred"
+      "comment" : "Firmware update screen title while firmware is transferred",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłanie firmware'u"
+          }
+        }
+      }
     },
     "Show Labels" : {
       "comment" : "Node Map widget setting: counts over the map on the small size",
@@ -7178,10 +7496,26 @@
       }
     },
     "Something interrupted the update. Move your phone close to the radio and try again." : {
-      "comment" : "Firmware update screen message after an update fails"
+      "comment" : "Firmware update screen message after an update fails",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Coś przerwało aktualizację. Przysuń telefon bliżej radia i spróbuj ponownie."
+          }
+        }
+      }
     },
     "Stable %@ is available." : {
-      "comment" : "Firmware Updates card when the radio is behind the latest stable release; the version"
+      "comment" : "Firmware Updates card when the radio is behind the latest stable release; the version",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dostępna jest stabilna wersja %@."
+          }
+        }
+      }
     },
     "Step %lld of %lld: elevation" : {
       "comment" : "Spatial map loading card: which part of the download is running, the elevation data",
@@ -7436,37 +7770,125 @@
       }
     },
     "Tap Save Firmware, go back to Locations in the file picker, choose the radio's drive and tap Save." : {
-      "comment" : "USB firmware update step: how to save the file onto the radio's drive"
+      "comment" : "USB firmware update step: how to save the file onto the radio's drive",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stuknij Zapisz firmware, wróć do Miejsc w selektorze plików, wybierz dysk radia i stuknij Zachowaj."
+          }
+        }
+      }
     },
     "The Bootloader Wasn't Installed" : {
-      "comment" : "Bootloader update screen title after a failure"
+      "comment" : "Bootloader update screen title after a failure",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bootloader nie został zainstalowany"
+          }
+        }
+      }
     },
     "The Meshtastic nRF52 Bootloader makes Bluetooth firmware updates faster and more reliable. It's installed from the radio's USB drive." : {
-      "comment" : "Bootloader update screen message before a drive is chosen"
+      "comment" : "Bootloader update screen message before a drive is chosen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtastic nRF52 Bootloader sprawia, że aktualizacje firmware'u przez Bluetooth są szybsze i bardziej niezawodne. Instaluje się go z dysku USB radia."
+          }
+        }
+      }
     },
     "The Radio Wasn't Erased" : {
-      "comment" : "Factory erase screen title after a failure"
+      "comment" : "Factory erase screen title after a failure",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio nie zostało wymazane"
+          }
+        }
+      }
     },
     "The app stays open until it finishes" : {
-      "comment" : "Firmware update checklist item"
+      "comment" : "Firmware update checklist item",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aplikacja pozostaje otwarta do końca"
+          }
+        }
+      }
     },
     "The bootloader erases its own settings. The installed firmware stays and starts as a brand-new device." : {
-      "comment" : "Factory erase screen message when the bootloader can erase itself"
+      "comment" : "Factory erase screen message when the bootloader can erase itself",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bootloader wymaże własne ustawienia. Zainstalowany firmware zostanie i uruchomi się jak nowe urządzenie."
+          }
+        }
+      }
     },
     "The download is checked against a known checksum before anything is written." : {
-      "comment" : "Note on the bootloader update screen"
+      "comment" : "Note on the bootloader update screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przed zapisaniem czegokolwiek pobrany plik jest sprawdzany ze znaną sumą kontrolną."
+          }
+        }
+      }
     },
     "The download is checked against a known checksum, and against what the drive reported, before anything is written." : {
-      "comment" : "Note on the factory erase screen"
+      "comment" : "Note on the factory erase screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przed zapisaniem czegokolwiek pobrany plik jest sprawdzany ze znaną sumą kontrolną i z tym, co zgłosił dysk."
+          }
+        }
+      }
     },
     "The file gets a random name so iOS doesn't reuse an old copy." : {
-      "comment" : "Note on the USB firmware update screen"
+      "comment" : "Note on the USB firmware update screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plik dostaje losową nazwę, żeby iOS nie użył starej kopii."
+          }
+        }
+      }
     },
     "The firmware goes on as a file you save onto the radio's USB drive." : {
-      "comment" : "Message on the USB firmware update screen"
+      "comment" : "Message on the USB firmware update screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware trafia na radio jako plik, który zapisujesz na jego dysku USB."
+          }
+        }
+      }
     },
     "The firmware is on your radio. It's restarting now, and the app reconnects on its own." : {
-      "comment" : "Firmware update screen message after a successful update"
+      "comment" : "Firmware update screen message after a successful update",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware jest już na radiu. Radio uruchamia się ponownie, a aplikacja sama się z nim połączy."
+          }
+        }
+      }
     },
     "The print was canceled on the printer." : {
       "comment" : "Label printer error",
@@ -7699,13 +8121,37 @@
       }
     },
     "The radio is charged or plugged in" : {
-      "comment" : "Firmware update checklist item"
+      "comment" : "Firmware update checklist item",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio jest naładowane lub podłączone do zasilania"
+          }
+        }
+      }
     },
     "The Update Didn't Finish" : {
-      "comment" : "Firmware update screen title after an update fails"
+      "comment" : "Firmware update screen title after an update fails",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja się nie zakończyła"
+          }
+        }
+      }
     },
     "The radio restarts as soon as the file is written, so the file picker may say it couldn't save. That's expected." : {
-      "comment" : "Note on the USB firmware update screen"
+      "comment" : "Note on the USB firmware update screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio uruchamia się ponownie zaraz po zapisaniu pliku, więc selektor plików może pokazać, że nie udało się zapisać. Tak ma być."
+          }
+        }
+      }
     },
     "These channels make a QR too dense for a 12 mm label. Share fewer channels to print one." : {
       "comment" : "Label printing: the channel QR is too big to print",
@@ -7754,10 +8200,26 @@
       }
     },
     "This radio takes the erase image for SoftDevice S140 %@. The firmware is removed too, so install firmware afterwards." : {
-      "comment" : "Factory erase screen message for older bootloaders; the SoftDevice version"
+      "comment" : "Factory erase screen message for older bootloaders; the SoftDevice version",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To radio używa obrazu wymazania dla SoftDevice S140 %@. Firmware też zostanie usunięty, więc potem zainstaluj firmware."
+          }
+        }
+      }
     },
     "This radio's firmware is too old to update from your phone. Update it once from a computer with the Web Flasher, and later updates can come from here." : {
-      "comment" : "Shown when an ESP32 radio's firmware predates phone updates"
+      "comment" : "Shown when an ESP32 radio's firmware predates phone updates",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware tego radia jest zbyt stary, żeby zaktualizować go z telefonu. Zaktualizuj go raz z komputera przez Web Flasher, a kolejne aktualizacje zrobisz już stąd."
+          }
+        }
+      }
     },
     "Turn on Bluetooth to find the printer." : {
       "comment" : "Label printing sheet",
@@ -7972,22 +8434,62 @@
       }
     },
     "Up to date with the latest stable release" : {
-      "comment" : "Firmware Updates card when the radio runs the latest stable release or newer"
+      "comment" : "Firmware Updates card when the radio runs the latest stable release or newer",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualne, najnowsze wydanie stabilne"
+          }
+        }
+      }
     },
     "Update" : {
       "comment" : "Button that starts a firmware update"
     },
     "Update Bootloader" : {
-      "comment" : "Button that opens the bootloader upgrade from the firmware update screen"
+      "comment" : "Button that opens the bootloader upgrade from the firmware update screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zaktualizuj bootloader"
+          }
+        }
+      }
     },
     "Update Over USB" : {
-      "comment" : "Title of the USB firmware update screen"
+      "comment" : "Title of the USB firmware update screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizuj przez USB"
+          }
+        }
+      }
     },
     "Update This Radio From a Computer" : {
-      "comment" : "Firmware update screen title when the phone can't update the radio"
+      "comment" : "Firmware update screen title when the phone can't update the radio",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zaktualizuj to radio z komputera"
+          }
+        }
+      }
     },
     "Update the Bootloader" : {
-      "comment" : "Bootloader update screen title before a drive is chosen"
+      "comment" : "Bootloader update screen title before a drive is chosen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zaktualizuj bootloader"
+          }
+        }
+      }
     },
     "Updated %@" : {
       "comment" : "Widget footer. The argument is how long ago, such as 11 minutes ago.",
@@ -8043,7 +8545,15 @@
       }
     },
     "Wrote %@. The radio is installing the bootloader and restarts on its own." : {
-      "comment" : "Bootloader update screen message after the file is written; the file name"
+      "comment" : "Bootloader update screen message after the file is written; the file name",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisano %@. Radio instaluje bootloader i samo uruchomi się ponownie."
+          }
+        }
+      }
     },
     "frequency slot %lld" : {
       "comment" : "Beacon switch prompt; one of the changes listed",
@@ -16548,7 +17058,15 @@
       }
     },
     "Your phone stays close to the radio" : {
-      "comment" : "Firmware update checklist item"
+      "comment" : "Firmware update checklist item",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Telefon jest blisko radia"
+          }
+        }
+      }
     },
     "Your phone's location goes only to your connected radio. Your radio shares nothing until you turn it on. This app only lets public channels share an approximate location. Radios on firmware 2.8 or later enforce the same limit. You can change location permissions at any time from settings." : {
       "localizations" : {
@@ -16639,13 +17157,37 @@
       }
     },
     "Your Radio Didn't Go Into Update Mode" : {
-      "comment" : "Firmware update screen title when the radio restarted but never entered update mode"
+      "comment" : "Firmware update screen title when the radio restarted but never entered update mode",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio nie przeszło w tryb aktualizacji"
+          }
+        }
+      }
     },
     "Your radio is restarting into update mode. Keep the app open and your phone near the radio." : {
-      "comment" : "Firmware update screen message while the radio restarts into update mode"
+      "comment" : "Firmware update screen message while the radio restarts into update mode",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio uruchamia się ponownie w trybie aktualizacji. Nie zamykaj aplikacji i trzymaj telefon blisko radia."
+          }
+        }
+      }
     },
     "Your radio is starting the new firmware. The app reconnects on its own." : {
-      "comment" : "Firmware update screen message after the transfer while the radio restarts"
+      "comment" : "Firmware update screen message after the transfer while the radio restarts",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio uruchamia nowy firmware. Aplikacja sama się z nim połączy."
+          }
+        }
+      }
     },
     "Your radio restarts to apply this and reconnects in a few seconds." : {
       "comment" : "Radio setup preset footer",
@@ -17093,7 +17635,15 @@
       }
     },
     "Your radio will restart a few times and reconnect when it's done." : {
-      "comment" : "Firmware update screen message before the update starts"
+      "comment" : "Firmware update screen message before the update starts",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio uruchomi się ponownie kilka razy i połączy się, gdy skończy."
+          }
+        }
+      }
     },
     "your radio's primary channel to \"%@\"" : {
       "comment" : "Beacon switch prompt; one of the changes listed",
@@ -54205,6 +54755,12 @@
             "value" : "모의 OTA 업로드"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Symulowane wysyłanie OTA"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -56249,6 +56805,12 @@
             "value" : "무선 장치나 펌웨어 파일을 사용하지 않습니다"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie jest używane żadne radio ani plik firmware"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -57886,6 +58448,12 @@
             "value" : "시뮬레이터 제어 열기"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz sterowanie symulatorem"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -58145,6 +58713,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "OTA 검사기"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Inspektor OTA"
           }
         },
         "pt-BR" : {
@@ -60199,6 +60773,12 @@
             "value" : "대기 상태로 초기화"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przywróć stan bezczynności"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -60280,6 +60860,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "모의 업로드 재시작"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uruchom symulowane wysyłanie od nowa"
           }
         },
         "pt-BR" : {
@@ -60973,6 +61559,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "실시간 애니메이션 사이클 실행"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uruchom cykl animacji na żywo"
           }
         },
         "pt-BR" : {
@@ -63205,6 +63797,12 @@
             "value" : "중간 실패 시뮬레이션"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Symuluj błąd w trakcie"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -63541,6 +64139,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "상태 값"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stan"
           }
         },
         "pt-BR" : {
@@ -75979,6 +76583,12 @@
             "value" : "• 파일이 기록되면 무선 장치가 스스로를 지운 후 부트로더로 다시 재부팅되며, 드라이브가 사라졌다가 다시 나타납니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Po zapisaniu pliku radio samo się wymaże i uruchomi ponownie w bootloaderze; dysk zniknie i pojawi się ponownie."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -76063,6 +76673,12 @@
             "value" : "• 다음으로 ‘펌웨어 업데이트’ 화면에서 펌웨어를 설치하십시오. 무선 장치는 완전히 새로운 장치로 시작됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Następnie zainstaluj firmware na ekranie Aktualizacje firmware. Radio uruchomi się jak nowe urządzenie."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -76145,6 +76761,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "• 기록하기 전에 다운로드한 파일을 고정된 체크섬으로 검증하고, 플래시 주소를 보고된 SoftDevice와 대조 확인합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Przed zapisaniem czegokolwiek pobrany plik jest sprawdzany z przypisaną sumą kontrolną, a jego adres w pamięci flash jest porównywany ze zgłoszonym SoftDevice."
           }
         },
         "pt-BR" : {
@@ -87447,6 +88069,12 @@
         "ko" : {
           "stringUnit" : {
             "state" : "machine_translated",
+            "value" : "ALPHA"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "ALPHA"
           }
         },
@@ -105676,6 +106304,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "SoftDevice를 식별하려면 위의 드라이브를 선택하십시오."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz dysk powyżej, aby rozpoznać SoftDevice."
           }
         },
         "pt-BR" : {
@@ -127868,6 +128502,12 @@
             "value" : "DIY 에디션"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Edycja DIY"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -137382,6 +138022,12 @@
             "value" : "모든 장치 및 앱 데이터를 삭제하시겠습니까?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymazać wszystkie dane urządzenia i aplikacji?"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -139189,6 +139835,12 @@
             "value" : "블랙록 사막에서 매년 열리는 모임인 Burning Man용 이벤트 펌웨어입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware na Burning Man, coroczne wydarzenie na pustyni Black Rock."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -139270,6 +139922,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "라스베이거스에서 매년 열리는 해커 콘퍼런스인 DEFCON용 이벤트 펌웨어입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware na DEFCON, coroczną konferencję hakerską w Las Vegas."
           }
         },
         "pt-BR" : {
@@ -139355,6 +140013,12 @@
             "value" : "애틀랜타에서 매년 열리는 멀티 장르 컨벤션인 Dragon Con용 이벤트 펌웨어입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware na Dragon Con, coroczny konwent wielu gatunków w Atlancie."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -139436,6 +140100,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "국제 Fab Lab 디지털 제작 콘퍼런스인 FAB용 이벤트 펌웨어입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware na FAB, międzynarodową konferencję Fab Lab o cyfrowej fabrykacji."
           }
         },
         "pt-BR" : {
@@ -139521,6 +140191,12 @@
             "value" : "데이턴에서 열리는 아마추어 무선 컨벤션인 Hamvention용 이벤트 펌웨어입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware na Hamvention, zlot krótkofalowców w Dayton."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -139604,6 +140280,12 @@
             "value" : "캘리포니아에서 매년 열리는 메이커 콘퍼런스인 Open Sauce용 이벤트 펌웨어입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware na Open Sauce, coroczną konferencję makerów w Kalifornii."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -139685,6 +140367,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "매년 열리는 CCC 해커 콘퍼런스인 Chaos Communication Congress용 이벤트 펌웨어입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware na Chaos Communication Congress, coroczną konferencję hakerską CCC."
           }
         },
         "pt-BR" : {
@@ -143109,6 +143797,12 @@
             "value" : "공장 출고 상태로 지우면 무선 장치의 소유자, 채널, ID 키, 설정 및 노드 데이터베이스가 영구적으로 삭제됩니다. 자동으로 복원되는 항목은 없습니다. 이후 펌웨어를 설치해야 합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymazanie fabryczne trwale usuwa właściciela radia, kanały, klucze tożsamości, ustawienia i bazę węzłów. Nic nie zostanie przywrócone automatycznie. Potem trzeba zainstalować firmware."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -146303,6 +146997,12 @@
             "value" : "펌웨어 파일"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plik firmware"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -146386,6 +147086,12 @@
             "value" : "DIY 및 비공식 커뮤니티 이벤트용 펌웨어입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware na wydarzenia DIY i nieoficjalne wydarzenia społeczności."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -146467,6 +147173,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "Smart Citizen 환경 모니터링 네트워크용 펌웨어입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware dla sieci monitoringu środowiska Smart Citizen."
           }
         },
         "pt-BR" : {
@@ -163150,6 +163862,12 @@
             "value" : "장치의 OTA_1 파티션에 올바른 업데이터가 로드되어 있는 경우, BLE 업데이트를 시도할 수 있습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jeśli Twoje urządzenie ma właściwy program aktualizujący w partycji OTA_1, możesz spróbować aktualizacji przez BLE."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -163231,6 +163949,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "장치의 OTA_1 파티션에 올바른 업데이터가 로드되어 있는 경우, WiFi 업데이트를 시도할 수 있습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jeśli Twoje urządzenie ma właściwy program aktualizujący w partycji OTA_1, możesz spróbować aktualizacji przez Wi-Fi."
           }
         },
         "pt-BR" : {
@@ -241477,6 +242201,12 @@
             "value" : "나이틀리"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "NIGHTLY"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -243972,6 +244702,12 @@
             "value" : "보드 “%@”에 사용할 수 있는 Meshtastic nRF52 부트로더가 없습니다. 아무것도 쓰지 않았습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dla płytki „%@” nie ma Meshtastic nRF52 Bootloader. Nic nie zostało zapisane."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -244491,6 +245227,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "보드 “%@”에 사용할 수 있는 OTAFIX 부트로더가 없습니다. 아무것도 쓰지 않았습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dla płytki „%@” nie ma bootloadera OTAFIX. Nic nie zostało zapisane."
           }
         },
         "pt-BR" : {
@@ -256757,6 +257499,12 @@
             "value" : "OTAFIX는 더 빠르고 안정적인 Bluetooth 펌웨어 업데이트를 제공하는 Meshtastic의 개선된 nRF52 부트로더입니다. 공장 출고 상태로 지우기는 부트로더 드라이브에서 무선 장치의 플래시를 지웁니다. 펌웨어가 부팅되지 않을 때 사용하는 복구 방법입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OTAFIX to ulepszony bootloader nRF52 od Meshtastic, z szybszymi i bardziej niezawodnymi aktualizacjami firmware'u przez Bluetooth. Wymazanie fabryczne czyści pamięć flash radia z dysku bootloadera — to sposób ratunkowy, gdy firmware się nie uruchamia."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -256840,6 +257588,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "OTAFIX는 더 빠르고 안정적인 Bluetooth 펌웨어 업데이트를 제공하는 Meshtastic의 개선된 nRF52 부트로더입니다. 업그레이드는 장치 자체의 부트로더 드라이브를 통해 기록됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OTAFIX to ulepszony bootloader nRF52 od Meshtastic, z szybszymi i bardziej niezawodnymi aktualizacjami firmware'u przez Bluetooth. Aktualizację zapisuje się z dysku bootloadera samego urządzenia."
           }
         },
         "pt-BR" : {
@@ -267235,6 +267989,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "속성 (%lld)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Właściwości (%lld)"
           }
         },
         "pt-BR" : {
@@ -287381,6 +288141,12 @@
             "value" : "보안 설정은 펌웨어 버전 2.5 이상이 필요합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ustawienia bezpieczeństwa wymagają firmware'u w wersji 2.5+"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -288865,6 +289631,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "파일 선택기에서 장치의 드라이브를 선택하십시오. 지우기 이미지는 드라이브가 보고하는 SoftDevice 버전에 따라 선택되므로 잘못된 이미지는 절대 기록되지 않습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz dysk urządzenia w selektorze plików. Obraz wymazania jest wybierany według wersji SoftDevice zgłoszonej przez dysk, więc nigdy nie zostanie zapisany zły obraz."
           }
         },
         "pt-BR" : {
@@ -304427,6 +305199,12 @@
             "value" : "SoftDevice **S140 %@**"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SoftDevice **S140 %@**"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -306258,6 +307036,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "일상적으로 사용하는 표준 Meshtastic 펌웨어입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standardowy firmware Meshtastic do codziennego użytku."
           }
         },
         "pt-BR" : {
@@ -316796,6 +317580,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtastic Apple 앱은 %@ 이상의 펌웨어 버전이 필요합니다. 이전 펌웨어 버전은 더 이상 지원되지 않으며 호환성 문제나 일부 기능 누락이 발생할 수 있습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aplikacja Meshtastic na Apple wymaga firmware'u w wersji %@ lub nowszej. Starsze wersje nie są już obsługiwane i mogą mieć problemy ze zgodnością lub brakujące funkcje."
           }
         },
         "pt-BR" : {
@@ -338848,6 +339638,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "부트로더 업그레이드"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zaktualizuj bootloader"
           }
         },
         "pt-BR" : {
