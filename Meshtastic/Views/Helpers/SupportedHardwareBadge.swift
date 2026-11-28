@@ -12,8 +12,11 @@ struct SupportedHardwareBadge: View {
 	
 	@Query var hardware: [DeviceHardwareEntity]
 	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
-	
-	init<T>(hwModelId: T) where T: BinaryInteger {
+	/// One line, icon beside the text, for use under a radio's name.
+	var inline = false
+
+	init<T>(hwModelId: T, inline: Bool = false) where T: BinaryInteger {
+		self.inline = inline
 		let hwModel = Int64(hwModelId)
 		_hardware = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
 			hw.hwModel == hwModel
@@ -32,7 +35,9 @@ struct SupportedHardwareBadge: View {
 	}
 	
 	var body: some View {
-		if let activelySupported = presentation?.activelySupported {
+		if inline {
+			inlineBody
+		} else if let activelySupported = presentation?.activelySupported {
 			VStack {
 				Image(systemName: activelySupported ? "checkmark.seal.fill" : "x.circle")
 					.font(.largeTitle)
@@ -62,6 +67,20 @@ struct SupportedHardwareBadge: View {
 					.font(.caption2)
 					.fixedSize()
 			}
+		}
+	}
+
+	@ViewBuilder
+	private var inlineBody: some View {
+		if let activelySupported = presentation?.activelySupported {
+			Label {
+				Text(activelySupported ? "Supported" : "Unsupported")
+			} icon: {
+				Image(systemName: activelySupported ? "checkmark.seal.fill" : "x.circle")
+					.foregroundStyle(activelySupported ? .green : .red)
+			}
+			.font(.caption)
+			.foregroundStyle(.secondary)
 		}
 	}
 }

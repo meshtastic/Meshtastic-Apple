@@ -13,6 +13,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 **Month YYYY** — [Page title](relative/path.md) — One sentence describing what changed or why it matters.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
+**Nov 2026** — [Firmware Updates](firmware.md#checking-for-updates) — The Firmware Updates page opens with the same radio card as the update screen, with **Update** when a newer stable release is out. The radio's technical details are under **Advanced**.
+
 **Nov 2026** — [Firmware Updates](firmware.md#installing-an-update) — The USB firmware update, the nRF52 bootloader update and factory erase use the same screen as the Bluetooth update: the radio's picture and name, then numbered steps.
 
 **Nov 2026** — [Firmware Updates](firmware.md#checking-for-updates) — When a new stable firmware is out for the connected radio, **Update** on the Connect screen downloads it and opens the update screen.

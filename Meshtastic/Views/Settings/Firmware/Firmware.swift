@@ -187,6 +187,9 @@ private struct FirmwareContentView: View {
 	@State var rowInstallation: RowInstallation?
 	@State var showBootloaderUpgrade = false
 	@State var showFactoryErase = false
+	@State private var isDownloadingUpdate = false
+	@State private var updateDownloadFailed = false
+	@State private var showsAdvanced = false
 
 	struct RowInstallation: Identifiable {
 		let type: FirmwareFile.FirmwareType
@@ -209,65 +212,50 @@ private struct FirmwareContentView: View {
 	
 	var body: some View {
 		List {
-			// SECTION 1: HERO
+			// SECTION 1: THE RADIO — the same card the update screen shows.
 			Section {
-				Text(hardware.displayName ?? "Unknown")
-					.font(.title)
-					.fixedSize(horizontal: false, vertical: true)
-					.frame(maxWidth: .infinity, alignment: .leading)
-					.padding(.bottom, 2)
-
-				HStack(alignment: .center, spacing: 12) {
-					SupportedHardwareBadge(hwModelId: hardware.hwModel)
-						.frame(width: 72)
-						.padding(.leading, 4)
-
+				VStack(spacing: 14) {
 					FirmwareHeroImage(hardware: hardware, pioEnv: node.myInfo?.pioEnv)
-						.frame(maxWidth: .infinity)
-				}
-				.padding(.bottom, 2)
-
-				// One row for all the data points: as separate rows each carried the full
-				// list row padding above and below, which read as big dead bands between them.
-				VStack(alignment: .leading, spacing: 12) {
-					VStack(alignment: .leading, spacing: 2) {
-						Text("Platform IO").font(.caption).foregroundColor(.secondary)
-						Text("\(node.myInfo?.pioEnv ?? "Unknown")")
-					}
-					.accessibilityElement(children: .combine)
-					VStack(alignment: .leading, spacing: 2) {
-						Text("Architecture").font(.caption).foregroundColor(.secondary)
-						Text("\(hardware.architecture ?? "Unknown")")
-					}
-					.accessibilityElement(children: .combine)
-					VStack(alignment: .leading, spacing: 2) {
-						Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
-						Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
-					}
-					.accessibilityElement(children: .combine)
-					VStack(alignment: .leading, spacing: 2) {
-						Text("Intended LoRa Region").font(.caption).foregroundColor(.secondary)
-						Text(intendedRegionLabel)
-					}
-					.accessibilityElement(children: .combine)
-					if shouldShowRegionUnsetWarning {
-						Label("Set a LoRa region before installing firmware.", systemImage: "exclamationmark.triangle.fill")
-							.foregroundStyle(.orange)
-							.font(.caption)
-					} else if shouldShowLocaleVariantWarning {
-						Label("This region may require a locale-specific firmware file for correct on-device text rendering.", systemImage: "character.book.closed.fill")
-							.foregroundStyle(.orange)
-							.font(.caption)
-					}
-					if let suggestedFileNameHint {
-						VStack(alignment: .leading, spacing: 2) {
-							Text("Suggested file pattern").font(.caption).foregroundColor(.secondary)
-							Text(suggestedFileNameHint).font(.caption).textSelection(.enabled)
+						.frame(maxHeight: 160)
+						.accessibilityHidden(true)
+					VStack(spacing: 4) {
+						Text(radioName)
+							.font(.title3.bold())
+							.multilineTextAlignment(.center)
+						if let hardwareName = hardware.displayName, hardwareName != radioName {
+							Text(hardwareName)
+								.font(.subheadline)
+								.foregroundStyle(.secondary)
+								.multilineTextAlignment(.center)
 						}
+						SupportedHardwareBadge(hwModelId: hardware.hwModel, inline: true)
 					}
+					updateStatus
+				}
+				.padding(.vertical, 8)
+				.frame(maxWidth: .infinity)
+				// Rounded rectangles, not the default capsule, to match the update screen.
+				.buttonBorderShape(.roundedRectangle(radius: 12))
+			}
+
+			Section {
+				// Details for troubleshooting; the card above already shows the name and version.
+				DisclosureGroup(isExpanded: $showsAdvanced) {
+					LabeledContent("Platform IO", value: node.myInfo?.pioEnv ?? "Unknown".localized)
+					LabeledContent("Architecture", value: hardware.architecture ?? "Unknown".localized)
+					LabeledContent("Intended LoRa Region", value: intendedRegionLabel)
+				} label: {
+					Text("Advanced")
+				}
+			} footer: {
+				if shouldShowRegionUnsetWarning {
+					Label("Set a LoRa region before installing firmware.", systemImage: "exclamationmark.triangle.fill")
+						.foregroundStyle(.orange)
+				} else if shouldShowLocaleVariantWarning {
+					Label("This region may require a locale-specific firmware file for correct on-device text rendering.", systemImage: "character.book.closed.fill")
+						.foregroundStyle(.orange)
 				}
 			}
-			.listRowSeparator(.hidden)
 
 			// SECTION 2: RELEASES
 			Section(header: releasesHeader, footer: lastUpdatedFooter) {
@@ -347,6 +335,89 @@ private struct FirmwareContentView: View {
 	}
 	
 	// MARK: - Subviews
+
+	/// The radio's own name, falling back to the hardware's.
+	private var radioName: String {
+		let longName = node.user?.longName ?? ""
+		return longName.isEmpty ? (hardware.displayName ?? "") : longName
+	}
+
+	/// The newest stable file this page would install with one tap: the Bluetooth DFU zip on
+	/// nRF52, the OTA bin on ESP32, the UF2 on RP2040.
+	private var latestStableFile: FirmwareFile? {
+		guard let architecture = hardware.architecture.flatMap({ Architecture(rawValue: $0) }) else { return nil }
+		let type = FirmwareUpdatePlan.phoneUpdateFileType(for: architecture) ?? .uf2
+		return firmwareList.mostRecentFirmware(forReleaseType: .stable).first { $0.firmwareType == type }
+	}
+
+	/// The version the radio runs against the latest stable, with Update when it's behind.
+	@ViewBuilder
+	private var updateStatus: some View {
+		let current = node.metadata?.firmwareVersion
+		if let current, !current.isEmpty {
+			Text("Firmware \(FirmwareUpdateNotificationPolicy.normalizedVersion(current))", comment: "The firmware version the radio runs, on the Firmware Updates card")
+				.font(.subheadline)
+				.foregroundStyle(.secondary)
+		}
+		if let current, !current.isEmpty, let file = latestStableFile,
+		   file.status != .unavailable,
+		   FirmwareUpdateNotificationPolicy.isUpdateAvailable(current: current, latestStable: file.versionId) {
+			VStack(spacing: 10) {
+				Text("Stable \(FirmwareUpdateNotificationPolicy.normalizedVersion(file.versionId)) is available.", comment: "Firmware Updates card when the radio is behind the latest stable release; the version")
+					.font(.callout)
+					.multilineTextAlignment(.center)
+				if updateDownloadFailed {
+					Text("Couldn't download the firmware. Check your internet connection and try again.")
+						.font(.footnote)
+						.foregroundStyle(.red)
+						.multilineTextAlignment(.center)
+				}
+				Button {
+					Task { await installLatestStable(file) }
+				} label: {
+					HStack(spacing: 6) {
+						if isDownloadingUpdate {
+							ProgressView()
+								.controlSize(.small)
+							Text("Downloading")
+						} else {
+							Text("Update")
+						}
+					}
+					.frame(maxWidth: .infinity)
+				}
+				.buttonStyle(.borderedProminent)
+				.tint(.accentFill)
+				.controlSize(.large)
+				.disabled(isDownloadingUpdate)
+			}
+			.padding(.top, 4)
+		} else if latestStableFile != nil, current?.isEmpty == false {
+			Label {
+				Text("Up to date with the latest stable release", comment: "Firmware Updates card when the radio runs the latest stable release or newer")
+			} icon: {
+				Image(systemName: "checkmark.circle.fill")
+					.foregroundStyle(.green)
+			}
+			.font(.callout)
+		}
+	}
+
+	/// Downloads the file if needed, then opens the update screen for it.
+	private func installLatestStable(_ file: FirmwareFile) async {
+		isDownloadingUpdate = true
+		updateDownloadFailed = false
+		defer { isDownloadingUpdate = false }
+		do {
+			if file.status != .downloaded {
+				try await file.download()
+			}
+			rowInstallation = RowInstallation(type: file.firmwareType, url: file.localUrl)
+		} catch is CancellationError {
+		} catch {
+			updateDownloadFailed = true
+		}
+	}
 
 	/// The radio as the bootloader and erase screens show it: no firmware going on.
 	private var maintenanceRadio: FirmwareUpdateRadio {
@@ -457,18 +528,6 @@ private struct FirmwareContentView: View {
 
 	var shouldShowLocaleVariantWarning: Bool {
 		nodeRegion.prefersLocalizedFontFirmware
-	}
-
-	/// Example artifact filename for this hardware, with the optional locale
-	/// tag shown for regions that ship localized-font variants. Selectable so
-	/// users hunting for a file on meshtastic.github.io can copy it.
-	var suggestedFileNameHint: String? {
-		let platformioTarget = firmwareTarget.trimmingCharacters(in: .whitespacesAndNewlines)
-		guard !platformioTarget.isEmpty else { return nil }
-		if nodeRegion.prefersLocalizedFontFirmware {
-			return "firmware-\(platformioTarget)-<version>[-\(nodeRegion.topic)]"
-		}
-		return "firmware-\(platformioTarget)-<version>"
 	}
 
 	/// Whether to offer the OTAFIX bootloader upgrade: nRF52 hardware whose
@@ -783,7 +842,7 @@ private struct FirmwareRow: View {
 					}
 				}
 				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
+				.buttonBorderShape(.roundedRectangle(radius: 8))
 				.controlSize(.small)
 				.disabled(firmwareFile.firmwareType == .bin && !accessoryManager.checkIsVersionSupported(forVersion: minimumESP32OTAVersion))
 
@@ -796,7 +855,7 @@ private struct FirmwareRow: View {
 					Text("Download")
 				}
 				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
+				.buttonBorderShape(.roundedRectangle(radius: 8))
 				.controlSize(.small)
 			case .unavailable:
 				Text("Not built for this device")
