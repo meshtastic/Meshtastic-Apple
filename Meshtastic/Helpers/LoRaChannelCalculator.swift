@@ -35,6 +35,16 @@ struct LoRaChannelCalculator {
 		frequencyOffset = Double(config?.frequencyOffset ?? 0)
 	}
 
+	init(config: Config.LoRaConfig) {
+		regionCode = config.region.rawValue
+		usePreset = config.usePreset
+		modemPreset = config.modemPreset.rawValue
+		channelNum = Int(config.channelNum)
+		bandwidth = Int(config.bandwidth)
+		overrideFrequency = Double(config.overrideFrequency)
+		frequencyOffset = Double(config.frequencyOffset)
+	}
+
 	init(
 		regionCode: Int,
 		usePreset: Bool,
@@ -65,16 +75,16 @@ struct LoRaChannelCalculator {
 	}
 
 	/// The radio's current operating slot. Respects a non-zero `channelNum` override
-	/// (the firmware pins the slot when set); otherwise derives it from the primary
-	/// channel name.
+	/// when it fits the region's slot count (matching firmware `resolveFrequencySlot`);
+	/// otherwise derives it from the region default or primary channel name.
 	func effectiveChannelSlot(primaryName: String) -> Int {
-		if channelNum != 0 {
+		let numChannels = numChannels()
+		if channelNum > 0, numChannels == 0 || channelNum <= numChannels {
 			return channelNum
 		}
-		if let defaultSlot = region?.defaultSlot, defaultSlot > 0 {
+		if let defaultSlot = region?.defaultSlot, defaultSlot > 0, numChannels == 0 || defaultSlot <= numChannels {
 			return defaultSlot
 		}
-		let numChannels = numChannels()
 		guard numChannels > 0 else { return 0 }
 		return Int(djb2Hash(primaryName) % UInt32(numChannels)) + 1
 	}
@@ -85,10 +95,10 @@ struct LoRaChannelCalculator {
 	/// channel resolves to on its own mesh, used to decide whether the connected radio
 	/// (whose slot comes from `effectiveChannelSlot`) can already hear it.
 	func slotForChannelName(_ name: String) -> Int {
-		if let defaultSlot = region?.defaultSlot, defaultSlot > 0 {
+		let numChannels = numChannels()
+		if let defaultSlot = region?.defaultSlot, defaultSlot > 0, numChannels == 0 || defaultSlot <= numChannels {
 			return defaultSlot
 		}
-		let numChannels = numChannels()
 		return numChannels > 0 ? Int(djb2Hash(name) % UInt32(numChannels)) + 1 : 0
 	}
 
@@ -99,8 +109,12 @@ struct LoRaChannelCalculator {
 		guard let region else { return 0 }
 		let bandwidthMHz = bandwidthMHz(region: region)
 		guard bandwidthMHz > 0, slot > 0 else { return 0 }
+		let count = numChannels()
+		guard count > 0, slot <= count else { return 0 }
 		let slotWidth = region.spacing + 2 * region.padding + bandwidthMHz
-		return region.freqStart + bandwidthMHz / 2 + region.padding + Double(slot - 1) * slotWidth + frequencyOffset
+		let center = region.freqStart + bandwidthMHz / 2 + region.padding + Double(slot - 1) * slotWidth
+		guard center <= region.freqEnd + 1e-6 else { return 0 }
+		return center + frequencyOffset
 	}
 
 	/// How many frequency slots the region has at this bandwidth.
@@ -130,6 +144,8 @@ struct LoRaChannelCalculator {
 			return presetBandwidth * (region.wideLoRa ? 3.25 : 1)
 		}
 		switch bandwidth {
+		case 0:
+			return regionCode == RegionCodes.lora24.rawValue ? 0.8125 : 0.25
 		case 31:
 			return 0.03125
 		case 62:

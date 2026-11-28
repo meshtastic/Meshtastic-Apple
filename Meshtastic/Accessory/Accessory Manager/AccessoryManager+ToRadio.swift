@@ -797,6 +797,7 @@ extension AccessoryManager {
 			if let txPower = currentLoRaConfig?.txPower {
 				channelSet.loraConfig.txPower = txPower
 			}
+			LoRaConfig.reconcile(&channelSet.loraConfig)
 			targetChannelIndexes = channelSet.settings.indices.map { Int32($0) }
 			primaryPSK = channelSet.settings.first?.psk
 		}
@@ -3280,7 +3281,7 @@ extension AccessoryManager {
 
 			meshPacket.decoded = dataMessage
 
-			let messageDescription = "🛎️ Requested LoRa Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
+			let messageDescription = "🛎️ Requested LoRa Config using an admin key for node: \(toUser.num.toHex())"
 
 			try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 		}

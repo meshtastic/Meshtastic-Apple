@@ -597,22 +597,44 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// node database, and the radio's NodeInfo.heard_on_current_lora answers for the new settings
 	/// never reach the app. The database completion saves the dump and publishes
 	/// `nodeDatabaseSavedAt`, which is what the unheard notice and node rows refresh on.
-	func refreshNodeDatabaseAfterLoRaChange() {
-		guard reportsHeardOnCurrentLora, isConnected else { return }
-		let generation = loraChangeTracker.changed()
-		Task { @MainActor in
+	@discardableResult
+	func refreshNodeDatabaseAfterLoRaChange(after delay: Duration = .seconds(2)) -> Task<Void, Never>? {
+		let shouldRefreshDatabase = reportsHeardOnCurrentLora
+		guard appliesLoRaConfigWithoutReboot || shouldRefreshDatabase, isConnected else { return nil }
+		let sessionID = activeConnection?.device.id
+		let generation = shouldRefreshDatabase ? loraChangeTracker.changed() : nil
+		return Task { @MainActor in
 			// Let the radio finish reprogramming the modem before asking.
-			try? await Task.sleep(for: .seconds(2))
-			// One download at a time: the completion doesn't say which request it answers.
-			while self.nodeDatabaseDumpInProgress, self.isConnected {
-				try? await Task.sleep(for: .milliseconds(250))
+			try? await Task.sleep(for: delay)
+			if shouldRefreshDatabase {
+				// One download at a time: the completion doesn't say which request it answers.
+				while self.nodeDatabaseDumpInProgress, self.isConnected, self.activeConnection?.device.id == sessionID {
+					try? await Task.sleep(for: .milliseconds(250))
+				}
 			}
+			guard self.activeConnection?.device.id == sessionID else { return }
 			guard self.isConnected else {
-				self.loraChangeTracker.reset()
+				if shouldRefreshDatabase {
+					self.loraChangeTracker.reset()
+				}
 				return
 			}
-			// A newer change is waiting its turn and will ask instead.
-			guard self.loraChangeTracker.request(generation) else { return }
+			if let generation {
+				// A newer change is waiting its turn and will ask instead.
+				guard self.loraChangeTracker.request(generation) else { return }
+			}
+			if let deviceNum = self.activeDeviceNum,
+			   let user = getNodeInfo(id: deviceNum, context: self.context)?.user {
+				// Re-read the radio's LoRa config so any firmware-side clamp replaces the
+				// optimistic copy saved locally.
+				try? await self.requestLoRaConfig(fromUser: user, toUser: user)
+			}
+			guard let generation else { return }
+			guard self.isConnected,
+				  self.activeConnection?.device.id == sessionID,
+				  self.loraChangeTracker.isActiveRequest(generation) else {
+				return
+			}
 			do {
 				try await self.sendWantDatabase(forLoRaChange: generation)
 			} catch {

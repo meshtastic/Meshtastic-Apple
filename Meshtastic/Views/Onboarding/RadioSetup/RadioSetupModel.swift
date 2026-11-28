@@ -154,7 +154,10 @@ final class RadioSetupModel {
 	var hasChosenRegion: Bool { isRegionSupported && draft.region != .unset }
 
 	var hasLoRaChanges: Bool {
-		draft.region != loaded.region || draft.modemPreset != loaded.modemPreset || draft.usePreset != loaded.usePreset
+		draft.region != loaded.region
+			|| draft.modemPreset != loaded.modemPreset
+			|| draft.usePreset != loaded.usePreset
+			|| draft.channelNum != loaded.channelNum
 	}
 
 	var restartsOnLoRaSave: Bool { hasLoRaChanges && !appliesWithoutReboot }
@@ -198,6 +201,10 @@ final class RadioSetupModel {
 		ModemPresets.usBandwidthWarning(region: region, preset: preset, supports2_8: supports2_8)
 	}
 
+	var slotResetNotice: String? {
+		LoRaConfig.slotResetNotice(draft, previousSlot: Int(loaded.channelNum))
+	}
+
 	func availablePresets(regionInfo: RegionPresetInfo?) -> [ModemPresets] {
 		ModemPresets.available(forRegion: region, current: preset, supports2_8: supports2_8, regionInfo: regionInfo)
 	}
@@ -223,6 +230,8 @@ final class RadioSetupModel {
 			currentPreset: preset) {
 			draft.modemPreset = next.protoEnumValue()
 		}
+		draft.channelNum = loaded.channelNum
+		LoRaConfig.reconcile(&draft)
 	}
 
 	/// Starts the draft on `region` when the radio has none, and remembers it so the region
@@ -238,6 +247,8 @@ final class RadioSetupModel {
 	func selectPreset(_ preset: ModemPresets) {
 		draft.modemPreset = preset.protoEnumValue()
 		draft.usePreset = true
+		draft.channelNum = loaded.channelNum
+		LoRaConfig.reconcile(&draft)
 	}
 
 	func setLongName(_ typed: String) {

@@ -300,6 +300,67 @@ struct DeviceProfileImportTests {
 		#expect(terminal.first?.kind == .loraConfig)
 	}
 
+	@Test("Standalone LoRa config import reconciles out-of-range channelNum")
+	func standaloneLoRaConfigReconcilesChannelNum() throws {
+		var profile = try makeFullProfile()
+		var lora = Config.LoRaConfig()
+		lora.region = .jp
+		lora.usePreset = true
+		lora.modemPreset = .longFast
+		lora.channelNum = 15
+		profile.config.lora = lora
+
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: User())
+		let loraItem = try #require(plan.items.first { $0.kind == .loraConfig })
+		guard case .loraConfig(let planned) = loraItem.payload else {
+			Issue.record("Expected .loraConfig payload")
+			return
+		}
+		#expect(planned.channelNum == 0)
+	}
+
+	@MainActor
+	@Test("Applying a standalone LoRa config reconciles an out-of-range channelNum before sending")
+	func applyGatewayReconcilesLoRaChannelNum() async throws {
+		let connection = MockChannelSetConnection(failureMode: .wantConfig)
+		let manager = AccessoryManager(transports: [])
+		let device = Device(
+			id: UUID(),
+			name: "Import Gateway Radio",
+			transportType: .ble,
+			identifier: "import-gateway-radio",
+			connectionState: .connected,
+			num: 123_456_789
+		)
+		manager.activeConnection = (device: device, connection: connection)
+		manager.activeDeviceNum = 123_456_789
+		manager.isConnected = true
+
+		let user = UserEntity()
+		user.num = 123_456_789
+
+		var lora = Config.LoRaConfig()
+		lora.region = .jp
+		lora.usePreset = true
+		lora.modemPreset = .longFast
+		lora.channelNum = 15
+
+		let item = ImportItem(
+			kind: .loraConfig,
+			section: .channelsAndLoRa,
+			summary: "LoRa region: jp",
+			isSensitive: false,
+			mayReboot: true,
+			payload: .loraConfig(lora)
+		)
+
+		let gateway = AccessoryProfileApplyGateway(accessoryManager: manager, node: user)
+		try await gateway.apply(item)
+
+		let sent = try #require(await connection.sentLoRaConfigs.last)
+		#expect(sent.channelNum == 0)
+	}
+
 	// MARK: - Fixed position gating
 
 	@Test("A zero-coordinate fixed position is not imported")

@@ -732,6 +732,16 @@ final class TAKServerManager: ObservableObject {
 
 	// MARK: - Auto-fix Primary Channel
 
+	static func shortFastLoRaConfig(preserving currentLoRa: LoRaConfigEntity?) -> Config.LoRaConfig {
+		var loraConfig = currentLoRa.map(Config.LoRaConfig.init(entity:)) ?? Config.LoRaConfig()
+		loraConfig.modemPreset = .shortFast
+		loraConfig.usePreset = true
+		loraConfig.txEnabled = true
+		loraConfig.hopLimit = 3
+		LoRaConfig.reconcile(&loraConfig)
+		return loraConfig
+	}
+
 	/// Automatically fix the primary channel to TAK-compatible settings
 	/// Sets: Name="TAK", 256-bit AES key, preserves existing LoRa channel
 	/// Returns true if successful
@@ -801,21 +811,7 @@ final class TAKServerManager: ObservableObject {
 			Logger.tak.info("Successfully fixed primary channel: name=TAK, key=256-bit")
 
 			// Also set LoRa modem preset to shortFast for optimal TAK performance
-			var loraConfig = Config.LoRaConfig()
-			loraConfig.modemPreset = .shortFast
-			loraConfig.usePreset = true
-			loraConfig.txEnabled = true
-			loraConfig.hopLimit = 3
-			
-			// Get current LoRa config to preserve other settings
-			if let currentLoRa = connectedNode.loRaConfig {
-				loraConfig.region = Config.LoRaConfig.RegionCode(rawValue: Int(currentLoRa.regionCode)) ?? .unset
-				loraConfig.channelNum = UInt32(currentLoRa.channelNum)
-				loraConfig.txPower = Int32(currentLoRa.txPower)
-				loraConfig.bandwidth = UInt32(currentLoRa.bandwidth)
-				loraConfig.codingRate = UInt32(currentLoRa.codingRate)
-				loraConfig.spreadFactor = UInt32(currentLoRa.spreadFactor)
-			}
+			let loraConfig = Self.shortFastLoRaConfig(preserving: connectedNode.loRaConfig)
 			
 			do {
 				try await accessoryManager.saveLoRaConfig(config: loraConfig, fromUser: user, toUser: user)

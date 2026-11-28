@@ -275,4 +275,58 @@ struct RadioSetupModelTests {
 		#expect(sent.intervalSecs == 7200)
 		#expect(sent.targets == [MeshBeaconTargetValues(preset: 0, region: 1, channelIndex: 0, frequencySlot: 0)])
 	}
+
+	@Test func changingPresetOrRegionClearsAnOutOfRangeSlot() {
+		var lora = Config.LoRaConfig()
+		lora.region = .jp
+		lora.usePreset = true
+		lora.modemPreset = .liteSlow
+		lora.channelNum = 15
+		let model = RadioSetupModel(
+			nodeNum: 1, deviceName: "Radio", hardwareName: nil, hardwareModelId: nil, firmwareVersion: "2.8.0",
+			supports2_8: true, appliesWithoutReboot: true, isLicensed: false, longNameLimit: 24,
+			loRaConfig: lora, longName: "Node", shortName: "NODE")
+
+		model.selectPreset(.longFast)
+		#expect(model.draft.channelNum == 0)
+		#expect(model.slotResetNotice != nil)
+
+		model.selectPreset(.narrowSlow)
+		#expect(model.draft.channelNum == 15)
+		#expect(model.slotResetNotice == nil)
+
+		model.selectRegion(.eu868, regionInfo: nil)
+		#expect(model.draft.channelNum == 0)
+		#expect(model.slotResetNotice != nil)
+	}
+
+	@Test func reconciledSlotResetCountsAsLoRaChange() {
+		var lora = Config.LoRaConfig()
+		lora.region = .jp
+		lora.usePreset = true
+		lora.modemPreset = .longFast
+		lora.channelNum = 15 // already out of range for JP LongFast (12 slots)
+		let model = RadioSetupModel(
+			nodeNum: 1, deviceName: "Radio", hardwareName: nil, hardwareModelId: nil, firmwareVersion: "2.8.0",
+			supports2_8: true, appliesWithoutReboot: true, isLicensed: false, longNameLimit: 24,
+			loRaConfig: lora, longName: "Node", shortName: "NODE")
+
+		#expect(!model.hasLoRaChanges)
+		model.selectPreset(.narrowSlow)
+		model.selectPreset(.longFast)
+		#expect(model.draft.channelNum == 0)
+		#expect(model.slotResetNotice != nil)
+		#expect(model.hasLoRaChanges)
+
+		var valid = lora
+		valid.channelNum = 5
+		let unchanged = RadioSetupModel(
+			nodeNum: 1, deviceName: "Radio", hardwareName: nil, hardwareModelId: nil, firmwareVersion: "2.8.0",
+			supports2_8: true, appliesWithoutReboot: true, isLicensed: false, longNameLimit: 24,
+			loRaConfig: valid, longName: "Node", shortName: "NODE")
+		unchanged.selectPreset(.narrowSlow)
+		unchanged.selectPreset(.longFast)
+		#expect(unchanged.draft.channelNum == 5)
+		#expect(!unchanged.hasLoRaChanges)
+	}
 }

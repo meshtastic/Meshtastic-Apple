@@ -64,6 +64,9 @@ struct RadioSetupPresetPage: View {
 			if let warning = model.usBandwidthWarning {
 				OnboardingFeatureRow(symbol: "exclamationmark.triangle.fill", color: .orange, text: warning)
 			}
+			if let notice = model.slotResetNotice {
+				OnboardingFeatureRow(symbol: "exclamationmark.triangle.fill", color: .orange, text: notice)
+			}
 			if !model.draft.usePreset {
 				OnboardingFeatureRow(
 					symbol: "slider.horizontal.3",

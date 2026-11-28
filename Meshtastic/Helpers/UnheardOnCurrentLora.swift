@@ -90,6 +90,11 @@ struct LoRaChangeNodeDatabaseTracker {
 		return true
 	}
 
+	/// Whether `changeNumber` is still the active, uncompleted request for the current connection.
+	func isActiveRequest(_ changeNumber: Int) -> Bool {
+		changeNumber == generation && changeNumber == requestedGeneration && completedGeneration != generation
+	}
+
 	/// The download asked for by `changeNumber` was saved, or the ask failed. Ignored unless it is
 	/// the newest change's request.
 	mutating func finished(_ changeNumber: Int) {
