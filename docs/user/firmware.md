@@ -12,13 +12,15 @@ The app can check for and install Meshtastic firmware updates directly on your c
 
 1. Connect to your radio.
 2. Go to **Settings → Firmware Updates**.
-3. The app shows the firmware version currently running on your radio and the latest stable release available from GitHub.
+3. The card at the top shows your radio's picture and name and the firmware it's running. If a newer stable release is out, it says so and offers **Update**, which downloads it and opens the update screen. Otherwise it says the radio is up to date.
 
 Opening the screen fetches the release list and the hardware catalog. Previously the list was only fetched at launch, so if that fetch failed the screen stayed empty until you pulled to refresh; now it fills in on its own. Refreshing the catalog means a board added since your build of the app shipped is recognized by its exact firmware target instead of falling back to another board that shares its hardware model.
 
 Neither fetch is rate limited, because both are cached: opening the screen repeatedly is served from the cache or answered with an empty "not modified" reply rather than downloading the lists again.
 
-The screen shows a picture of your radio above the details. Images for supported hardware ship with the app, so the picture appears even without an internet connection. A radio reporting a specialized firmware target with its own artwork gets that artwork; otherwise the app shows the base hardware image. If no image is available for your hardware, the screen leaves the picture out instead of showing an empty space.
+**Advanced**, under the card, opens to show the radio's PlatformIO target, processor architecture and intended LoRa region. A warning about the region shows under it even while it's closed.
+
+Images for supported hardware ship with the app, so the picture appears even without an internet connection. A radio reporting a specialized firmware target with its own artwork gets that artwork; otherwise the app shows the base hardware image. If no image is available for your hardware, the screen leaves the picture out instead of showing an empty space.
 
 When you connect to a node running firmware older than the latest stable release, the app can send a firmware update notification. For hardware the app can update directly, tapping the notification opens **Firmware Updates** so you can review and start the OTA update. For hardware that needs an external updater, the notification tells you to use **Meshtastic Flasher** instead.
 
@@ -26,7 +28,7 @@ The app remembers each node, hardware target, and stable version it has already 
 
 The Connect screen also shows **Firmware update available** while the connected radio is behind the latest stable release. For a radio the app can update, **Update** downloads the stable firmware and opens the update screen, and **Other Versions** opens **Firmware Updates**. For other hardware, tapping it opens **Meshtastic Flasher**.
 
-Some radios report a specialized firmware target that is not a separate entry in the hardware catalog. In that case, the app uses the base hardware entry for details such as the device name and processor architecture, but it keeps the radio's exact target when choosing downloads and local files. The suggested filename on the Firmware Updates screen uses that exact target, such as `firmware-thinknode_m1-inkhud-<version>.uf2`.
+Some radios report a specialized firmware target that is not a separate entry in the hardware catalog. In that case, the app uses the base hardware entry for details such as the device name and processor architecture, but it keeps the radio's exact target when choosing downloads and local files.
 
 ## Installing an Update
 
